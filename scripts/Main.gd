@@ -2,6 +2,8 @@ extends Control
 
 const LEARNING_ENGINE = preload("res://scripts/LearningEngine.gd")
 const ADAPTIVE_SELECTOR = preload("res://scripts/AdaptiveQuestionSelector.gd")
+const SKILL_TAXONOMY = preload("res://scripts/SkillTaxonomy.gd")
+const DECOMPOSITION_ENGINE = preload("res://scripts/DecompositionEngine.gd")
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
 const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
 const FANCY_BUTTON = preload("res://scripts/ui/FancyButton.gd")
@@ -447,7 +449,7 @@ func choose_question() -> Dictionary:
 		var pending: Dictionary = queue.pop_front()
 		if not recent_keys.has(str(pending.get("key", ""))):
 			return pending
-	return ADAPTIVE_SELECTOR.choose(world, progress.get("skills", {}), recent_keys, today)
+	return ADAPTIVE_SELECTOR.choose(world, progress.get("skills", {}), recent_keys, today, progress.get("strategies", {}))
 
 func next_question() -> void:
 	if finished: return
@@ -557,6 +559,11 @@ func resolve_answer(value: int, reason: String) -> void:
 		if shield == 0:
 			feedback.text = "SHIELD DESTROYED! MISSION FAILED"
 	skills[skill_key] = stats
+	if world > 1:
+		var strategy_key: String = SKILL_TAXONOMY.key_for(question)
+		var strategies: Dictionary = progress.get("strategies", {})
+		strategies[strategy_key] = LEARNING_ENGINE.record(strategies.get(strategy_key, {}), correct, reason, question_elapsed, input_mode, hint_used, int(progress.get("mission_sequence", 0)), int(Time.get_unix_time_from_system() / 86400.0))
+		progress["strategies"] = strategies
 	update_hud()
 	if shield == 0:
 		pending_defeat = true
@@ -617,7 +624,7 @@ func exit_mission() -> void:
 	finish_mission()
 
 func save_progress() -> void:
-	progress["schema_version"] = 3
+	progress["schema_version"] = 4
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(progress))
@@ -632,4 +639,5 @@ func load_progress() -> void:
 	if typeof(parsed) == TYPE_DICTIONARY:
 		progress = parsed
 		if not progress.has("skills"): progress["skills"] = {}
-	progress["schema_version"] = 3
+	if not progress.has("strategies"): progress["strategies"] = {}
+	progress["schema_version"] = 4

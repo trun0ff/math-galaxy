@@ -5,8 +5,9 @@ const LEARNING_ENGINE = preload("res://scripts/LearningEngine.gd")
 const REVIEW_SCHEDULER = preload("res://scripts/ReviewScheduler.gd")
 const MATH_ENGINE = preload("res://scripts/MathEngine.gd")
 const RECENT_WINDOW := 5
+const SKILL_TAXONOMY = preload("res://scripts/SkillTaxonomy.gd")
 
-static func choose(world: int, skills: Dictionary, recent_keys: Array, day: int) -> Dictionary:
+static func choose(world: int, skills: Dictionary, recent_keys: Array, day: int, strategies: Dictionary = {}) -> Dictionary:
 	var candidates: Array[Dictionary] = []
 	if world == 1:
 		for a in range(2, 10):
@@ -43,7 +44,8 @@ static func choose(world: int, skills: Dictionary, recent_keys: Array, day: int)
 		filtered = candidates
 	var pools: Dictionary = {"weak": [], "due": [], "mastered": [], "new": []}
 	for q in filtered:
-		var s: Dictionary = skills.get(q["key"], {})
+		var statistic_key: String = SKILL_TAXONOMY.key_for(q) if world > 1 else str(q["key"])
+		var s: Dictionary = strategies.get(statistic_key, {}) if world > 1 else skills.get(q["key"], {})
 		var state: String = LEARNING_ENGINE.effective_state(s, day)
 		var category: String = "weak"
 		if int(s.get("attempts", 0)) == 0:
