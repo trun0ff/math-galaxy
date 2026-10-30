@@ -7,10 +7,18 @@ var damage_timer: float = 0.0
 var laser_timer: float = 0.0
 var death_timer: float = 0.0
 var enemy_index: int = 0
+var enemy_hp: int = 3
+var enemy_max_hp: int = 3
+var boss_mode: bool = false
+var enemy_impact: float = 0.0
+var enemy_defeated: float = 0.0
 var stars: Array[Vector2] = []
 var debris: Array[Dictionary] = []
 var shockwaves: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
+const PLAYER_TEXTURE = preload("res://assets/battle/player.png")
+const ENEMY_TEXTURES = [preload("res://assets/battle/enemy_1.png"), preload("res://assets/battle/enemy_2.png"), preload("res://assets/battle/enemy_3.png")]
+const SPACE_TEXTURE = preload("res://assets/battle/nebula.jpg")
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -24,6 +32,8 @@ func _process(delta: float) -> void:
 	damage_timer = maxf(0.0, damage_timer - delta)
 	laser_timer = maxf(0.0, laser_timer - delta)
 	death_timer = maxf(0.0, death_timer - delta)
+	enemy_impact = maxf(0.0, enemy_impact - delta)
+	enemy_defeated = maxf(0.0, enemy_defeated - delta)
 	for i in range(debris.size() - 1, -1, -1):
 		var p: Dictionary = debris[i]
 		p["life"] = float(p["life"]) - delta
@@ -55,13 +65,27 @@ func burst(at: Vector2, count: int, palette: Array[Color], speed: float = 165.0)
 		debris.append({"pos": at, "vel": velocity, "life": rng.randf_range(0.25, 0.82), "max_life": 0.82, "radius": rng.randf_range(1.5, 5.5), "color": palette[i % palette.size()]})
 	shockwaves.append({"pos": at, "age": 0.0})
 
+func set_boss_mode(active: bool) -> void:
+	if boss_mode == active: return
+	boss_mode = active
+	enemy_max_hp = 6 if active else 3
+	enemy_hp = enemy_max_hp
+	enemy_defeated = 0.0
+
 func hit_enemy() -> void:
 	if death_timer > 0.0:
 		return
 	laser_timer = 0.36
 	hit_timer = 0.6
-	burst(enemy_position(), 38, [Color("fff2a0"), Color("ffb347"), Color("ff5fa2"), Color("b9ebff")])
-	enemy_index += 1
+	enemy_hp -= 1
+	enemy_impact = 0.42
+	burst(enemy_position(), 22, [Color("fff2a0"), Color("ffb347"), Color("ff5fa2"), Color("b9ebff")])
+	if enemy_hp <= 0:
+		burst(enemy_position(), 75, [Color("fff2a0"), Color("ffb347"), Color("ff5fa2"), Color("b9ebff")], 235.0)
+		enemy_defeated = 0.31
+		enemy_index += 1
+		enemy_max_hp = 6 if boss_mode else 3
+		enemy_hp = enemy_max_hp
 
 func hit_ship() -> void:
 	if death_timer > 0.0:
@@ -79,14 +103,8 @@ func _draw() -> void:
 	var h: float = size.y
 	if w < 50.0 or h < 50.0:
 		return
-	# Several softly glowing nebula layers and parallax starfields.
-	draw_rect(Rect2(Vector2.ZERO, size), Color("08132b"))
-	for i in range(4):
-		var center := Vector2(w * (0.18 + i * 0.23), h * (0.22 + (i % 2) * 0.48))
-		var tint: Color = [Color("273d7e"), Color("362c70"), Color("174f65"), Color("502954")][i]
-		for j in range(7, 0, -1):
-			var alpha: float = 0.012 + (8.0 - j) * 0.003
-			draw_circle(center, float(j) * 28.0, Color(tint.r, tint.g, tint.b, alpha))
+	# Painted nebula texture with a subtle animated parallax star layer.
+	draw_texture_rect(SPACE_TEXTURE, Rect2(Vector2.ZERO, size), false, Color.WHITE)
 	for i in range(stars.size()):
 		var star: Vector2 = stars[i]
 		var layer: int = i % 3
@@ -103,30 +121,35 @@ func _draw() -> void:
 	if damage_timer > 0.0 and death_timer == 0.0:
 		ship += Vector2(rng.randf_range(-4.0, 4.0), rng.randf_range(-3.0, 3.0))
 	if death_timer <= 0.0:
-		# Engine bloom and ship hull.
-		var flame: float = 20.0 + sin(time_passed * 23.0) * 7.0
-		draw_colored_polygon(PackedVector2Array([ship + Vector2(-54, -9), ship + Vector2(-84 - flame, 0), ship + Vector2(-54, 9)]), Color("ffae4f"))
-		draw_colored_polygon(PackedVector2Array([ship + Vector2(-50, -4), ship + Vector2(-70 - flame * 0.7, 0), ship + Vector2(-50, 4)]), Color("d9faff"))
-		draw_colored_polygon(PackedVector2Array([ship + Vector2(-62, 0), ship + Vector2(8, -25), ship + Vector2(60, 0), ship + Vector2(8, 25)]), Color("65d8ff"))
-		draw_colored_polygon(PackedVector2Array([ship + Vector2(-28, -9), ship + Vector2(-56, -44), ship + Vector2(9, -17)]), Color("2865bd"))
-		draw_colored_polygon(PackedVector2Array([ship + Vector2(-28, 9), ship + Vector2(-56, 44), ship + Vector2(9, 17)]), Color("2865bd"))
-		draw_circle(ship + Vector2(12, 0), 13, Color("10275e"))
-		draw_line(ship + Vector2(-27, -11), ship + Vector2(29, -9), Color("a6edff"), 2.0)
-		draw_line(ship + Vector2(-27, 11), ship + Vector2(29, 9), Color("a6edff"), 2.0)
-		draw_arc(ship + Vector2(12, 0), 13, 0, TAU, 32, Color("d3ffff"), 3.0)
-	if hit_timer <= 0.35:
-		var color: Color = [Color("ae6fff"), Color("ff7777"), Color("6addad")][enemy_index % 3]
-		var enemy_scale: float = 1.0 + sin(time_passed * 3.0) * 0.025
-		draw_circle(enemy, 46.0 * enemy_scale, Color(color.r, color.g, color.b, 0.12))
-		draw_circle(enemy, 38.0 * enemy_scale, color)
-		draw_arc(enemy, 43.0 * enemy_scale, -PI * 0.84, PI * 0.84, 40, Color("c5ecff", 0.55), 3.0)
-		draw_circle(enemy + Vector2(0, 23), 5.0, Color("fff1a8"))
-		draw_line(enemy + Vector2(-24, -27), enemy + Vector2(-41, -51), color, 7.0)
-		draw_line(enemy + Vector2(24, -27), enemy + Vector2(41, -51), color, 7.0)
-		for offset in [-15.0, 15.0]:
-			draw_circle(enemy + Vector2(offset, -8), 9.0, Color.WHITE)
-			draw_circle(enemy + Vector2(offset + 2.0, -8), 4.5, Color("1a1640"))
-		draw_arc(enemy + Vector2(0, 6), 15, 0.2, PI - 0.2, 22, Color("2a1d57"), 3.0)
+		# Textured ship sprite, animated engine plume and engine core glow.
+		var flame: float = 24.0 + sin(time_passed * 22.0) * 8.0
+		draw_circle(ship + Vector2(-68, 0), 32.0 + flame * 0.3, Color(0.16, 0.65, 1.0, 0.14))
+		draw_colored_polygon(PackedVector2Array([ship + Vector2(-57, -12), ship + Vector2(-102 - flame, 0), ship + Vector2(-57, 12)]), Color(0.25, 0.78, 1.0, 0.48))
+		draw_colored_polygon(PackedVector2Array([ship + Vector2(-62, -5), ship + Vector2(-95 - flame * 0.65, 0), ship + Vector2(-62, 5)]), Color("e5ffff"))
+		draw_texture_rect(PLAYER_TEXTURE, Rect2(ship - Vector2(93, 93), Vector2(186, 186)), false)
+	if enemy_defeated <= 0.0:
+		var enemy_scale: float = (1.35 if boss_mode else 1.0) * (1.0 + sin(time_passed * 3.0) * 0.025)
+		var enemy_size := Vector2(125.0, 125.0) * enemy_scale
+		var shake := Vector2(sin(time_passed * 76.0) * enemy_impact * 13.0, cos(time_passed * 64.0) * enemy_impact * 9.0)
+		draw_texture_rect(ENEMY_TEXTURES[enemy_index % 3], Rect2(enemy + shake - enemy_size * 0.5, enemy_size), false)
+		# Damage persists on the same enemy until its HP reaches zero.
+		var damage_fraction: float = 1.0 - float(enemy_hp) / float(enemy_max_hp)
+		if damage_fraction > 0.0:
+			for n in range(1 + int(damage_fraction * 4.0)):
+				var origin := enemy + Vector2(-24.0 + n * 11.0, -23.0 + n % 2 * 13.0)
+				draw_polyline(PackedVector2Array([origin, origin + Vector2(7, 11), origin + Vector2(1, 20)]), Color(0.11, 0.05, 0.22, 0.85), 2.4)
+			if damage_fraction > 0.5:
+				for n in range(3):
+					var spark := enemy + Vector2(22.0 + n * 5.0, -24.0 + sin(time_passed * 9.0 + n) * 8.0)
+					draw_circle(spark, 2.0 + sin(time_passed * 12.0 + n), Color("ffba69"))
+		if enemy_impact > 0.0:
+			draw_circle(enemy, 49.0 * enemy_scale, Color(1.0, 0.66, 0.77, enemy_impact * 0.6))
+		# Persistent HP bar for normal enemies and tougher bosses.
+		var bar_width: float = 126.0 if boss_mode else 90.0
+		var bar_rect := Rect2(enemy + Vector2(-bar_width * 0.5, 66.0 * enemy_scale), Vector2(bar_width, 8))
+		draw_rect(bar_rect, Color("1a2244"), true)
+		draw_rect(Rect2(bar_rect.position, Vector2(bar_width * float(enemy_hp) / float(enemy_max_hp), 8)), Color("ff526d") if enemy_hp <= 1 else Color("67e9da"), true)
+		draw_rect(bar_rect, Color("b7dcff"), false, 1.0)
 	if laser_timer > 0.0:
 		var opacity: float = minf(1.0, laser_timer * 4.0)
 		draw_line(ship + Vector2(58, 0), enemy, Color(0.1, 0.7, 1.0, 0.25 * opacity), 23.0)

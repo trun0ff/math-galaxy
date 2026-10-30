@@ -2,6 +2,8 @@ extends Control
 
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
 const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
+const WORLD_ART = [preload("res://assets/worlds/1_lightning.jpg"), preload("res://assets/worlds/2_desert.jpg"), preload("res://assets/worlds/3_crystal.jpg"), preload("res://assets/worlds/4_titan.jpg"), preload("res://assets/worlds/5_blackhole.jpg")]
+const WORLD_SUBTITLES = ["TABLE 2-9", "2 DIGITS × 1", "3 DIGITS × 1", "2 DIGITS × 2", "EXACT DIVISION"]
 const SAVE_PATH = "user://math_galaxy_progress.json"
 const MISSION_LENGTH := 300.0
 const PHASE_LIMITS := [35.0, 85.0, 235.0, 280.0, 300.0]
@@ -203,18 +205,55 @@ func show_menu() -> void:
 	grid.columns = 5
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.add_child(grid)
+	grid.add_theme_constant_override("h_separation", 12)
 	for i in range(5):
 		var idx: int = i + 1
-		var b := make_button("%d\n%s" % [idx,WORLD_NAMES[i]], func(): select_world(idx), Color("17669e") if idx == world else Color("293c73"), 205)
-		b.custom_minimum_size.y = 95
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		grid.add_child(b)
+		grid.add_child(make_world_card(idx))
 	var filler := Control.new()
 	filler.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(filler)
 	root.add_child(make_label("Crystals: %d      Missions played: %d" % [progress.get("coins",0), progress.get("missions",0)], 22, Color("a7bddf")))
 	root.add_child(make_button("▶  START 5-MINUTE MISSION", start_mission, Color("12896f")))
 	root.add_child(make_label("Prototype • Offline • Landscape • No account required", 16, Color("8999b7")))
+
+func make_world_card(idx: int) -> Button:
+	var selected: bool = idx == world
+	var b := make_button("", func(): select_world(idx), Color("25c4d6") if selected else Color("334d82"), 180)
+	b.custom_minimum_size.y = 176
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.clip_contents = true
+	var picture := TextureRect.new()
+	picture.texture = WORLD_ART[idx - 1]
+	picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	picture.anchor_right = 1.0
+	picture.anchor_bottom = 1.0
+	picture.offset_left = 4
+	picture.offset_top = 4
+	picture.offset_right = -4
+	picture.offset_bottom = -4
+	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(picture)
+	var dark := ColorRect.new()
+	dark.color = Color(0.025, 0.045, 0.12, 0.76)
+	dark.anchor_top = 0.68
+	dark.anchor_right = 1.0
+	dark.anchor_bottom = 1.0
+	dark.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(dark)
+	var title := make_label("WORLD %d  •  %s" % [idx, WORLD_NAMES[idx - 1]], 15, Color("dbf8ff") if selected else Color.WHITE)
+	title.anchor_top = 0.69
+	title.anchor_right = 1
+	title.anchor_bottom = 0.88
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(title)
+	var subtitle := make_label(WORLD_SUBTITLES[idx - 1], 13, Color("8deefa") if selected else Color("a9c3ed"))
+	subtitle.anchor_top = 0.86
+	subtitle.anchor_right = 1
+	subtitle.anchor_bottom = 1
+	subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(subtitle)
+	return b
 
 func select_world(value: int) -> void:
 	world = value
@@ -306,6 +345,8 @@ func style_progress(bar: ProgressBar, fill: Color) -> void:
 func update_phase_label() -> void:
 	if header != null:
 		header.text = "%s  •  WORLD %d" % [PHASE_NAMES[phase], world]
+	if art != null and is_instance_valid(art):
+		art.call("set_boss_mode", phase == 3)
 
 func update_hud() -> void:
 	info.text = "%02d:%02d" % [int(ceil(MISSION_LENGTH-elapsed)) / 60, int(ceil(MISSION_LENGTH-elapsed)) % 60]

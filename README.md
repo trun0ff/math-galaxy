@@ -25,3 +25,21 @@ git push origin main
 ```
 
 Note: this update has been checked structurally, but not executed inside Godot in this environment. No external art assets are included; the ships remain procedural artwork.
+
+
+## v0.6 - Illustrated Space Combat
+- New original PNG ship and 3 animated enemy variants in `assets/battle/`.
+- Painted nebula with stars and distant planet, composited with existing moving star layer.
+- Engine plume, laser, shield damage, debris and ship destruction preserved.
+- All v0.5 UI, button visuals, math and save code unchanged.
+- Import this folder with Godot 4 and press F5; replace `scripts/SpaceScene.gd` and add `assets/battle/` in an existing project.
+- Artistic sprites are original vector-generated assets; no outside copyrighted graphics.
+
+
+## v0.7 - worlds and persistent enemy damage
+- Five illustrated world cards replace plain world buttons. Art in `assets/worlds/`.
+- Enemies keep their identity across successful hits (3 HP normal, 6 HP boss). On zero HP, a particle burst plays and a new enemy appears.
+- Persistent HP bar, damage cracks, hit shake, and sparks on heavily damaged enemies.
+- More atmospheric nebula background; math logic and keypad remain unchanged.
+- Import by copying archive contents over your existing project, preserving `.git` and `.godot`.
+- Project not runtime-tested in Godot; use F5 to validate UI layout and combat.
