@@ -4,6 +4,7 @@ const LEARNING_ENGINE = preload("res://scripts/LearningEngine.gd")
 const ADAPTIVE_SELECTOR = preload("res://scripts/AdaptiveQuestionSelector.gd")
 const SKILL_TAXONOMY = preload("res://scripts/SkillTaxonomy.gd")
 const DECOMPOSITION_ENGINE = preload("res://scripts/DecompositionEngine.gd")
+const WORKSHOP_ENGINE = preload("res://scripts/WorkshopEngine.gd")
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
 const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
 const FANCY_BUTTON = preload("res://scripts/ui/FancyButton.gd")
@@ -44,6 +45,10 @@ var paused: bool = false
 var last_key: String = ""
 var recent_keys: Array[String] = []
 var pending_defeat: bool = false
+var workshop_session: Dictionary = {}
+var workshop_entry: LineEdit
+var workshop_feedback: Label
+var workshop_next: Button
 
 var header: Label
 var info: Label
@@ -256,7 +261,114 @@ func show_menu() -> void:
 	var start_wrap := CenterContainer.new()
 	root.add_child(start_wrap)
 	start_wrap.add_child(make_button("▶  START 5-MINUTE MISSION", start_mission, Color("00e485"), 520, 78, 29))
+	var workshop_wrap := CenterContainer.new()
+	root.add_child(workshop_wrap)
+	workshop_wrap.add_child(make_button("✦  MATH WORKSHOP", show_workshop, Color("2865ad"), 340, 60, 23))
 	root.add_child(make_label("Prototype • Offline • Landscape • No account required", 16, Color("b2c2dd")))
+
+func show_workshop() -> void:
+	screen = "workshop"
+	var root := build_root(MENU_BACKGROUNDS[world - 1])
+	var top := HBoxContainer.new()
+	root.add_child(top)
+	top.add_child(make_button("◀  GALAXY", show_menu, Color("425d88"), 190, 54, 19))
+	top.add_child(make_label("   MATH WORKSHOP - WORLD %d" % world, 30, Color("84d8ff")))
+	if world == 1:
+		root.add_child(make_label("Workshop begins in World 2. Select worlds 2-5.", 23))
+		return
+	root.add_child(make_label("Choose how you want to learn:", 24))
+	var modes := HBoxContainer.new()
+	modes.add_theme_constant_override("separation", 14)
+	root.add_child(modes)
+	modes.add_child(make_button("SHOW ME", func(): start_workshop("demo"), Color("2364ad"), 210, 60, 21))
+	modes.add_child(make_button("SOLVE TOGETHER", func(): start_workshop("guided"), Color("2364ad"), 260, 60, 21))
+	modes.add_child(make_button("TRY MYSELF", func(): start_workshop("solo"), Color("00a978"), 235, 60, 21))
+	root.add_child(make_label("Practice is separate from battle scores and rewards.", 19, Color("bbd6f3")))
+
+func start_workshop(mode: String) -> void:
+	var q: Dictionary = MathEngine.generate(world)
+	workshop_session = WORKSHOP_ENGINE.prepare(q, mode)
+	show_workshop_step()
+
+func show_workshop_step() -> void:
+	screen = "workshop_step"
+	var root := build_root(MENU_BACKGROUNDS[world - 1])
+	root.add_child(make_button("◀  BACK TO WORKSHOP", show_workshop, Color("425d88"), 270, 50, 19))
+	var q: Dictionary = workshop_session["question"]
+	root.add_child(make_label("%d %s %d = ?" % [int(q["a"]), str(q["sign"]), int(q["b"])], 48, Color("8de8ff")))
+	var step: Dictionary = WORKSHOP_ENGINE.current_step(workshop_session)
+	if step.is_empty():
+		finish_workshop()
+		return
+	var idx: int = int(workshop_session["index"])
+	var count: int = workshop_session["steps"].size()
+	root.add_child(make_label("STEP %d OF %d" % [idx + 1, count], 21, Color("fcd34d")))
+	root.add_child(make_label(str(step["prompt"]), 29, Color.WHITE))
+	workshop_feedback = make_label("", 20, Color("c4e5ff"))
+	if workshop_session["mode"] == "demo":
+		root.add_child(make_label("Answer: %d" % int(step["answer"]), 34, Color("8fffc4")))
+		root.add_child(make_button("NEXT STEP ▶", advance_workshop_demo, Color("00a978"), 230, 65, 23))
+	else:
+		var answer_row := HBoxContainer.new()
+		answer_row.add_theme_constant_override("separation", 14)
+		root.add_child(answer_row)
+		workshop_entry = LineEdit.new()
+		workshop_entry.placeholder_text = "Enter a number"
+		workshop_entry.custom_minimum_size = Vector2(270, 60)
+		workshop_entry.max_length = 7
+		workshop_entry.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
+		answer_row.add_child(workshop_entry)
+		answer_row.add_child(make_button("CHECK", submit_workshop_step, Color("00a978"), 170, 60, 23))
+		answer_row.add_child(make_button("HINT", reveal_workshop_step, Color("425d88"), 140, 60, 21))
+		workshop_entry.text_submitted.connect(func(_value: String): submit_workshop_step())
+		root.add_child(workshop_feedback)
+		workshop_next = make_button("NEXT STEP ▶", advance_workshop_step, Color("2865ad"), 240, 58, 21)
+		workshop_next.visible = false
+		root.add_child(workshop_next)
+
+func advance_workshop_demo() -> void:
+	workshop_session["index"] = int(workshop_session["index"]) + 1
+	workshop_session["complete"] = int(workshop_session["index"]) >= workshop_session["steps"].size()
+	show_workshop_step()
+
+func submit_workshop_step() -> void:
+	if workshop_next.visible or not workshop_entry.text.strip_edges().is_valid_int():
+		workshop_feedback.text = "Enter a whole number first."
+		return
+	var correct: bool = WORKSHOP_ENGINE.check(workshop_session, int(workshop_entry.text))
+	if correct:
+		workshop_feedback.text = "Correct! Continue to the next step."
+		workshop_next.visible = true
+		workshop_entry.editable = false
+	else:
+		workshop_feedback.text = "Not quite. Try again or use HINT."
+
+func reveal_workshop_step() -> void:
+	if workshop_next.visible:
+		return
+	WORKSHOP_ENGINE.reveal(workshop_session)
+	var step: Dictionary = WORKSHOP_ENGINE.current_step(workshop_session)
+	workshop_feedback.text = "Hint: this step equals %d. Type it to continue." % int(step["answer"])
+
+func advance_workshop_step() -> void:
+	show_workshop_step()
+
+func finish_workshop() -> void:
+	var outcome: Dictionary = WORKSHOP_ENGINE.summary(workshop_session)
+	var records: Array = progress.get("workshop_history", [])
+	outcome["timestamp"] = int(Time.get_unix_time_from_system())
+	records.append(outcome)
+	if records.size() > 200:
+		records.pop_front()
+	progress["workshop_history"] = records
+	save_progress()
+	screen = "workshop_complete"
+	var root := build_root(MENU_BACKGROUNDS[world - 1])
+	root.add_child(make_label("WORKSHOP COMPLETE!", 48, Color("8fffc4")))
+	root.add_child(make_label("Mistakes: %d   Hints: %d" % [int(outcome["mistakes"]), int(outcome["hints"])], 27))
+	root.add_child(make_label("Independent: YES" if outcome["independent"] else "Guided practice completed", 23, Color("c4e5ff")))
+	root.add_child(make_button("TRY ANOTHER", func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 64, 22))
+	root.add_child(make_button("BACK TO WORKSHOP", show_workshop, Color("425d88"), 280, 60, 21))
 
 func make_world_card(idx: int) -> Button:
 	var selected: bool = idx == world
@@ -624,7 +736,7 @@ func exit_mission() -> void:
 	finish_mission()
 
 func save_progress() -> void:
-	progress["schema_version"] = 4
+	progress["schema_version"] = 5
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(progress))
@@ -640,4 +752,4 @@ func load_progress() -> void:
 		progress = parsed
 		if not progress.has("skills"): progress["skills"] = {}
 	if not progress.has("strategies"): progress["strategies"] = {}
-	progress["schema_version"] = 4
+	progress["schema_version"] = 5
