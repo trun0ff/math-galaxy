@@ -1,6 +1,7 @@
 extends Control
 
 const LEARNING_ENGINE = preload("res://scripts/LearningEngine.gd")
+const ADAPTIVE_SELECTOR = preload("res://scripts/AdaptiveQuestionSelector.gd")
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
 const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
 const FANCY_BUTTON = preload("res://scripts/ui/FancyButton.gd")
@@ -39,6 +40,7 @@ var transition_delay: float = 0.0
 var finished: bool = false
 var paused: bool = false
 var last_key: String = ""
+var recent_keys: Array[String] = []
 var pending_defeat: bool = false
 
 var header: Label
@@ -319,6 +321,7 @@ func start_mission() -> void:
 	transition_delay = 0.0
 	question_active = false
 	last_key = ""
+	recent_keys.clear()
 	pending_defeat = false
 	finished = false
 	paused = false
@@ -439,27 +442,12 @@ func update_hud() -> void:
 	timer_bar.value = maxf(0.0, question_limit - question_elapsed)
 
 func choose_question() -> Dictionary:
+	var today: int = int(Time.get_unix_time_from_system() / 86400.0)
 	if phase >= 3 and not queue.is_empty() and randf() < 0.75:
-		return queue.pop_front()
-	var skills: Dictionary = progress.get("skills", {})
-	var candidates: Array[Dictionary] = []
-	for i in range(12):
-		var q: Dictionary = MathEngine.generate(world)
-		if q["key"] == last_key:
-			continue
-		candidates.append(q)
-	if candidates.is_empty():
-		return MathEngine.generate(world)
-	candidates.shuffle()
-	candidates.sort_custom(func(a: Dictionary,b: Dictionary): return skill_priority(a, skills) > skill_priority(b, skills))
-	return candidates[0] if randf() < 0.7 else candidates[randi_range(0, candidates.size()-1)]
-
-func skill_priority(q: Dictionary, skills: Dictionary) -> float:
-	var s: Dictionary = skills.get(q["key"], {})
-	var attempts: int = s.get("attempts", 0)
-	if attempts == 0:
-		return 1.5
-	return (float(s.get("wrong", 0)) + 1.0) / (float(attempts) + 1.0) + 1.0 / (1.0 + float(s.get("fast",0)))
+		var pending: Dictionary = queue.pop_front()
+		if not recent_keys.has(str(pending.get("key", ""))):
+			return pending
+	return ADAPTIVE_SELECTOR.choose(world, progress.get("skills", {}), recent_keys, today)
 
 func next_question() -> void:
 	if finished: return
@@ -468,6 +456,9 @@ func next_question() -> void:
 		return
 	question = choose_question()
 	last_key = question["key"]
+	recent_keys.append(last_key)
+	if recent_keys.size() > 5:
+		recent_keys.pop_front()
 	question_elapsed = 0.0
 	question_limit = [8.0, 20.0, 35.0, 60.0, 45.0][world - 1]
 	if phase == 1:
@@ -626,7 +617,7 @@ func exit_mission() -> void:
 	finish_mission()
 
 func save_progress() -> void:
-	progress["schema_version"] = 2
+	progress["schema_version"] = 3
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(progress))
@@ -641,4 +632,4 @@ func load_progress() -> void:
 	if typeof(parsed) == TYPE_DICTIONARY:
 		progress = parsed
 		if not progress.has("skills"): progress["skills"] = {}
-	progress["schema_version"] = 2
+	progress["schema_version"] = 3
