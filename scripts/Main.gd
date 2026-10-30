@@ -1,6 +1,7 @@
 extends Control
 
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
+const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
 const SAVE_PATH = "user://math_galaxy_progress.json"
 const MISSION_LENGTH := 300.0
 const PHASE_LIMITS := [35.0, 85.0, 235.0, 280.0, 300.0]
@@ -39,6 +40,7 @@ var header: Label
 var info: Label
 var question_label: Label
 var answer_label: Label
+var keypad: VBoxContainer
 var feedback: Label
 var timer_label: Label
 var shield_label: Label
@@ -118,9 +120,20 @@ func make_button(value: String, fn: Callable, color: Color = BLUE, min_x: float 
 	style.corner_radius_top_right = 12
 	style.corner_radius_bottom_left = 12
 	style.corner_radius_bottom_right = 12
+	style.border_color = color.lightened(0.35)
+	style.set_border_width_all(2)
+	style.shadow_color = Color(color.r, color.g, color.b, 0.36)
+	style.shadow_size = 5
 	style.content_margin_left = 12
 	style.content_margin_right = 12
 	btn.add_theme_stylebox_override("normal", style)
+	var hover := style.duplicate() as StyleBoxFlat
+	hover.bg_color = color.lightened(0.18)
+	btn.add_theme_stylebox_override("hover", hover)
+	var pressed := style.duplicate() as StyleBoxFlat
+	pressed.bg_color = color.darkened(0.2)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	return btn
 
 func build_root() -> VBoxContainer:
@@ -217,7 +230,7 @@ func build_battle() -> void:
 	top.add_child(info)
 	art = Control.new()
 	art.set_script(SCENE_SCRIPT)
-	art.custom_minimum_size.y = 213
+	art.custom_minimum_size.y = 170
 	art.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(art)
 	var question_row := HBoxContainer.new()
@@ -232,11 +245,12 @@ func build_battle() -> void:
 	timer_bar = ProgressBar.new()
 	timer_bar.custom_minimum_size = Vector2(140, 14)
 	timer_container.add_child(timer_bar)
+	style_progress(timer_bar, Color("ffc857"))
 	feedback = make_label("", 20, Color("a7f3d0"))
 	feedback.custom_minimum_size.y = 34
 	root.add_child(feedback)
 	answer_area = VBoxContainer.new()
-	answer_area.custom_minimum_size.y = 190
+	answer_area.custom_minimum_size.y = 180
 	root.add_child(answer_area)
 	var footer := HBoxContainer.new()
 	footer.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -245,6 +259,17 @@ func build_battle() -> void:
 	footer.add_child(make_button("SKIP (-20 shield)", func(): resolve_answer(-1, "skip"), Color("9f1239"), 230))
 	footer.add_child(make_button("EXIT", exit_mission, Color("334155"), 110))
 	update_phase_label()
+
+func style_progress(bar: ProgressBar, fill: Color) -> void:
+	bar.show_percentage = false
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color("0d1730")
+	bg.set_corner_radius_all(7)
+	bar.add_theme_stylebox_override("background", bg)
+	var fg := StyleBoxFlat.new()
+	fg.bg_color = fill
+	fg.set_corner_radius_all(7)
+	bar.add_theme_stylebox_override("fill", fg)
 
 func update_phase_label() -> void:
 	if header != null:
@@ -298,31 +323,31 @@ func next_question() -> void:
 	build_answers()
 
 func build_answers() -> void:
+	keypad = null
 	for c in answer_area.get_children():
 		answer_area.remove_child(c)
 		c.queue_free()
 	if input_mode == "choices":
 		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 12)
 		row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		answer_area.add_child(row)
 		for value in MathEngine.options(question):
 			var v: int = value
-			var b := make_button(str(value), func(): resolve_answer(v, "answer"), Color("1e40af"), 110)
+			var b := make_button(str(value), func(): resolve_answer(v, "answer"), Color("164a85"), 110)
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.custom_minimum_size.y = 96
 			row.add_child(b)
 	else:
-		answer_label = make_label("_", 32, Color("7dd3fc"))
-		answer_area.add_child(answer_label)
-		var grid := GridContainer.new()
-		grid.columns = 6
-		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		answer_area.add_child(grid)
-		for value in ["1","2","3","4","5","6","7","8","9","0","⌫","OK"]:
-			var digit: String = value
-			var b := make_button(digit, func(): press_digit(digit), PANEL, 100)
-			b.custom_minimum_size.y = 52
-			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			grid.add_child(b)
+		var center := CenterContainer.new()
+		center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		answer_area.add_child(center)
+		keypad = VBoxContainer.new()
+		keypad.set_script(KEYPAD_SCRIPT)
+		keypad.custom_minimum_size.x = 388
+		center.add_child(keypad)
+		keypad.call("set_value", "")
+		keypad.connect("key_pressed", Callable(self, "press_digit"))
 
 func press_digit(digit: String) -> void:
 	if not question_active or input_mode != "numeric": return
@@ -332,7 +357,8 @@ func press_digit(digit: String) -> void:
 		if input_value.is_valid_int(): resolve_answer(int(input_value), "answer")
 	else:
 		if input_value.length() < 6: input_value += digit
-	answer_label.text = input_value if not input_value.is_empty() else "_"
+	if keypad != null:
+		keypad.call("set_value", input_value)
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if screen != "battle" or not question_active or not event.pressed: return
@@ -364,6 +390,8 @@ func resolve_answer(value: int, reason: String) -> void:
 	stats["attempts"] += 1
 	stats["total_ms"] += int(question_elapsed * 1000.0)
 	if hint_used: stats["hints"] += 1
+	if keypad != null:
+		keypad.call("flash", correct)
 	if correct:
 		stats["correct"] += 1
 		if fast and input_mode == "numeric": stats["fast"] += 1
