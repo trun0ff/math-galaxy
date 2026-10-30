@@ -182,6 +182,8 @@ func start_mission() -> void:
 	misses = 0
 	coins_earned = 0
 	queue.clear()
+	transition_delay = 0.0
+	question_active = false
 	last_key = ""
 	finished = false
 	paused = false
@@ -379,11 +381,36 @@ func resolve_answer(value: int, reason: String) -> void:
 		if queue.size() < 30:
 			queue.append(question.duplicate(true))
 		if shield == 0:
-			shield = 30
-			feedback.text += "  •  Emergency shield restored"
+			feedback.text = "SHIELD DESTROYED! MISSION FAILED"
 	skills[skill_key] = stats
-	transition_delay = 1.0
 	update_hud()
+	if shield == 0:
+		fail_mission()
+		return
+	transition_delay = 1.0
+
+func fail_mission() -> void:
+	if finished: return
+	finished = true
+	question_active = false
+	transition_delay = 0.0
+	# Keep practice statistics for adaptive learning, but don't award mission crystals.
+	save_progress()
+	screen = "game_over"
+	var root := build_root()
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(spacer)
+	root.add_child(make_label("SHIP DESTROYED", 58, Color("fb7185")))
+	root.add_child(make_label("World %d: %s" % [world, WORLD_NAMES[world - 1]], 26))
+	root.add_child(make_label("Correct: %d        Missed: %d" % [hits, misses], 31))
+	root.add_child(make_label("Shield: 0%  •  No mission crystals awarded", 24, Color("fda4af")))
+	root.add_child(make_label("Your answers were saved for future practice", 21, Color("a7bddf")))
+	root.add_child(make_button("RETRY LEVEL", start_mission, Color("15803d")))
+	root.add_child(make_button("RETURN TO GALAXY", show_menu, Color("334155")))
+	var sp2 := Control.new()
+	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(sp2)
 
 func finish_mission() -> void:
 	if finished: return

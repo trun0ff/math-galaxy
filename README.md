@@ -48,3 +48,10 @@ Official guide: https://docs.godotengine.org/en/stable/tutorials/export/exportin
 - `scripts/MathEngine.gd`: math problems, options, hints
 - `scripts/SpaceScene.gd`: animated ship, aliens, laser and damage effects
 - `scenes/Main.tscn`: entry scene
+
+## Shield game over (v0.2)
+- Each wrong answer, skip, or timeout removes 20 shield points.
+- At 0 shield, the current mission ends immediately with a **SHIP DESTROYED** screen.
+- **RETRY LEVEL** restarts the same world with full shield, a fresh five-minute timer, and a new randomized set of questions.
+- **RETURN TO GALAXY** returns to the world selection menu.
+- Practice statistics remain saved after a loss, but crystals earned during the failed run are not granted.
