@@ -1,0 +1,23 @@
+
+# Godot 4 generated files
+.godot/
+
+# Godot export builds
+*.apk
+*.aab
+*.pck
+*.exe
+
+# Temporary files
+*.tmp
+*.log
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local Android export credentials
+*.keystore
+*.jks
