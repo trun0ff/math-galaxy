@@ -1,5 +1,6 @@
 extends Control
 
+const LEARNING_ENGINE = preload("res://scripts/LearningEngine.gd")
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
 const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
 const FANCY_BUTTON = preload("res://scripts/ui/FancyButton.gd")
@@ -305,6 +306,7 @@ func select_world(value: int) -> void:
 	show_menu()
 
 func start_mission() -> void:
+	progress["mission_sequence"] = int(progress.get("mission_sequence", 0)) + 1
 	elapsed = 0.0
 	phase = 0
 	shield = 100
@@ -541,15 +543,10 @@ func resolve_answer(value: int, reason: String) -> void:
 	var fast: bool = question_elapsed <= question_limit * 0.45 and not hint_used
 	var skill_key: String = question["key"]
 	var skills: Dictionary = progress["skills"]
-	var stats: Dictionary = skills.get(skill_key, {"attempts":0,"correct":0,"wrong":0,"fast":0,"hints":0,"total_ms":0})
-	stats["attempts"] += 1
-	stats["total_ms"] += int(question_elapsed * 1000.0)
-	if hint_used: stats["hints"] += 1
+	var stats: Dictionary = LEARNING_ENGINE.record(skills.get(skill_key, {}), correct, reason, question_elapsed, input_mode, hint_used, int(progress.get("mission_sequence", 0)), int(Time.get_unix_time_from_system() / 86400.0))
 	if keypad != null:
 		keypad.call("flash", correct)
 	if correct:
-		stats["correct"] += 1
-		if fast and input_mode == "numeric": stats["fast"] += 1
 		hits += 1
 		combo += 1
 		energy = mini(100, energy + (15 if fast else 10))
@@ -559,7 +556,6 @@ func resolve_answer(value: int, reason: String) -> void:
 		feedback.text = "DIRECT HIT! +%d crystals" % reward
 		art.call("hit_enemy")
 	else:
-		stats["wrong"] += 1
 		misses += 1
 		combo = 0
 		shield = maxi(0, shield - 20)
@@ -630,6 +626,7 @@ func exit_mission() -> void:
 	finish_mission()
 
 func save_progress() -> void:
+	progress["schema_version"] = 2
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(progress))
@@ -644,3 +641,4 @@ func load_progress() -> void:
 	if typeof(parsed) == TYPE_DICTIONARY:
 		progress = parsed
 		if not progress.has("skills"): progress["skills"] = {}
+	progress["schema_version"] = 2
