@@ -33,6 +33,7 @@ var transition_delay: float = 0.0
 var finished: bool = false
 var paused: bool = false
 var last_key: String = ""
+var pending_defeat: bool = false
 
 var header: Label
 var info: Label
@@ -67,7 +68,9 @@ func _process(delta: float) -> void:
 	if transition_delay > 0.0:
 		transition_delay -= delta
 		if transition_delay <= 0.0:
-			if elapsed >= PHASE_LIMITS[4]: finish_mission()
+			if pending_defeat:
+				fail_mission()
+			elif elapsed >= PHASE_LIMITS[4]: finish_mission()
 			else: next_question()
 		return
 	elapsed = minf(MISSION_LENGTH, elapsed + delta)
@@ -185,6 +188,7 @@ func start_mission() -> void:
 	transition_delay = 0.0
 	question_active = false
 	last_key = ""
+	pending_defeat = false
 	finished = false
 	paused = false
 	screen = "battle"
@@ -385,7 +389,9 @@ func resolve_answer(value: int, reason: String) -> void:
 	skills[skill_key] = stats
 	update_hud()
 	if shield == 0:
-		fail_mission()
+		pending_defeat = true
+		transition_delay = 1.65
+		art.call("destroy_ship")
 		return
 	transition_delay = 1.0
 
