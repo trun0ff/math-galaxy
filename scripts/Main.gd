@@ -592,7 +592,7 @@ func fail_mission() -> void:
 	root.add_child(make_label("SHIP DESTROYED", 58, Color("fb7185")))
 	root.add_child(make_label("World %d: %s" % [world, WORLD_NAMES[world - 1]], 26))
 	root.add_child(make_label("Correct: %d        Missed: %d" % [hits, misses], 31))
-	root.add_child(make_label("Shield: 0%%  •  No mission crystals awarded", 24, Color("fda4af")))
+	root.add_child(make_label("Shield: 0%  •  No mission crystals awarded", 24, Color("fda4af")))
 	root.add_child(make_label("Your answers were saved for future practice", 21, Color("a7bddf")))
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
