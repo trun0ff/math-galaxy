@@ -2,36 +2,38 @@ extends VBoxContainer
 ## Reusable neon numeric input. Emits a digit, delete or submit request.
 signal key_pressed(key: String)
 
-const BASE := Color("152950")
-const EDGE := Color("4e7cc7")
+const FANCY = preload("res://scripts/ui/FancyButton.gd")
+const BASE := Color("1689c4")
+const EDGE := Color("29d3ff")
 const TEXT := Color("eefaff")
 
 var display: Label
 var current_value := ""
 
 func _ready() -> void:
-	add_theme_constant_override("separation", 6)
+	add_theme_constant_override("separation", 3)
 	var display_shell := PanelContainer.new()
-	display_shell.custom_minimum_size = Vector2(0, 36)
+	display_shell.custom_minimum_size = Vector2(0, 33)
 	display_shell.add_theme_stylebox_override("panel", _style(Color("0d1d3c"), Color("33b8df"), 12, 1))
 	add_child(display_shell)
 	display = Label.new()
 	display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	display.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	display.add_theme_font_size_override("font_size", 26)
-	display.add_theme_color_override("font_color", Color("b3f2ff"))
+	display.add_theme_font_size_override("font_size", 31)
+	display.add_theme_color_override("font_color", Color("e1faff"))
 	display_shell.add_child(display)
 	set_value("")
 	var grid := GridContainer.new()
 	grid.columns = 3
 	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 5)
+	grid.add_theme_constant_override("v_separation", 3)
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_child(grid)
 	for key in ["7", "8", "9", "4", "5", "6", "1", "2", "3", "⌫", "0", "OK"]:
 		var button := Button.new()
-		button.text = key
-		button.custom_minimum_size = Vector2(104, 39)
+		button.set_script(FANCY)
+		button.text = ""
+		button.custom_minimum_size = Vector2(104, 37)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.focus_mode = Control.FOCUS_NONE
 		button.add_theme_font_size_override("font_size", 24)
@@ -43,18 +45,28 @@ func _ready() -> void:
 		var accent := EDGE
 		if key == "OK":
 			base = Color("087e83")
-			accent = Color("48f4d9")
+			accent = Color("00f2b2")
 		elif key == "⌫":
 			base = Color("78375a")
 			accent = Color("ff8fa3")
-		button.add_theme_stylebox_override("normal", _style(base, accent, 12, 2))
-		button.add_theme_stylebox_override("hover", _style(base.lightened(0.20), accent.lightened(0.2), 12, 2))
-		button.add_theme_stylebox_override("pressed", _style(accent.darkened(0.25), Color.WHITE, 12, 2))
+		button.set("accent_color", accent)
+		button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+		button.add_theme_stylebox_override("hover", StyleBoxEmpty.new())
+		button.add_theme_stylebox_override("pressed", StyleBoxEmpty.new())
 		button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 		button.pivot_offset = button.custom_minimum_size * 0.5
 		button.mouse_entered.connect(_on_hover.bind(button))
 		button.pressed.connect(_on_pressed.bind(key, button))
 		grid.add_child(button)
+		var caption := Label.new()
+		caption.text = key
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		caption.add_theme_font_size_override("font_size", 23)
+		caption.add_theme_color_override("font_color", TEXT)
+		caption.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.add_child(caption)
 
 func _style(fill: Color, edge: Color, radius: int, edge_size: int) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
@@ -84,7 +96,7 @@ func _on_hover(button: Button) -> void:
 func set_value(value: String) -> void:
 	current_value = value
 	if display != null:
-		display.text = "ANSWER   " + (value if not value.is_empty() else "_ _ _")
+		display.text = value if not value.is_empty() else "_ _ _"
 
 func flash(correct: bool) -> void:
 	if display == null:

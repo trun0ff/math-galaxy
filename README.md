@@ -1,15 +1,19 @@
-# Math Galaxy v0.8 - Illustrated Worlds & Sci-fi Buttons
+# Math Galaxy v0.11 - UI polish and layout fixes
 
-Godot 4.x. This release upgrades the existing v0.7 project without changing the mathematics, reward logic, or loss rules.
+Based on v0.10. Keeps MathEngine and progress data format unchanged.
 
-## New in 0.8
-- Five illustrated high-resolution world cards (HD versions in assets/worlds).
-- Five distinct battle backgrounds selected to match each world (assets/battle/world_*_background.jpg).
-- Custom reusable polygonal sci-fi button art drawn by scripts/ui/FancyButton.gd. All buttons created by Main.gd use the shared component.
-- Original scripts and save format retained.
+## Fixes
+- Raised world card captions to avoid extending below the card.
+- Brighter emerald mission button and more saturated reusable sci-fi buttons.
+- Timer anchored inside the question row; question centered independently.
+- Same cyan palette for answer choices and keypad.
+- Removed the word ANSWER from the numeric display.
+- Five new RGBA battle backdrops with gradual fade at the bottom and edges.
+- Corrected duplicated FANCY and caption declarations carried over in the archived keypad.
+- Correct Label theme override API.
 
-## Upgrade
-Unzip the complete package over the files in your Git working tree. Leave your .git and .godot folders untouched. Run F5 in Godot, verify the five worlds, the battle, keypad, victory and loss screens. Commit only after checking the result.
+## Update
+Copy the contents into your project folder. Keep your existing .git and .godot folders. Start Godot and test with F5, in both choice and numeric modes. Review the Debugger for warnings/errors before committing.
 
-## Notes
-The illustrated world cards and background composites are made from newly generated concept artwork rather than the old low-resolution geometric planets. The images are JPEGs, not individually transparent PNG planetary sprites. Godot execution has not been tested in this environment.
+## Limitations
+Not runtime-tested in Godot in this environment. The existing sprites are retained; visual comparison with the earlier concept art remains a separate future art task.

@@ -18,7 +18,7 @@ var shockwaves: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
 const PLAYER_TEXTURE = preload("res://assets/battle/player.png")
 const ENEMY_TEXTURES = [preload("res://assets/battle/enemy_1.png"), preload("res://assets/battle/enemy_2.png"), preload("res://assets/battle/enemy_3.png")]
-const WORLD_BACKGROUNDS = [preload("res://assets/battle/world_1_background.jpg"), preload("res://assets/battle/world_2_background.jpg"), preload("res://assets/battle/world_3_background.jpg"), preload("res://assets/battle/world_4_background.jpg"), preload("res://assets/battle/world_5_background.jpg")]
+const WORLD_BACKGROUNDS = [preload("res://assets/battle/world_1_background_fade.png"), preload("res://assets/battle/world_2_background_fade.png"), preload("res://assets/battle/world_3_background_fade.png"), preload("res://assets/battle/world_4_background_fade.png"), preload("res://assets/battle/world_5_background_fade.png")]
 var current_world: int = 1
 
 func set_world(idx: int) -> void:
