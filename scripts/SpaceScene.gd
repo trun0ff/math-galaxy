@@ -18,7 +18,12 @@ var shockwaves: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
 const PLAYER_TEXTURE = preload("res://assets/battle/player.png")
 const ENEMY_TEXTURES = [preload("res://assets/battle/enemy_1.png"), preload("res://assets/battle/enemy_2.png"), preload("res://assets/battle/enemy_3.png")]
-const SPACE_TEXTURE = preload("res://assets/battle/nebula.jpg")
+const WORLD_BACKGROUNDS = [preload("res://assets/battle/world_1_background.jpg"), preload("res://assets/battle/world_2_background.jpg"), preload("res://assets/battle/world_3_background.jpg"), preload("res://assets/battle/world_4_background.jpg"), preload("res://assets/battle/world_5_background.jpg")]
+var current_world: int = 1
+
+func set_world(idx: int) -> void:
+	current_world = clampi(idx, 1, 5)
+	queue_redraw()
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -104,7 +109,7 @@ func _draw() -> void:
 	if w < 50.0 or h < 50.0:
 		return
 	# Painted nebula texture with a subtle animated parallax star layer.
-	draw_texture_rect(SPACE_TEXTURE, Rect2(Vector2.ZERO, size), false, Color.WHITE)
+	draw_texture_rect(WORLD_BACKGROUNDS[current_world - 1], Rect2(Vector2.ZERO, size), false, Color.WHITE)
 	for i in range(stars.size()):
 		var star: Vector2 = stars[i]
 		var layer: int = i % 3

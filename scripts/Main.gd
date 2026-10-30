@@ -2,7 +2,8 @@ extends Control
 
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
 const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
-const WORLD_ART = [preload("res://assets/worlds/1_lightning.jpg"), preload("res://assets/worlds/2_desert.jpg"), preload("res://assets/worlds/3_crystal.jpg"), preload("res://assets/worlds/4_titan.jpg"), preload("res://assets/worlds/5_blackhole.jpg")]
+const WORLD_ART = [preload("res://assets/worlds/1_lightning_hd.jpg"), preload("res://assets/worlds/2_desert_hd.jpg"), preload("res://assets/worlds/3_crystal_hd.jpg"), preload("res://assets/worlds/4_titan_hd.jpg"), preload("res://assets/worlds/5_blackhole_hd.jpg")]
+const FANCY_BUTTON = preload("res://scripts/ui/FancyButton.gd")
 const WORLD_SUBTITLES = ["TABLE 2-9", "2 DIGITS × 1", "3 DIGITS × 1", "2 DIGITS × 2", "EXACT DIVISION"]
 const SAVE_PATH = "user://math_galaxy_progress.json"
 const MISSION_LENGTH := 300.0
@@ -113,6 +114,8 @@ func make_label(value: String, font_size: int = 24, color: Color = Color.WHITE) 
 func make_button(value: String, fn: Callable, color: Color = BLUE, min_x: float = 100.0) -> Button:
 	# Shared styling for every navigation, battle, answer and result button.
 	var btn := Button.new()
+	btn.set_script(FANCY_BUTTON)
+	btn.set("accent_color", color)
 	btn.text = value
 	btn.custom_minimum_size = Vector2(min_x, 56)
 	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -219,7 +222,7 @@ func show_menu() -> void:
 func make_world_card(idx: int) -> Button:
 	var selected: bool = idx == world
 	var b := make_button("", func(): select_world(idx), Color("25c4d6") if selected else Color("334d82"), 180)
-	b.custom_minimum_size.y = 176
+	b.custom_minimum_size.y = 215
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.clip_contents = true
 	var picture := TextureRect.new()
@@ -236,19 +239,19 @@ func make_world_card(idx: int) -> Button:
 	b.add_child(picture)
 	var dark := ColorRect.new()
 	dark.color = Color(0.025, 0.045, 0.12, 0.76)
-	dark.anchor_top = 0.68
+	dark.anchor_top = 0.67
 	dark.anchor_right = 1.0
 	dark.anchor_bottom = 1.0
 	dark.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(dark)
 	var title := make_label("WORLD %d  •  %s" % [idx, WORLD_NAMES[idx - 1]], 15, Color("dbf8ff") if selected else Color.WHITE)
-	title.anchor_top = 0.69
+	title.anchor_top = 0.70
 	title.anchor_right = 1
 	title.anchor_bottom = 0.88
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(title)
 	var subtitle := make_label(WORLD_SUBTITLES[idx - 1], 13, Color("8deefa") if selected else Color("a9c3ed"))
-	subtitle.anchor_top = 0.86
+	subtitle.anchor_top = 0.87
 	subtitle.anchor_right = 1
 	subtitle.anchor_bottom = 1
 	subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -301,6 +304,7 @@ func build_battle() -> void:
 	top.add_child(info)
 	art = Control.new()
 	art.set_script(SCENE_SCRIPT)
+	art.call("set_world", world)
 	art.custom_minimum_size.y = 170
 	art.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(art)
