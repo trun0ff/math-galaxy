@@ -1,24 +1,27 @@
-# Math Galaxy v0.4 - Neon Controls
+# Math Galaxy v0.5 - Neon Interface Refresh
 
-Godot 4 project. Uses the existing v0.3 math and gameplay rules.
+Godot 4.x, GDScript. This update improves **all** interactive buttons in the game while preserving v0.4 math rules and the shield=0 defeat condition.
 
-## New in v0.4
-- Separate reusable neon numeric keypad (`scripts/ui/NeonKeypad.gd`)
-- Larger buttons, colored OK / delete, hover and press feedback
-- Animated answer display
-- Styled shield and question timer bars
-- Styled answer-choice buttons and menu buttons
-- Existing space effects and ship-destruction flow retained
+## Included
+- Unified cyan/indigo neon button treatment across world selection, start, answer choices, hint, skip, exit, retry and result screens
+- Consistent corner radii, hover/press states, focus-free touchscreen controls and soft glows
+- Enhanced numeric keypad: prominent confirm/delete colors, press bounce, hover light
+- Small upgrades to the procedural spaceship, enemies and twinkling star field
 
-## Update existing Git project
-Copy `scripts/Main.gd`, `scripts/ui/NeonKeypad.gd` and `README.md` into your existing project, preserving folder names. Then reopen or refresh Godot and press F5. Alternatively import `project.godot` from this complete archive.
+## Merge into your existing Git repository
+Copy these files into the existing working project, preserving paths:
+- `scripts/Main.gd`
+- `scripts/ui/NeonKeypad.gd`
+- `scripts/SpaceScene.gd`
+- `README.md`
 
-## Controls
-Numeric mode: keypad or computer number keys, Enter, Backspace.
-Choice mode: choose one of four answers.
+Open Godot and press F5. Test world selection, four-choice questions, numeric keyboard, hint, skip, defeat and retry. Your saved progress remains local in Godot's `user://` folder.
 
-## Suggested commit
-`git add scripts/Main.gd scripts/ui/NeonKeypad.gd README.md && git commit -m "Add neon keypad and battle HUD styling" && git push origin main`
+Commit only after checking:
+```
+git add scripts/Main.gd scripts/ui/NeonKeypad.gd scripts/SpaceScene.gd README.md
+git commit -m "Polish all game buttons and battle effects"
+git push origin main
+```
 
-## Notes
-This version is intended as a visual/UI iteration; it does not add new gameplay rules. It has not been runtime-tested in the Godot editor in this environment.
+Note: this update has been checked structurally, but not executed inside Godot in this environment. No external art assets are included; the ships remain procedural artwork.

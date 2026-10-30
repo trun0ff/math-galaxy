@@ -109,32 +109,64 @@ func make_label(value: String, font_size: int = 24, color: Color = Color.WHITE) 
 	return l
 
 func make_button(value: String, fn: Callable, color: Color = BLUE, min_x: float = 100.0) -> Button:
+	# Shared styling for every navigation, battle, answer and result button.
 	var btn := Button.new()
 	btn.text = value
-	btn.custom_minimum_size = Vector2(min_x, 52)
-	btn.add_theme_font_size_override("font_size", 23)
-	btn.pressed.connect(fn)
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_left = 12
-	style.corner_radius_bottom_right = 12
-	style.border_color = color.lightened(0.35)
-	style.set_border_width_all(2)
-	style.shadow_color = Color(color.r, color.g, color.b, 0.36)
-	style.shadow_size = 5
-	style.content_margin_left = 12
-	style.content_margin_right = 12
-	btn.add_theme_stylebox_override("normal", style)
-	var hover := style.duplicate() as StyleBoxFlat
-	hover.bg_color = color.lightened(0.18)
+	btn.custom_minimum_size = Vector2(min_x, 56)
+	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.add_theme_font_size_override("font_size", 21)
+	btn.add_theme_color_override("font_color", Color("f0faff"))
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	btn.add_theme_color_override("font_disabled_color", Color("94a5c4"))
+	var accent := color.lightened(0.35)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = color.darkened(0.32)
+	normal.border_color = accent
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(16)
+	normal.shadow_color = Color(accent.r, accent.g, accent.b, 0.34)
+	normal.shadow_size = 7
+	normal.shadow_offset = Vector2(0, 3)
+	normal.content_margin_left = 15.0
+	normal.content_margin_right = 15.0
+	normal.content_margin_top = 9.0
+	normal.content_margin_bottom = 9.0
+	btn.add_theme_stylebox_override("normal", normal)
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = color.lightened(0.12)
+	hover.border_color = accent.lightened(0.24)
+	hover.shadow_size = 12
 	btn.add_theme_stylebox_override("hover", hover)
-	var pressed := style.duplicate() as StyleBoxFlat
-	pressed.bg_color = color.darkened(0.2)
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = color.darkened(0.14)
+	pressed.border_color = Color("e9ffff")
+	pressed.shadow_size = 2
 	btn.add_theme_stylebox_override("pressed", pressed)
+	var disabled := normal.duplicate() as StyleBoxFlat
+	disabled.bg_color = Color("263047")
+	disabled.border_color = Color("42506a")
+	disabled.shadow_size = 0
+	btn.add_theme_stylebox_override("disabled", disabled)
 	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	btn.pressed.connect(func(): animate_button(btn))
+	btn.pressed.connect(fn)
+	btn.mouse_entered.connect(func(): pulse_button(btn))
 	return btn
+
+func animate_button(btn: Button) -> void:
+	if not is_instance_valid(btn): return
+	btn.pivot_offset = btn.size * 0.5
+	var tw := btn.create_tween()
+	tw.tween_property(btn, "scale", Vector2(0.965, 0.965), 0.07)
+	tw.tween_property(btn, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+func pulse_button(btn: Button) -> void:
+	if not is_instance_valid(btn) or btn.disabled: return
+	var tw := btn.create_tween()
+	tw.tween_property(btn, "modulate", Color("c6f8ff"), 0.09)
+	tw.tween_property(btn, "modulate", Color.WHITE, 0.16)
 
 func build_root() -> VBoxContainer:
 	clear_screen()
@@ -173,7 +205,7 @@ func show_menu() -> void:
 	root.add_child(grid)
 	for i in range(5):
 		var idx: int = i + 1
-		var b := make_button("%d\n%s" % [idx,WORLD_NAMES[i]], func(): select_world(idx), BLUE if idx == world else PANEL, 205)
+		var b := make_button("%d\n%s" % [idx,WORLD_NAMES[i]], func(): select_world(idx), Color("17669e") if idx == world else Color("293c73"), 205)
 		b.custom_minimum_size.y = 95
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		grid.add_child(b)
@@ -181,7 +213,7 @@ func show_menu() -> void:
 	filler.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(filler)
 	root.add_child(make_label("Crystals: %d      Missions played: %d" % [progress.get("coins",0), progress.get("missions",0)], 22, Color("a7bddf")))
-	root.add_child(make_button("START 5-MINUTE MISSION", start_mission, Color("15803d")))
+	root.add_child(make_button("▶  START 5-MINUTE MISSION", start_mission, Color("12896f")))
 	root.add_child(make_label("Prototype • Offline • Landscape • No account required", 16, Color("8999b7")))
 
 func select_world(value: int) -> void:
@@ -255,9 +287,9 @@ func build_battle() -> void:
 	var footer := HBoxContainer.new()
 	footer.alignment = BoxContainer.ALIGNMENT_CENTER
 	root.add_child(footer)
-	footer.add_child(make_button("HINT (-25 energy)", use_hint, Color("6d28d9"), 210))
-	footer.add_child(make_button("SKIP (-20 shield)", func(): resolve_answer(-1, "skip"), Color("9f1239"), 230))
-	footer.add_child(make_button("EXIT", exit_mission, Color("334155"), 110))
+	footer.add_child(make_button("✦  HINT (-25 energy)", use_hint, Color("6543bd"), 210))
+	footer.add_child(make_button("↷  SKIP (-20 shield)", func(): resolve_answer(-1, "skip"), Color("a23e64"), 230))
+	footer.add_child(make_button("◀  EXIT", exit_mission, Color("34496d"), 110))
 	update_phase_label()
 
 func style_progress(bar: ProgressBar, fill: Color) -> void:
@@ -334,7 +366,7 @@ func build_answers() -> void:
 		answer_area.add_child(row)
 		for value in MathEngine.options(question):
 			var v: int = value
-			var b := make_button(str(value), func(): resolve_answer(v, "answer"), Color("164a85"), 110)
+			var b := make_button(str(value), func(): resolve_answer(v, "answer"), Color("246cba"), 110)
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			b.custom_minimum_size.y = 96
 			row.add_child(b)
@@ -440,8 +472,8 @@ func fail_mission() -> void:
 	root.add_child(make_label("Correct: %d        Missed: %d" % [hits, misses], 31))
 	root.add_child(make_label("Shield: 0%  •  No mission crystals awarded", 24, Color("fda4af")))
 	root.add_child(make_label("Your answers were saved for future practice", 21, Color("a7bddf")))
-	root.add_child(make_button("RETRY LEVEL", start_mission, Color("15803d")))
-	root.add_child(make_button("RETURN TO GALAXY", show_menu, Color("334155")))
+	root.add_child(make_button("↻  RETRY LEVEL", start_mission, Color("12896f")))
+	root.add_child(make_button("◀  RETURN TO GALAXY", show_menu, Color("34496d")))
 	var sp2 := Control.new()
 	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(sp2)
@@ -463,7 +495,7 @@ func finish_mission() -> void:
 	root.add_child(make_label("Correct: %d        Missed: %d        Shield: %d%%" % [hits,misses,shield], 31))
 	root.add_child(make_label("+%d crystals    •    %d questions awaiting review" % [coins_earned,queue.size()], 29, Color("7dd3fc")))
 	root.add_child(make_label("Progress has been saved locally", 21, Color("a7f3d0")))
-	root.add_child(make_button("RETURN TO GALAXY", show_menu, Color("15803d")))
+	root.add_child(make_button("◀  RETURN TO GALAXY", show_menu, Color("12896f")))
 	var sp2 := Control.new()
 	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(sp2)

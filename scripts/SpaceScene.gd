@@ -94,6 +94,10 @@ func _draw() -> void:
 		var y: float = star.y * h
 		var brightness: float = 0.55 + 0.25 * sin(time_passed * (1.0 + float(i % 5)) + i)
 		draw_circle(Vector2(x, y), 0.6 + float(layer) * 0.55, Color(0.7, 0.88, 1.0, brightness))
+		if i % 19 == 0:
+			var twinkle: float = 2.0 + 1.7 * (0.5 + 0.5 * sin(time_passed * 2.0 + i))
+			draw_line(Vector2(x - twinkle, y), Vector2(x + twinkle, y), Color(0.5, 0.85, 1.0, brightness * 0.45), 1.0)
+			draw_line(Vector2(x, y - twinkle), Vector2(x, y + twinkle), Color(0.5, 0.85, 1.0, brightness * 0.45), 1.0)
 	var ship: Vector2 = ship_position()
 	var enemy: Vector2 = enemy_position()
 	if damage_timer > 0.0 and death_timer == 0.0:
@@ -107,12 +111,16 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([ship + Vector2(-28, -9), ship + Vector2(-56, -44), ship + Vector2(9, -17)]), Color("2865bd"))
 		draw_colored_polygon(PackedVector2Array([ship + Vector2(-28, 9), ship + Vector2(-56, 44), ship + Vector2(9, 17)]), Color("2865bd"))
 		draw_circle(ship + Vector2(12, 0), 13, Color("10275e"))
+		draw_line(ship + Vector2(-27, -11), ship + Vector2(29, -9), Color("a6edff"), 2.0)
+		draw_line(ship + Vector2(-27, 11), ship + Vector2(29, 9), Color("a6edff"), 2.0)
 		draw_arc(ship + Vector2(12, 0), 13, 0, TAU, 32, Color("d3ffff"), 3.0)
 	if hit_timer <= 0.35:
 		var color: Color = [Color("ae6fff"), Color("ff7777"), Color("6addad")][enemy_index % 3]
 		var enemy_scale: float = 1.0 + sin(time_passed * 3.0) * 0.025
 		draw_circle(enemy, 46.0 * enemy_scale, Color(color.r, color.g, color.b, 0.12))
 		draw_circle(enemy, 38.0 * enemy_scale, color)
+		draw_arc(enemy, 43.0 * enemy_scale, -PI * 0.84, PI * 0.84, 40, Color("c5ecff", 0.55), 3.0)
+		draw_circle(enemy + Vector2(0, 23), 5.0, Color("fff1a8"))
 		draw_line(enemy + Vector2(-24, -27), enemy + Vector2(-41, -51), color, 7.0)
 		draw_line(enemy + Vector2(24, -27), enemy + Vector2(41, -51), color, 7.0)
 		for offset in [-15.0, 15.0]:
