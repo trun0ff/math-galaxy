@@ -49,6 +49,8 @@ var queue: Array[Dictionary] = []
 var input_mode: String = "numeric"
 var input_value: String = ""
 var hint_used: bool = false
+var hint_visible: bool = false
+var hint_close_button: Button
 var hint_stage: int = 0
 var hint_texts: Array[String] = []
 var hint_button: Button
@@ -100,7 +102,7 @@ func _notification(what: int) -> void:
 		save_progress()
 
 func _process(delta: float) -> void:
-	if screen != "battle" or paused or finished:
+	if screen != "battle" or paused or finished or hint_visible:
 		return
 	elapsed = minf(MISSION_LENGTH, elapsed + delta)
 	if pending_defeat:
@@ -661,6 +663,7 @@ func start_mission() -> void:
 	misses = 0
 	coins_earned = 0
 	queue.clear()
+	hint_visible = false
 	transition_delay = 0.0
 	question_active = false
 	last_key = ""
@@ -754,6 +757,9 @@ func build_battle() -> void:
 	root.add_child(footer)
 	hint_button = make_button("✦ HINT 1/3  -25", use_hint, Color("9d50ff"), 230, 51, 19)
 	footer.add_child(hint_button)
+	hint_close_button = make_button("CONTINUE ▶", close_hint, Color("2865ad"), 165, 51, 19)
+	hint_close_button.visible = false
+	footer.add_child(hint_close_button)
 	footer.add_child(make_button("↻ SKIP  -20 SHIELD", func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 51, 19))
 	footer.add_child(make_button("◀ EXIT", exit_mission, Color("4f8cdb"), 125, 51, 19))
 	if progress.rewards.owned.has("repair"):
@@ -786,7 +792,7 @@ func update_hud() -> void:
 	shield_label.text = "SHIELD %d%%" % shield
 	shield_bar.value = shield
 	energy_label.text = "ENERGY %d  •  COMBO %d" % [energy, combo]
-	timer_label.text = "%.1f s" % maxf(0.0, question_limit - question_elapsed)
+	timer_label.text = "PAUSED" if hint_visible else "%.1f s" % maxf(0.0, question_limit - question_elapsed)
 	timer_bar.max_value = question_limit
 	timer_bar.value = maxf(0.0, question_limit - question_elapsed)
 
@@ -831,6 +837,8 @@ func next_question() -> void:
 		question_limit += 8.0
 	hint_used = false
 	hint_stage = 0
+	hint_visible = false
+	hint_close_button.visible = false
 	hint_texts = MathEngine.hint_stages(question, randf() < 0.5 and int(question.world) > 1)
 	hint_button.text = "✦ HINT 1/3  -25"
 	question_active = true
@@ -901,14 +909,28 @@ func queue_review() -> void:
 		retry["retry_after"] = int(progress.get("attempt_sequence", 0)) + 3
 		queue.append(retry)
 
+func show_hint_pause() -> void:
+	hint_visible = true
+	hint_close_button.visible = true
+	update_hud()
+
+func close_hint() -> void:
+	hint_visible = false
+	hint_close_button.visible = false
+	if question_active:
+		feedback.text = "Enter your answer" if input_mode == "numeric" else "Choose the answer"
+	update_hud()
+
 func use_hint() -> void:
 	if not question_active or finished or paused: return
 	if hint_stage == 3:
 		feedback.text = hint_texts[2]
+		show_hint_pause()
 		return
 	var cost: int = HINT_COSTS[hint_stage]
 	if energy < cost:
 		feedback.text = "Not enough energy" + ("\n" + hint_texts[hint_stage - 1] if hint_stage > 0 else "")
+		if hint_stage > 0: show_hint_pause()
 		return
 	energy -= cost
 	hint_used = true
@@ -917,10 +939,11 @@ func use_hint() -> void:
 	hint_stage += 1
 	queue_review()
 	hint_button.text = "✦ REVIEW HINT" if hint_stage == 3 else "✦ HINT %d/3  -%d" % [hint_stage + 1, HINT_COSTS[hint_stage]]
-	update_hud()
+	show_hint_pause()
 
 func resolve_answer(value: int, reason: String) -> void:
 	if not question_active or finished: return
+	close_hint()
 	question_active = false
 	var correct: bool = reason == "answer" and value == question["answer"]
 	PARENT_DATA.record(progress, question, world, level, correct, input_mode, hint_used, question_elapsed, "battle")

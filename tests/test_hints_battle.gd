@@ -34,9 +34,21 @@ func run() -> void:
 		var before: int = app.energy
 		app.use_hint()
 		assert(app.energy == before - cost)
+		var mission_time: float = app.elapsed
+		var answer_time: float = app.question_elapsed
+		app._process(60.0)
+		assert(app.hint_visible and app.elapsed == mission_time and app.question_elapsed == answer_time)
+		assert(app.timer_label.text == "PAUSED")
+		app.close_hint()
+		app._process(0.1)
+		assert(not app.hint_visible and app.elapsed > mission_time and app.question_elapsed > answer_time)
 	assert(app.hint_stage == 3 and app.energy == 0)
 	assert(app.question_limit == initial_limit + 18.0)
 	app.use_hint()
+	var review_time: float = app.elapsed
+	app._process(60.0)
+	assert(app.elapsed == review_time and app.hint_visible)
+	app.close_hint()
 	assert(app.energy == 0 and app.progress.attempt_sequence == sequence and app.queue.size() == 1)
 	var queued_key: String = app.question.key
 	app.progress.attempt_sequence = sequence + 3
@@ -48,6 +60,7 @@ func run() -> void:
 	app.hint_used = true
 	var hp: int = app.art.enemy_hp
 	app.resolve_answer(app.question.answer, "answer")
+	assert(not app.hint_visible)
 	assert(app.hits == 1 and app.combo == 1 and app.art.enemy_hp == hp - 1)
 	assert(app.progress.skills[app.question.key].independent_correct == 0)
 	app.art.set_boss_mode(true)
