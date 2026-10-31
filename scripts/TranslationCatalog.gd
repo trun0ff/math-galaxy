@@ -196,7 +196,6 @@ const UK := {
 	"▶  CONTINUE": "▶  ПРОДОВЖИТИ",
 	"▶  CHOOSE MISSION": "▶  ОБЕРИ МІСІЮ",
 	"✦  MATH WORKSHOP": "✦  МАТЕМАТИЧНА МАЙСТЕРНЯ",
-	"Prototype • Offline • Landscape • No account required": "Прототип • Офлайн • Без реєстрації",
 	"◀  GALAXY": "◀  ГАЛАКТИКА",
 	"   MATH WORKSHOP - WORLD %d": "   МАЙСТЕРНЯ — СВІТ %d",
 	"Workshop begins in World 2. Select worlds 2-5.": "Майстерня доступна зі світу 2. Обери світ 2–5.",

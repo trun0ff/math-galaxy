@@ -344,7 +344,6 @@ func show_menu() -> void:
 	continue_button.name = "ContinueGame"
 	continue_button.disabled = PROGRESSION.continue_target(progress).is_empty()
 	actions.add_child(continue_button)
-	root.add_child(make_label(L10N.text("Prototype • Offline • Landscape • No account required"), 16, Color("b2c2dd")))
 
 func show_workshop() -> void:
 	screen = "workshop"
