@@ -2,6 +2,8 @@ extends RefCounted
 
 # English source templates map to Ukrainian; keep format placeholders unchanged.
 const UK := {
+	"Examples: %d/%d": "Приклади: %d/%d",
+	"Missions: 10 examples; final challenges: 12. No mission timer.": "Місії: 10 прикладів; фінальні випробування: 12. Без таймера місії.",
 	"TABLE 2-9": "ТАБЛИЦЯ 2–9",
 	"2 DIGITS × 1": "2 ЦИФРИ × 1",
 	"3 DIGITS × 1": "3 ЦИФРИ × 1",

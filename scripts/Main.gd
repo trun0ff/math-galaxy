@@ -26,8 +26,7 @@ const MISSION_MANAGER = preload("res://scripts/MissionManager.gd")
 var save_writable := true
 var save_warning := ""
 const SAVE_PATH = "user://math_galaxy_progress.json"
-var MISSION_LENGTH := 300.0
-var PHASE_LIMITS := [35.0, 85.0, 235.0, 280.0, 300.0]
+var question_target := 10
 const PHASE_NAMES := ["WARM-UP", "WORKSHOP", "SPACE BATTLE", "BOSS", "REWARDS"]
 const WORLD_NAMES := ["Lightning Academy", "Mechanic Desert", "Crystal Planet", "Titan City", "Black Hole"]
 const BACK := Color("07122d")
@@ -111,24 +110,10 @@ func _notification(what: int) -> void:
 func _process(delta: float) -> void:
 	if screen != "battle" or paused or finished or hint_visible:
 		return
-	elapsed = minf(MISSION_LENGTH, elapsed + delta)
+	elapsed += delta
 	if pending_defeat:
 		transition_delay -= delta
 		if transition_delay <= 0.0: fail_mission()
-		return
-	if elapsed >= MISSION_LENGTH:
-		finish_mission()
-		return
-	var next_phase: int = determine_phase()
-	if next_phase != phase:
-		phase = next_phase
-		update_phase_label()
-		if phase == 4:
-			question_active = false
-			transition_delay = 0.0
-			feedback.text = L10N.text("Flight complete! Preparing rewards...")
-	if phase == 4:
-		update_hud()
 		return
 	if transition_delay > 0.0:
 		transition_delay -= delta
@@ -142,7 +127,7 @@ func _process(delta: float) -> void:
 	update_hud()
 
 func determine_phase() -> int:
-	return MISSION_MANAGER.phase_at(elapsed, PHASE_LIMITS)
+	return MISSION_MANAGER.question_phase(hits + misses, question_target)
 
 func clear_screen() -> void:
 	for c in get_children():
@@ -664,8 +649,7 @@ func start_level_practice() -> void:
 	start_mission()
 
 func start_mission() -> void:
-	MISSION_LENGTH = PARENT_DATA.duration(progress)
-	PHASE_LIMITS = MISSION_MANAGER.phase_limits(MISSION_LENGTH)
+	question_target = 12 if PROGRESSION.is_final(world, level) else 10
 	REWARD_MANAGER.migrate(progress)
 	progress["mission_sequence"] = maxi(int(progress.get("mission_sequence", 0)), int(progress.rewards.settled)) + 1
 	save_progress()
@@ -716,7 +700,7 @@ func build_battle() -> void:
 	energy_label = make_label(L10N.text("ENERGY 50  •  COMBO 0"), 20, Color("ffd85d"))
 	energy_label.custom_minimum_size.x = 250
 	top.add_child(energy_label)
-	info = make_label("05:00", 26, Color.WHITE)
+	info = make_label("", 22, Color.WHITE)
 	info.custom_minimum_size.x = 92
 	top.add_child(info)
 
@@ -805,7 +789,7 @@ func update_phase_label() -> void:
 		art.call("set_boss_mode", phase == 3)
 
 func update_hud() -> void:
-	info.text = "%02d:%02d" % [int(ceil(MISSION_LENGTH-elapsed)) / 60, int(ceil(MISSION_LENGTH-elapsed)) % 60]
+	info.text = L10N.text("Examples: %d/%d") % [hits + misses, question_target]
 	shield_label.text = L10N.text("SHIELD %d%%") % shield
 	shield_bar.value = shield
 	energy_label.text = L10N.text("ENERGY %d  •  COMBO %d") % [energy, combo]
@@ -837,9 +821,11 @@ func choose_question_legacy() -> Dictionary:
 
 func next_question() -> void:
 	if finished: return
-	if elapsed >= MISSION_LENGTH:
+	if hits + misses >= question_target:
 		finish_mission()
 		return
+	phase = determine_phase()
+	update_phase_label()
 	question = choose_question()
 	progress["attempt_sequence"] = int(progress.get("attempt_sequence", 0)) + 1
 	question_attempt_id = "battle:%d" % int(progress["attempt_sequence"])

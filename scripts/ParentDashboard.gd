@@ -199,14 +199,14 @@ func spin(title: String, value: float, minimum: float, maximum: float) -> SpinBo
 func settings() -> void:
 	clear()
 	button(L10N.text("Overview"), dashboard)
-	var duration := spin(L10N.text("Mission seconds: 120–900 (default 300). Phase proportions stay the same; Rewards begins at 280/300."), DATA.duration(host.progress), 120, 900)
+	label(L10N.text("Missions: 10 examples; final challenges: 12. No mission timer."))
 	var inputs: Array = []
 	for i in range(5):
 		inputs.append(spin(L10N.text("World %d answer seconds: 5–180 (default %d)") % [i + 1, DATA.DEFAULT_LIMITS[i]], DATA.limits(host.progress)[i], 5, 180))
 	button(L10N.text("Save timing"), func():
 		var values: Array = []
 		for item in inputs: values.append(item.value)
-		host.progress["parent_settings"] = {"duration": duration.value, "limits": values}
+		host.progress["parent_settings"] = {"duration": DATA.duration(host.progress), "limits": values}
 		host.save_progress()
 		dashboard())
 	button(L10N.text("Restore default timing"), func(): host.progress.erase("parent_settings"); host.save_progress(); settings())

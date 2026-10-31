@@ -67,18 +67,27 @@ func run() -> void:
 	assert(app.art.enemy_hp == 6)
 	for i in range(6): app.art.hit_enemy()
 	assert(app.art.enemy_hp == 6 and app.art.enemy_index == 1)
-	for boundary in [0.0, 35.0, 85.0, 235.0, 280.0]:
-		app.elapsed = boundary
-		assert(app.determine_phase() == [0.0, 35.0, 85.0, 235.0, 280.0].find(boundary))
-	app.elapsed = 279.5
-	app.phase = 3
-	app.transition_delay = 1.0
-	app._process(0.5)
-	assert(app.phase == 4 and not app.finished and app.elapsed == 280.0)
-	app._process(19.0)
-	assert(not app.finished)
-	app._process(1.0)
-	assert(app.finished and app.elapsed == 300.0)
+	app.start_mission()
+	assert(app.question_target == 10)
+	# Wall-clock time cannot complete a mission or advance its phase.
+	app.question_limit = 1000.0
+	app._process(301.0)
+	assert(not app.finished and app.phase == 0 and app.hits == 0)
+	for i in range(10):
+		assert(app.phase == (0 if i < 2 else 1 if i < 4 else 2 if i < 8 else 3))
+		app.resolve_answer(app.question.answer, "answer")
+		assert(not app.finished)
+		app._process(1.1)
+	assert(app.finished and app.screen == "results" and app.hits == 10)
+	app.level = P.levels(1).size() - 1
+	app.start_mission()
+	assert(app.question_target == 12)
+	for i in range(12):
+		assert(app.phase == (0 if i < 2 else 1 if i < 4 else 2 if i < 10 else 3))
+		app.resolve_answer(app.question.answer, "answer")
+		app._process(1.1)
+	assert(app.finished and app.hits == 12)
+	app.level = 0
 	app.start_mission()
 	assert(app.combo == 0 and app.hits == 0 and not app.finished and app.queue.is_empty())
 	app.shield = 50
