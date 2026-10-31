@@ -353,7 +353,7 @@ func show_workshop() -> void:
 	top.add_child(make_button(L10N.text("◀  GALAXY"), show_menu, Color("425d88"), 190, 64, 19))
 	top.add_child(make_label(L10N.text("   MATH WORKSHOP - WORLD %d") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 30, Color("84d8ff")))
 	if world == 1:
-		root.add_child(make_label(L10N.text("Workshop begins in World 2. Select worlds 2-5."), 23))
+		root.add_child(make_label(L10N.text("Workshop begins in World 2. Select worlds 2-8."), 23))
 		return
 	root.add_child(make_label(L10N.text("Choose how you want to learn:"), 24))
 	var modes := HBoxContainer.new()
@@ -1135,9 +1135,75 @@ func show_hint_pause() -> void:
 	hint_button.visible = false
 	hint_visible = true
 	hint_close_button.visible = true
+	show_visual_hint()
 	update_hud()
 
+func show_visual_hint(topic: int = 0) -> void:
+	var previous := get_node_or_null("VisualHint")
+	if previous != null:
+		remove_child(previous)
+		previous.queue_free()
+	var overlay := ColorRect.new()
+	overlay.name = "VisualHint"
+	overlay.color = Color(0.01, 0.025, 0.08, 0.94)
+	add_child(overlay)
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var margin := MarginContainer.new()
+	overlay.add_child(margin)
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 24)
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", space_panel(Color("0b1935"), Color("67e8f9")))
+	margin.add_child(panel)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
+	var content := VBoxContainer.new()
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 12)
+	scroll.add_child(content)
+	content.add_child(make_label(L10N.text("Let's see how it works"), 30, Color("67e8f9")))
+	var tabs := HBoxContainer.new()
+	tabs.alignment = BoxContainer.ALIGNMENT_CENTER
+	content.add_child(tabs)
+	var titles := ["This problem", "Groups", "Place values", "Multiply ↔ divide"]
+	for index in range(titles.size()):
+		var tab := make_button(L10N.text(titles[index]), show_visual_hint.bind(index), Color("2865ad"), 180, 48, 18)
+		tab.disabled = topic == index
+		tabs.add_child(tab)
+	var picture := preload("res://scripts/ui/HintPicture.gd").new()
+	picture.places = topic == 2
+	content.add_child(picture)
+	var message: String
+	match topic:
+		1:
+			message = L10N.text("A group is one box. Each box has 4 dots.") + "\n" + L10N.text("3 boxes of 4: 4 + 4 + 4 = 12") + "\n3 × 4 = 12"
+		2:
+			message = L10N.text("100 squares • 2 strips of 10 • 3 dots") + "\n123 = 100 + 20 + 3\n" + L10N.text("Multiply each part, then add:") + "\n123 × 2 = 200 + 40 + 6 = 246"
+		3:
+			message = L10N.text("3 boxes × 4 dots = 12 dots") + "\n3 × 4 = 12\n↕\n12 ÷ 3 = 4\n" + L10N.text("Share 12 dots into 3 boxes: 4 in each.")
+		_:
+			# The picture explains a small example; the formula below uses this question.
+			message = L10N.text("Example: 3 boxes of 4 dots. 3 × 4 = 12.") + "\n\n"
+			if question.sign == "÷":
+				message += L10N.text("Division asks: what number goes in the blank?") + "\n%d × ? = %d" % [int(question.b), int(question.a)]
+			else:
+				message += L10N.text("Break the first number into smaller parts.")
+			if hint_stage >= 2:
+				message += "\n" + hint_texts[mini(hint_stage - 1, 2)]
+			elif question.sign != "÷":
+				message += "\n" + hint_texts[0]
+	var explanation := make_label(message, 24, Color("e0edff"))
+	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(explanation)
+	content.add_child(make_button(L10N.text("GOT IT"), close_hint, Color("2865ad"), 220, 54, 22))
+
 func close_hint() -> void:
+	var overlay := get_node_or_null("VisualHint")
+	if overlay != null:
+		remove_child(overlay)
+		overlay.queue_free()
 	hint_button.visible = true
 	hint_visible = false
 	hint_close_button.visible = false

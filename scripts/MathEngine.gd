@@ -73,7 +73,7 @@ static func hint_stages(q: Dictionary, alternate: bool = false) -> Array[String]
 		if alternate or first == 0 or first == quotient:
 			first = maxi(1, int(quotient / 2))
 		var chunk: int = first * b
-		return [L10N.text("Use a known multiple: %d × %d. Then divide what remains.") % [b, first],
+		return [L10N.text("Start with %d × %d. Subtract it, then divide the rest.") % [b, first],
 			"%d ÷ %d = (%d ÷ %d) + (%d ÷ %d)" % [a, b, chunk, b, a - chunk, b],
 			"%d = %d + %d; %d ÷ %d = %d + %d = %d" % [a, chunk, a - chunk, a, b, first, quotient - first, quotient]]
 	var split: int = a
@@ -96,7 +96,7 @@ static func hint_stages(q: Dictionary, alternate: bool = false) -> Array[String]
 	for part in parts:
 		expressions.append("(%d × %d)" % [part, factor])
 		values.append(str(part * factor))
-	return [L10N.text("Start with %d × %d; use the remaining groups. You can split into places or use a nearby round number.") % [parts[0], factor],
+	return [L10N.text("First %d × %d. Then do the other parts and add.") % [parts[0], factor],
 		"%d × %d = %s" % [a, b, " + ".join(expressions)],
 		"%s = %s = %d" % [" + ".join(expressions), " + ".join(values), a * b]]
 

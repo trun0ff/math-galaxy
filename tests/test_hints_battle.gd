@@ -34,12 +34,18 @@ func run() -> void:
 		var before: int = app.energy
 		app.use_hint()
 		assert(app.energy == before - cost)
+		assert(app.get_node_or_null("VisualHint") != null)
+		for topic in range(4):
+			app.show_visual_hint(topic)
+			assert(app.get_node_or_null("VisualHint") != null)
+		assert(app.energy == before - cost)
 		var mission_time: float = app.elapsed
 		var answer_time: float = app.question_elapsed
 		app._process(60.0)
 		assert(app.hint_visible and app.elapsed == mission_time and app.question_elapsed == answer_time)
 		assert(app.timer_label.text == "PAUSED")
 		app.close_hint()
+		assert(app.get_node_or_null("VisualHint") == null)
 		app._process(0.1)
 		assert(not app.hint_visible and app.elapsed > mission_time and app.question_elapsed > answer_time)
 	assert(app.hint_stage == 3 and app.energy == 0)
