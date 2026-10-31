@@ -88,6 +88,7 @@ static func validate(value: Variant) -> bool:
 		if rewards.has(key) and not rewards[key] is Dictionary: return false
 	if rewards.has("settled") and (not (rewards.settled is int or rewards.settled is float) or not is_finite(float(rewards.settled)) or float(rewards.settled) < 0): return false
 	if rewards.has("equipped") and not rewards.equipped is String: return false
+	if rewards.has("weapon") and not rewards.weapon is String: return false
 	for record in rewards.get("records", {}).values():
 		if not record is Dictionary: return false
 		if record.has("accuracy") and (not (record.accuracy is int or record.accuracy is float) or not is_finite(float(record.accuracy)) or float(record.accuracy) < 0 or float(record.accuracy) > 1): return false

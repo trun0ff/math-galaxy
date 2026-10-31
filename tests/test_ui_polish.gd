@@ -42,7 +42,7 @@ func run() -> void:
 	var purchase: Button
 	for button in host.find_children("*","Button",true,false):
 		var caption := button.get_node_or_null("Caption")
-		if caption != null and caption.text == "180 CRYSTALS": purchase = button
+		if caption != null and caption.text == "1200 CRYSTALS": purchase = button
 	assert(purchase != null and not purchase.disabled)
 	purchase.pressed.emit()
 	assert(host.get_node_or_null("GameNotice") != null)

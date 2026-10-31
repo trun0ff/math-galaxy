@@ -29,5 +29,5 @@ func _initialize() -> void:
    names[source] = true
    count += 1
  assert(count == 56)
- print("56 distinct location paintings, pair mappings and translations verified")
+ print("Unique location tests passed: 56 distinct paintings, pair mappings and translations verified")
  quit()

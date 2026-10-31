@@ -1,6 +1,32 @@
 extends Control
 ## Textured fighters, monster variants and layered battle effects.
 
+const FLEET = preload("res://scripts/FleetBalance.gd")
+var single_encounter := false
+var encounter_species := 0
+var attack_damage := 1
+var incoming_damage := 20
+var equipped_ship := ""
+var equipped_weapon := ""
+var shot_damage := 1
+var ember_clock := 0.0
+var encounter_defeated := false
+
+func configure_encounter(ship: String, weapon: String, data: Dictionary) -> void:
+	single_encounter = true
+	encounter_defeated = false
+	equipped_ship = ship
+	equipped_weapon = weapon
+	ship_variant = FLEET.ship_index(ship)
+	attack_damage = FLEET.damage(ship_variant, FLEET.weapon_index(weapon), data)
+	incoming_damage = 20 - FLEET.ARMOR[ship_variant]
+	var pool: Array = FLEET.monster_pool(int(data.tier))
+	encounter_species = int(pool.pick_random())
+	enemy_max_hp = int(data.hp)
+	enemy_hp = enemy_max_hp
+	display_hp = enemy_hp
+	hp_trail = enemy_hp
+
 signal ship_impact
 var ship_actor: TextureRect
 var monster_actor: TextureRect
@@ -77,6 +103,11 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	time_passed += delta
+	ember_clock += delta
+	if single_encounter and enemy_hp > 0 and display_hp < enemy_max_hp * 0.65 and ember_clock > 0.16:
+		ember_clock = 0.0
+		var at := enemy_position() + Vector2(rng.randf_range(-30, 30), rng.randf_range(-30, 30))
+		debris.append({"pos": at, "vel": Vector2(rng.randf_range(-12, 12), -35), "life": 0.7, "max_life": 0.7, "radius": 2.5, "color": Color("ffac57")})
 	if retreating: retreat_age += delta
 	if laser_timer > 0.0:
 		var previous_age := shot_age
@@ -88,7 +119,7 @@ func _process(delta: float) -> void:
 					burst(shot_target + Vector2(0, (bullet - 2) * 4), 5, [shot_color, Color.WHITE], 100)
 		if pending_enemy_hit and shot_age >= shot_arrival:
 			apply_enemy_impact()
-	hp_trail = move_toward(hp_trail, display_hp, delta * 1.1)
+	hp_trail = move_toward(hp_trail, display_hp, delta * maxf(1.1, enemy_max_hp * 0.8))
 	enemy_laser_timer = maxf(0.0, enemy_laser_timer - delta)
 	if enemy_attack_timer > 0.0:
 		enemy_attack_timer = maxf(0.0, enemy_attack_timer - delta)
@@ -144,6 +175,7 @@ func burst(at: Vector2, count: int, palette: Array[Color], speed: float = 165.0)
 func set_boss_mode(active: bool) -> void:
 	if boss_mode == active: return
 	boss_mode = active
+	if single_encounter: return
 	enemy_max_hp = 6 if active else 3
 	enemy_hp = enemy_max_hp
 	enemy_defeated = 0.0
@@ -151,9 +183,14 @@ func set_boss_mode(active: bool) -> void:
 	hp_trail = enemy_max_hp
 
 func hit_enemy() -> void:
-	if retreating: return
+	if retreating or (single_encounter and enemy_hp <= 0): return
+	if pending_enemy_hit: apply_enemy_impact()
 	weapon_mode = WEAPONS[clampi(ship_variant, 0, 2)]
 	shot_color = SHIP_COLORS[clampi(ship_variant, 0, 2)]
+	if not equipped_weapon.is_empty():
+		var wi := FLEET.weapon_index(equipped_weapon)
+		weapon_mode = FLEET.MODES[wi]
+		shot_color = Color(FLEET.COLORS[wi])
 	shot_origin = ship_position() + Vector2(88, 5)
 	shot_target = enemy_position() + Vector2(-40, 0)
 	shot_species = monster_species()
@@ -162,10 +199,11 @@ func hit_enemy() -> void:
 	shot_arrival = 0.54 if weapon_mode == "machine_gun" else 0.15
 	laser_timer = shot_duration
 	pending_enemy_hit = true
-	enemy_hp -= 1
+	shot_damage = mini(attack_damage, enemy_hp)
+	enemy_hp -= shot_damage
 	shot_hp = enemy_hp
 	pending_enemy_kill = enemy_hp <= 0
-	if pending_enemy_kill:
+	if pending_enemy_kill and not single_encounter:
 		enemy_index += 1
 		enemy_max_hp = 6 if boss_mode else 3
 		enemy_hp = enemy_max_hp
@@ -175,13 +213,15 @@ func apply_enemy_impact() -> void:
 	display_hp = maxf(0, shot_hp)
 	hit_timer = 0.65
 	enemy_impact = 0.55
-	damage_labels.append({"pos": enemy_position() + Vector2(-14, -70), "age": 0.0, "text": "-1", "color": shot_color.lightened(0.6), "enemy": true})
+	damage_labels.append({"pos": enemy_position() + Vector2(-14, -70), "age": 0.0, "text": "-%d" % shot_damage, "color": shot_color.lightened(0.6), "enemy": true})
 	burst(shot_target, 35, [shot_color, Color("fff1be"), Color.WHITE], 200)
 	if pending_enemy_kill:
 		burst(enemy_position(), 75, [shot_color, Color("ffbf68"), Color.WHITE], 235)
 		enemy_defeated = 0.28
+		if single_encounter: encounter_defeated = true
 
 func monster_species() -> int:
+	if single_encounter: return encounter_species
 	return (enemy_index + current_world - 1) % ENEMY_TEXTURES.size()
 
 func visual_species() -> int:
@@ -191,14 +231,14 @@ func hit_ship() -> void:
 	if retreating or death_timer > 0.0 or enemy_attack_timer > 0.0: return
 	# Charge, fire, travel, then impact. The HUD listens for the arrival signal.
 	enemy_attack_timer = 0.36
-	enemy_shot_color = ENEMY_COLORS[monster_species()]
+	enemy_shot_color = ENEMY_COLORS[monster_species() % ENEMY_COLORS.size()]
 	attack_origin = enemy_position() + Vector2(-48, 5)
 	attack_target = ship_position() + Vector2(87, 0)
 
 func apply_ship_impact() -> void:
 	enemy_laser_timer = 0.12
 	damage_timer = 0.6
-	damage_labels.append({"pos": ship_position() + Vector2(-20, -58), "age": 0.0, "text": "-20", "color": Color("ff668a")})
+	damage_labels.append({"pos": ship_position() + Vector2(-20, -58), "age": 0.0, "text": "-%d" % incoming_damage, "color": Color("ff668a")})
 	burst(attack_target, 24, [enemy_shot_color, Color("ffffff"), Color("b2f0ff")], 140.0)
 	ship_impact.emit()
 	if pending_destruction:
@@ -231,7 +271,9 @@ func make_actor(shader: Shader) -> TextureRect:
 func update_actors() -> void:
 	if ship_actor == null: return
 	var engine_color: Color = [Color("32cfff"), Color("ffba32"), Color("b657ff")][clampi(ship_variant, 0, 2)]
-	ship_actor.texture = PLAYER_TEXTURES[clampi(ship_variant, 0, 2)]
+	if not equipped_ship.is_empty():
+		engine_color = Color(FLEET.SHIP_TINTS[ship_variant])
+	ship_actor.texture = FLEET.ship_texture(equipped_ship) if not equipped_ship.is_empty() else PLAYER_TEXTURES[clampi(ship_variant, 0, 2)]
 	ship_actor.size = Vector2(235, 235 * float(ship_actor.texture.get_height()) / float(ship_actor.texture.get_width()))
 	ship_actor.position = ship_position() - ship_actor.size * 0.5
 	if damage_timer > 0.0:
@@ -241,11 +283,11 @@ func update_actors() -> void:
 	ship_actor.material.set_shader_parameter("clock", time_passed)
 	ship_actor.material.set_shader_parameter("engine_color", engine_color)
 	var species := visual_species()
-	monster_actor.texture = ENEMY_TEXTURES[species]
+	monster_actor.texture = FLEET.monster_texture(species) if single_encounter else ENEMY_TEXTURES[species]
 	var scale_factor := (1.35 if boss_mode else 1.0) * (1.0 + sin(time_passed * 3) * 0.025)
 	monster_actor.size = Vector2(155 * float(monster_actor.texture.get_width()) / float(monster_actor.texture.get_height()), 155) * scale_factor
 	monster_actor.position = enemy_position() - monster_actor.size * 0.5 + Vector2(sin(time_passed * 76) * enemy_impact * 13, cos(time_passed * 64) * enemy_impact * 9)
-	monster_actor.visible = enemy_defeated <= 0.0
+	monster_actor.visible = enemy_defeated <= 0.0 and not encounter_defeated
 	var blink_phase := fposmod(time_passed + species * 0.71, 4.1)
 	var blink := maxf(0.0, 1.0 - absf(blink_phase - 3.7) / 0.13)
 	var attack_jaw := sin((1.0 - enemy_attack_timer / 0.36) * PI) if enemy_attack_timer > 0 else 0.0
@@ -257,7 +299,7 @@ func update_actors() -> void:
 	monster_actor.material.set_shader_parameter("species", species)
 	monster_actor.material.set_shader_parameter("blink", blink)
 	monster_actor.material.set_shader_parameter("jaw", jaw)
-	monster_actor.material.set_shader_parameter("skin_color", ENEMY_COLORS[species].darkened(0.65))
+	monster_actor.material.set_shader_parameter("skin_color", ENEMY_COLORS[species % ENEMY_COLORS.size()].darkened(0.65))
 
 func _draw() -> void:
 	var w: float = size.x
@@ -291,7 +333,7 @@ func _draw() -> void:
 func draw_foreground(canvas: Control) -> void:
 	var ship := ship_position()
 	var enemy := enemy_position()
-	if enemy_defeated <= 0:
+	if enemy_defeated <= 0 and not encounter_defeated:
 		var scale_factor := 1.35 if boss_mode else 1.0
 		draw_enemy_hp(canvas, Vector2(enemy.x, minf(size.y - 19, enemy.y + 77.5 * scale_factor + 7)))
 		if enemy_impact > 0:
@@ -369,6 +411,33 @@ func draw_player_weapon(canvas: Control) -> void:
 		for branch in [5,10,14]:
 			var at := points[branch]
 			canvas.draw_polyline(PackedVector2Array([at,at+Vector2(9,-17),at+Vector2(31,-24)]),Color(shot_color,fade*0.65),1.5,true)
+	elif weapon_mode in ["plasma", "gravity", "nova"]:
+		var flight := clampf(shot_age / shot_arrival, 0, 1)
+		var at := shot_origin.lerp(shot_target, flight)
+		var radius := 13.0 if weapon_mode == "plasma" else 20.0
+		canvas.draw_circle(at, radius * 1.7, Color(shot_color, fade * 0.15))
+		canvas.draw_circle(at, radius, Color(shot_color, fade * 0.75))
+		for ring in range(3):
+			canvas.draw_arc(at, radius + ring * 5, time_passed * 8 + ring, time_passed * 8 + ring + PI * 1.5, 24, Color(shot_color.lightened(0.5), fade), 2, true)
+		canvas.draw_circle(at, 5, Color.WHITE)
+		if weapon_mode == "gravity":
+			for mote in range(9):
+				var angle := mote * TAU / 9 + time_passed * 11
+				var offset := Vector2(cos(angle), sin(angle) * 0.5) * (24 + sin(time_passed * 7 + mote) * 9)
+				canvas.draw_circle(at + offset, 2, Color(shot_color.lightened(0.7), fade))
+		elif weapon_mode == "nova":
+			for ray in range(8):
+				var direction := Vector2.RIGHT.rotated(ray * TAU / 8 + time_passed)
+				canvas.draw_line(at + direction * 9, at + direction * 34, Color(shot_color, fade), 2, true)
+	elif weapon_mode == "pulse":
+		for side in [-1, 1]:
+			var offset := Vector2(0, side * 9)
+			beam(canvas, shot_origin + offset, shot_origin.lerp(shot_target, clampf(shot_age / shot_arrival, 0, 1)) + offset, shot_color, fade, 4)
+	elif weapon_mode in ["cryo", "solar", "rail"]:
+		beam(canvas, shot_origin, shot_target, shot_color, fade, 12 if weapon_mode == "solar" else 3)
+		for ring in range(6):
+			var at := shot_origin.lerp(shot_target, (ring + 1) / 7.0)
+			canvas.draw_arc(at, 6 + ring, time_passed * 9, time_passed * 9 + PI, 12, Color(shot_color, fade), 2, true)
 	else:
 		var progress := clampf(shot_age/shot_arrival,0,1)
 		beam(canvas,shot_origin,shot_origin.lerp(shot_target,progress),shot_color,fade,6)
@@ -380,20 +449,25 @@ func draw_enemy_hp(canvas: Control, at: Vector2) -> void:
 	var height := 16.0
 	var left := at - Vector2(width/2,0)
 	var shape := PackedVector2Array([left+Vector2(7,0),left+Vector2(width-7,0),left+Vector2(width,8),left+Vector2(width-7,16),left+Vector2(7,16),left+Vector2(0,8)])
-	var color: Color = ENEMY_COLORS[visual_species()]
+	var color: Color = ENEMY_COLORS[visual_species() % ENEMY_COLORS.size()]
 	canvas.draw_colored_polygon(shape,Color("071025"))
 	canvas.draw_polyline(shape+PackedVector2Array([shape[0]]),color.lightened(0.4),1.5,true)
 	var trail_width := (width-16)*hp_trail/float(enemy_max_hp)
 	canvas.draw_rect(Rect2(left+Vector2(8,4),Vector2(trail_width,8)),Color("ffce83"))
-	for segment in range(enemy_max_hp):
-		var segment_width := (width-16)/float(enemy_max_hp)
-		var segment_color := color if segment < int(display_hp) else Color("1b2844")
+	for segment in range(10):
+		var segment_width := (width-16)/10.0
+		var segment_color := color if float(segment) / 10.0 < display_hp / enemy_max_hp else Color("1b2844")
 		var rect := Rect2(left+Vector2(8+segment*segment_width,4),Vector2(segment_width-3,8))
 		canvas.draw_rect(rect,segment_color)
-		if segment < int(display_hp): canvas.draw_line(rect.position,rect.position+Vector2(rect.size.x,0),segment_color.lightened(0.6),1,true)
+		if float(segment) / 10.0 < display_hp / enemy_max_hp: canvas.draw_line(rect.position,rect.position+Vector2(rect.size.x,0),segment_color.lightened(0.6),1,true)
 	if hp_trail > display_hp:
 		canvas.draw_rect(Rect2(left+Vector2(8+(width-16)*display_hp/float(enemy_max_hp),4),Vector2((width-16)*(hp_trail-display_hp)/float(enemy_max_hp),8)),Color(1,0.7,0.35,0.7))
 	var font := ThemeDB.fallback_font
+	if single_encounter:
+		var title: String = preload("res://scripts/Localization.gd").text(FLEET.MONSTER_NAMES[visual_species()])
+		var title_at := at + Vector2(-font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x / 2, -7)
+		canvas.draw_string_outline(font, title_at, title, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, 4, Color("071025"))
+		canvas.draw_string(font, title_at, title, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, color.lightened(0.6))
 	var text := "%d / %d" % [int(display_hp),enemy_max_hp]
 	var text_at := at + Vector2(-font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,12).x/2,12)
 	canvas.draw_string_outline(font,text_at,text,HORIZONTAL_ALIGNMENT_LEFT,-1,12,3,Color("071025"))

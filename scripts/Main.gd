@@ -29,6 +29,8 @@ const MISSION_MANAGER = preload("res://scripts/MissionManager.gd")
 var save_writable := true
 var save_warning := ""
 const SAVE_PATH = "user://math_galaxy_progress.json"
+const FLEET = preload("res://scripts/FleetBalance.gd")
+var encounter_data: Dictionary = {}
 var question_target := 10
 const PHASE_NAMES := ["WARM-UP", "WORKSHOP", "SPACE BATTLE", "BOSS", "REWARDS"]
 const WORLD_NAMES := ["Lightning Academy", "Mechanic Desert", "Crystal Planet", "Titan City", "Black Hole", "Tidal Ocean", "Aurora Gardens", "Solar Forge"]
@@ -131,7 +133,7 @@ func _process(delta: float) -> void:
 	update_hud()
 
 func determine_phase() -> int:
-	return MISSION_MANAGER.question_phase(hits + misses, question_target)
+	return mini(3, MISSION_MANAGER.question_phase(hits + misses, question_target))
 
 func clear_screen() -> void:
 	for c in get_children():
@@ -786,6 +788,7 @@ func start_mission() -> void:
 	elapsed = 0.0
 	phase = 0
 	shield = 100
+	encounter_data = FLEET.encounter(world, level, question_target)
 	energy = 65 if progress.rewards.owned.has("battery") else 50
 	combo = 0
 	hits = 0
@@ -838,7 +841,7 @@ func build_battle() -> void:
 	energy_label = make_label(L10N.text("ENERGY 50  •  COMBO 0"), 20, Color("ffd85d"))
 	energy_label.custom_minimum_size.x = 250
 	top.add_child(energy_label)
-	info = make_label("", 22, Color.WHITE)
+	info = make_label("", 16, Color.WHITE)
 	info.custom_minimum_size.x = 92
 	top.add_child(info)
 
@@ -903,11 +906,11 @@ func build_battle() -> void:
 	hint_close_button = make_button(L10N.text("CONTINUE ▶"), close_hint, Color("2865ad"), 165, 51, 19)
 	hint_close_button.visible = false
 	footer.add_child(hint_close_button)
-	footer.add_child(make_button(L10N.text("↻ SKIP  -20 SHIELD"), func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 51, 19))
+	footer.add_child(make_button(L10N.text("↻ SKIP  -%d SHIELD") % (20 - FLEET.ARMOR[FLEET.ship_index(str(progress.rewards.equipped))]), func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 51, 19))
 	footer.add_child(make_button(L10N.text("◀ EXIT"), exit_mission, Color("4f8cdb"), 125, 51, 19))
 	if progress.rewards.owned.has("repair"):
 		footer.add_child(make_button(L10N.text("REPAIR +15"), use_repair, Color("2865ad"), 160, 51, 18))
-	art.set("ship_variant", 2 if progress.rewards.equipped == "violet" else 1 if progress.rewards.equipped == "gold" else 0)
+	art.call("configure_encounter", str(progress.rewards.equipped), str(progress.rewards.weapon), encounter_data)
 	update_hud()
 	update_phase_label()
 
@@ -931,7 +934,7 @@ func update_phase_label() -> void:
 		art.call("set_boss_mode", phase == 3)
 
 func update_hud() -> void:
-	info.text = L10N.text("Examples: %d/%d") % [hits + misses, question_target]
+	info.text = L10N.text("Hits: %d\nDamage: %d • Armor: %d") % [hits, int(art.get("attack_damage")), FLEET.ARMOR[FLEET.ship_index(str(progress.rewards.equipped))]]
 	if art == null or float(art.get("enemy_attack_timer")) <= 0.0:
 		shield_label.text = "%d%%" % shield
 		shield_bar.value = shield
@@ -960,7 +963,7 @@ func choose_question_legacy() -> Dictionary:
 
 func next_question() -> void:
 	if finished: return
-	if hits + misses >= question_target:
+	if hits + misses >= question_target and int(art.get("enemy_hp")) <= 0:
 		finish_mission()
 		return
 	phase = determine_phase()
@@ -1104,13 +1107,14 @@ func resolve_answer(value: int, reason: String) -> void:
 		energy = mini(100, energy + (15 if fast else 10))
 		shield = mini(100, shield + 5 + (10 if combo % 5 == 0 else 0))
 		var reward: int = 10 + (5 if fast else 0)
-		coins_earned += reward
+		if hits <= question_target: coins_earned += reward
+		else: reward = 0
 		feedback.text = L10N.text("DIRECT HIT! +%d pending crystals") % reward
 		art.call("hit_enemy")
 	else:
 		misses += 1
 		combo = 0
-		shield = maxi(0, shield - 20)
+		shield = maxi(0, shield - int(art.get("incoming_damage")))
 		feedback.text = L10N.text("%s! Answer: %d") % [L10N.text(reason.to_upper()), question["answer"]]
 		art.call("hit_ship")
 		queue_review()
@@ -1271,6 +1275,8 @@ func buy_hangar(id: String) -> void:
 	if not REWARD_MANAGER.purchase(progress, id):
 		show_game_notice(L10N.text("Not enough crystals"), L10N.text("Need %d more crystals. Complete missions to earn them.") % maxi(0, int(REWARD_MANAGER.CATALOG.get(id, {}).get("cost", 0)) - int(progress.coins)))
 		return
+	if str(REWARD_MANAGER.CATALOG[id].get("kind", "")) in ["ship", "weapon"]:
+		REWARD_MANAGER.equip(progress, id)
 	if not PARENT_DATA.write_save(SAVE_PATH, progress):
 		progress = before
 		HANGAR.show(self, L10N.text("Could not save purchase. Crystals returned."))

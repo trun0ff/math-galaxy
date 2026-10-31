@@ -7,9 +7,9 @@ func _initialize() -> void:
 	assert(p.coins == 179 and p.missions == 4 and DATA.validate(p))
 	assert(not R.purchase(p, "violet"))
 	assert(p.coins == 179)
-	p.coins = 500
+	p.coins = 1500
 	assert(R.purchase(p, "violet"))
-	assert(p.coins == 320)
+	assert(p.coins == 300)
 	assert(not R.purchase(p, "violet"))
 	assert(not R.purchase(p, "unknown"))
 	assert(not R.equip(p, "gold"))

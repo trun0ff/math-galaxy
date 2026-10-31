@@ -1,0 +1,197 @@
+{
+  "date": "2026-10-31",
+  "tool": "built-in image_gen",
+  "transparent_background": true,
+  "prompt_template": "Use case: stylized-concept. Game sprite for a children's painted space math arcade. One {subject}. {type}. Polished colorful hand-painted 3D cartoon, metallic or organic texture, crisp silhouette, luminous details, centered complete subject occupying 80% of canvas, generous transparent margins, real transparent background, no text, no frame, no shadow plane, no scene. Save usable game asset.",
+  "assets": [
+    {
+      "id": "ship_1",
+      "subject": "mint narrow twin-boom scout",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-6e248322-0c9e-44ba-99e3-a9198ba429a5.png",
+      "file": "ship_1.png"
+    },
+    {
+      "id": "ship_2",
+      "subject": "orange swept-wing falcon fighter",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-afd07069-a5d7-433e-afc1-2a082dc22d91.png",
+      "file": "ship_2.png"
+    },
+    {
+      "id": "ship_3",
+      "subject": "white red armored turtle gunship",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-85d530c3-6d9a-439e-b217-8145793e103b.png",
+      "file": "ship_3.png"
+    },
+    {
+      "id": "ship_4",
+      "subject": "blue silver tri-engine lancer",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-48ce72e7-208e-405e-bb1a-45fd18b7ff3a.png",
+      "file": "ship_4.png"
+    },
+    {
+      "id": "ship_5",
+      "subject": "emerald crescent wing interceptor",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-191b7b01-f500-4af7-bf50-95f73f7fea57.png",
+      "file": "ship_5.png"
+    },
+    {
+      "id": "ship_6",
+      "subject": "crimson bulky hammerhead cruiser",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-a7308075-44c2-4234-afee-2c132bbd9549.png",
+      "file": "ship_6.png"
+    },
+    {
+      "id": "ship_7",
+      "subject": "pearl gold solar sail fighter",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-f60e9b36-8f26-44fa-8d7e-9da8eb8efcb2.png",
+      "file": "ship_7.png"
+    },
+    {
+      "id": "ship_8",
+      "subject": "indigo angular stealth manta",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-62b44740-b552-4bbf-89d5-e715311dfce8.png",
+      "file": "ship_8.png"
+    },
+    {
+      "id": "ship_9",
+      "subject": "copper teal ring reactor dreadnought",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-15803506-6748-4969-8500-479ebc9ba688.png",
+      "file": "ship_9.png"
+    },
+    {
+      "id": "ship_10",
+      "subject": "white violet majestic star phoenix flagship",
+      "type": "spaceship facing RIGHT, side three-quarter view, engines on left",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-c127c85c-cd09-4a2c-9951-f447eea29cf0.png",
+      "file": "ship_10.png"
+    },
+    {
+      "id": "monster_1",
+      "subject": "lime gelatinous space slug with antennae",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-2d6106f1-7e34-4b88-b44b-938919ddfec7.png",
+      "file": "monster_1.png"
+    },
+    {
+      "id": "monster_2",
+      "subject": "orange rock crab with molten cracks",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-7cce2a5f-b22f-4926-8bc8-396d6aafb4a8.png",
+      "file": "monster_2.png"
+    },
+    {
+      "id": "monster_3",
+      "subject": "turquoise floating jellyfish alien",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-6bf56d5d-2ee5-4dc8-af70-b6bb7904c3c7.png",
+      "file": "monster_3.png"
+    },
+    {
+      "id": "monster_4",
+      "subject": "purple furry bat alien with four eyes",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-54ef63bb-e001-47dc-9635-6f3014815edf.png",
+      "file": "monster_4.png"
+    },
+    {
+      "id": "monster_5",
+      "subject": "red spiked armored beetle alien",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-373045f9-3134-4bf6-ae06-c0d8dbca603e.png",
+      "file": "monster_5.png"
+    },
+    {
+      "id": "monster_6",
+      "subject": "blue ice golem alien",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-ff3c66d4-1fdf-4051-8f55-e789a158c8da.png",
+      "file": "monster_6.png"
+    },
+    {
+      "id": "monster_7",
+      "subject": "emerald tentacle kraken alien",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-70b50406-47cf-417e-ba86-5c696a57257b.png",
+      "file": "monster_7.png"
+    },
+    {
+      "id": "monster_8",
+      "subject": "gold mechanical scarab alien",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-ce28df97-01e5-4956-b3a2-40aa8d3270be.png",
+      "file": "monster_8.png"
+    },
+    {
+      "id": "monster_9",
+      "subject": "dark violet horned void dragon head",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-e7512d3d-dfc8-48dc-b0c9-b30259319270.png",
+      "file": "monster_9.png"
+    },
+    {
+      "id": "monster_10",
+      "subject": "white crimson armored cosmic leviathan",
+      "type": "friendly intimidating space monster facing LEFT, full body",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-ce36e948-0aaa-4136-8b85-4a68f24365d0.png",
+      "file": "monster_10.png"
+    },
+    {
+      "id": "weapon_1",
+      "subject": "green twin pulse cannon",
+      "type": "isolated science fiction spaceship weapon module pointing RIGHT",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-15a73736-a38d-4f95-a94a-553b37afe776.png",
+      "file": "weapon_1.png"
+    },
+    {
+      "id": "weapon_2",
+      "subject": "orange plasma orb launcher",
+      "type": "isolated science fiction spaceship weapon module pointing RIGHT",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-7b44c956-3d61-498e-8710-ac34108275bf.png",
+      "file": "weapon_2.png"
+    },
+    {
+      "id": "weapon_3",
+      "subject": "white blue cryo beam emitter",
+      "type": "isolated science fiction spaceship weapon module pointing RIGHT",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-5aa36fc3-447a-4cd5-b67d-155e4e69cc1a.png",
+      "file": "weapon_3.png"
+    },
+    {
+      "id": "weapon_4",
+      "subject": "red railgun",
+      "type": "isolated science fiction spaceship weapon module pointing RIGHT",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-ac292ddf-e144-4bd6-bea0-74ad0d1403e4.png",
+      "file": "weapon_4.png"
+    },
+    {
+      "id": "weapon_5",
+      "subject": "gold solar ray cannon",
+      "type": "isolated science fiction spaceship weapon module pointing RIGHT",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-d7c91b46-5d71-4da2-8f9d-273f304b6d18.png",
+      "file": "weapon_5.png"
+    },
+    {
+      "id": "weapon_6",
+      "subject": "purple gravity vortex projector",
+      "type": "isolated science fiction spaceship weapon module pointing RIGHT",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-e0dd73e1-8dc7-4126-9c69-f99f37c772a4.png",
+      "file": "weapon_6.png"
+    },
+    {
+      "id": "weapon_7",
+      "subject": "white rainbow nova cannon",
+      "type": "isolated science fiction spaceship weapon module pointing RIGHT",
+      "source": "C:\\Users\\freez\\.codex\\generated_images\\01a191c8-cd80-7fb3-bad1-69434b15624b\\exec-aefb109a-aa49-4277-b049-e545f585c103.png",
+      "file": "weapon_7.png"
+    }
+  ]
+}

@@ -2,12 +2,20 @@ extends RefCounted
 
 const L10N = preload("res://scripts/Localization.gd")
 
-const CATALOG = {
-	"violet": {"name": "Violet hull", "cost": 180, "description": "Cosmetic ship colour"},
-	"gold": {"name": "Golden hull", "cost": 300, "description": "Cosmetic ship colour"},
-	"battery": {"name": "Energy reserve", "cost": 220, "description": "+15 starting hint energy (one upgrade)"},
-	"repair": {"name": "Repair pulse", "cost": 260, "description": "Restore 15 shield once per mission (one upgrade)"}
-}
+const FLEET = preload("res://scripts/FleetBalance.gd")
+static var CATALOG: Dictionary = build_catalog()
+
+static func build_catalog() -> Dictionary:
+	var result := {
+		"battery": {"name": "Energy reserve", "cost": 2200, "description": "+15 starting hint energy (one upgrade)", "kind": "upgrade"},
+		"repair": {"name": "Repair pulse", "cost": 2600, "description": "Restore 15 shield once per mission (one upgrade)", "kind": "upgrade"}
+	}
+	for i in range(1, FLEET.SHIP_IDS.size()):
+		result[FLEET.SHIP_IDS[i]] = {"name": FLEET.SHIP_NAMES[i], "cost": FLEET.SHIP_COSTS[i], "kind": "ship"}
+	for i in range(1, FLEET.WEAPON_IDS.size()):
+		result[FLEET.WEAPON_IDS[i]] = {"name": FLEET.WEAPON_NAMES[i], "cost": FLEET.WEAPON_COSTS[i], "kind": "weapon"}
+	return result
+
 const ACHIEVEMENTS = {"first": "First completed mission", "accurate": "At least 90% accuracy (10 answers)", "return": "Completed practice on 3 different days", "courage": "Returned to a difficult fact", "progress": "Improved personal accuracy"}
 
 static func migrate(p: Dictionary) -> void:
@@ -17,6 +25,16 @@ static func migrate(p: Dictionary) -> void:
 		if not r.get(key) is Dictionary: r[key] = {}
 	r["settled"] = maxi(int(r.get("settled", 0)), 0)
 	r["equipped"] = str(r.get("equipped", "default"))
+	# Repair stale selections without removing legacy purchases.
+	if r.equipped != "default" and (not FLEET.SHIP_IDS.has(r.equipped) or not r.owned.has(r.equipped)): r.equipped = "default"
+	if not r.has("weapon"):
+		# Legacy hull purchases included their signature weapon.
+		if r.owned.has("gold"): r.owned["machine_gun"] = true
+		if r.owned.has("violet"): r.owned["lightning"] = true
+		r["weapon"] = "machine_gun" if r.equipped == "gold" else "lightning" if r.equipped == "violet" else "laser"
+	r["weapon"] = str(r.get("weapon", "laser"))
+	if r.weapon != "laser" and (not FLEET.WEAPON_IDS.has(r.weapon) or not r.owned.has(r.weapon)): r.weapon = "laser"
+	if FLEET.DRAW[FLEET.weapon_index(r.weapon)] > FLEET.POWER[FLEET.ship_index(r.equipped)]: r.weapon = "laser"
 	p["rewards"] = r
 	p["schema_version"] = maxi(13, int(p.get("schema_version", 0)))
 
@@ -31,8 +49,14 @@ static func purchase(p: Dictionary, id: String) -> bool:
 
 static func equip(p: Dictionary, id: String) -> bool:
 	migrate(p)
-	if id != "default" and (id not in ["violet", "gold"] or not p.rewards.owned.has(id)): return false
+	if FLEET.WEAPON_IDS.has(id):
+		if id != "laser" and not p.rewards.owned.has(id): return false
+		if FLEET.DRAW[FLEET.weapon_index(id)] > FLEET.POWER[FLEET.ship_index(p.rewards.equipped)]: return false
+		p.rewards.weapon = id
+		return true
+	if not FLEET.SHIP_IDS.has(id) or (id != "default" and not p.rewards.owned.has(id)): return false
 	p.rewards.equipped = id
+	if FLEET.DRAW[FLEET.weapon_index(p.rewards.weapon)] > FLEET.POWER[FLEET.ship_index(id)]: p.rewards.weapon = "laser"
 	return true
 
 static func settle(p: Dictionary, mission: int, won: bool, hits: int, misses: int, base: int, difficult: int, day: String, world: int) -> Dictionary:

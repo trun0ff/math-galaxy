@@ -34,10 +34,11 @@ void fragment() {
 		color = eyelid(color, uv, vec2(0.56, 0.55), vec2(0.055, 0.07));
 		color = eyelid(color, uv, vec2(0.61, 0.68), vec2(0.055, 0.07));
 	}
+	color.rgb *= 1.0 - damage_fraction * 0.16;
 	// Scorch marks and branching fissures accumulate with lost HP.
-	for (int scar = 0; scar < 3; scar++) {
-		vec2 center = vec2(0.56 + float(scar) * 0.06, 0.52 - float(scar) * 0.13);
-		float active = step(float(scar) * 0.3 + 0.05, damage_fraction);
+	for (int scar = 0; scar < 6; scar++) {
+		vec2 center = vec2(0.56 + sin(float(scar) * 2.4) * 0.19, 0.5 + cos(float(scar) * 2.1) * 0.22);
+		float active = step(float(scar) * 0.14 + 0.05, damage_fraction);
 		float scorch = exp(-length((uv - center) / vec2(0.048, 0.07)) * 1.6) * active;
 		color.rgb = mix(color.rgb, vec3(0.025, 0.018, 0.045), scorch * 0.8);
 		float fissure = min(crack_distance(uv, center + vec2(-0.03,-0.06), center), crack_distance(uv,center,center + vec2(-0.02,0.05)));

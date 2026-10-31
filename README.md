@@ -120,3 +120,39 @@ first sublevel of every world; sublevels within each world remain sequential.
 The option saves immediately and survives timing saves, restoring default timing,
 profile reloads and imports. It defaults to off. Choice rounds remain 5 seconds;
 parent timing controls apply to typed answers.
+
+
+### Fleet, arsenal and single-monster encounters
+
+The hangar contains 13 ships (10 new), 10 independently equipped weapons
+(7 new) and the encounter roster contains 13 species (10 new). Ships provide
+armor, reactor capacity and a damage bonus. Weapon draw cannot exceed
+the reactor rating; switching to a smaller ship safely selects the free laser.
+Previously purchased hulls and balances remain intact. No save reset is needed.
+
+A sublevel fights one random monster from its difficulty pool. Phase changes
+never heal or replace it. Hits show traveling projectiles, damage numbers,
+a trailing health bar, flashes, accumulated scorch marks, glowing cracks and
+embers. A dead monster stays defeated until the results screen.
+
+`FleetBalance.gd` owns the tuning. The curriculum ordinal follows the displayed
+world order; its reference budget is ordinal × 360 × 0.8 (two evidence missions
+per sublevel, with 20% held back). Monster HP is 10 times the strongest compatible
+ship/weapon damage affordable within that budget, or 12 times for a final.
+The actual wallet and selected equipment never increase monster HP. Effective
+damage is capped at the reference damage, preserving the educational minimum,
+and focus assistance sets a damage floor that keeps any loadout within 18
+correct hits (22 on finals). Misses do not reduce monster HP; combat continues
+until victory or retreat. Existing independent-learning requirements still apply.
+Extra hits beyond the mission target do not generate extra base crystals.
+
+Paid ships cost 1,200–17,500 crystals; weapons cost 1,000–15,500.
+Battery/repair upgrades cost 2,200/2,600. Regular rewards remain 10–15 per
+correct answer (first 10/12 only), +40 completion and existing daily/achievement
+bonuses. The first purchase therefore requires several successful missions,
+and two perfect first missions cannot buy either a ship or a weapon.
+Armor reduces the 20-point enemy hit by 0–9; shield regeneration is unchanged.
+
+Run `tests/run_tests.ps1` for encounter math across every curriculum level and
+compatible loadout, purchase/equipment migration, reactor restrictions, enemy
+persistence, answer timing, saves, and the existing learning/UI suites.

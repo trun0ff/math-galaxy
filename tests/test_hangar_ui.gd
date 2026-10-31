@@ -26,7 +26,7 @@ func run() -> void:
 		host.show_hangar()
 		await process_frame
 		await process_frame
-		for id in ["default", "gold", "violet"]:
+		for id in preload("res://scripts/FleetBalance.gd").SHIP_IDS:
 			var preview: TextureRect = host.find_child("HullPreview_" + id, true, false)
 			assert(preview != null and preview.texture != null)
 		var tip: Label = host.find_child("HangarTip", true, false)

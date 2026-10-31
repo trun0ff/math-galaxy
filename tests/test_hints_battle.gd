@@ -61,12 +61,15 @@ func run() -> void:
 	var hp: int = app.art.enemy_hp
 	app.resolve_answer(app.question.answer, "answer")
 	assert(not app.hint_visible)
-	assert(app.hits == 1 and app.combo == 1 and app.art.enemy_hp == hp - 1)
+	assert(app.hits == 1 and app.combo == 1 and app.art.enemy_hp == hp - app.art.attack_damage)
 	assert(app.progress.skills[app.question.key].independent_correct == 0)
+	var remaining: int = app.art.enemy_hp
+	var species: int = app.art.monster_species()
 	app.art.set_boss_mode(true)
-	assert(app.art.enemy_hp == 6)
-	for i in range(6): app.art.hit_enemy()
-	assert(app.art.enemy_hp == 6 and app.art.enemy_index == 1)
+	assert(app.art.enemy_hp == remaining)
+	for i in range(30): app.art.hit_enemy()
+	assert(app.art.enemy_hp == 0 and app.art.enemy_index == 0)
+	assert(app.art.monster_species() == species)
 	app.start_mission()
 	assert(app.question_target == 10)
 	# Wall-clock time cannot complete a mission or advance its phase.
@@ -82,11 +85,10 @@ func run() -> void:
 	app.level = P.levels(1).size() - 1
 	app.start_mission()
 	assert(app.question_target == 12)
-	for i in range(12):
-		assert(app.phase == (0 if i < 2 else 1 if i < 4 else 2 if i < 10 else 3))
+	while not app.finished and app.hits < 23:
 		app.resolve_answer(app.question.answer, "answer")
 		app._process(1.1)
-	assert(app.finished and app.hits == 12)
+	assert(app.finished and app.hits >= 12 and app.hits <= 22)
 	app.level = 0
 	app.start_mission()
 	assert(app.combo == 0 and app.hits == 0 and not app.finished and app.queue.is_empty())

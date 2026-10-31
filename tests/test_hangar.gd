@@ -6,17 +6,18 @@ func run() -> void:
 	var host := Control.new()
 	host.set_script(MAIN)
 	root.add_child(host)
-	host.progress = {"coins": 1500, "skills": {}}
+	host.progress = {"coins": 8000, "skills": {}}
 	host.show_hangar()
 	host.buy_hangar("gold")
+	assert(host.progress.rewards.equipped == "gold")
 	host.equip_hangar("gold")
 	host.buy_hangar("battery")
 	host.buy_hangar("repair")
 	host.show_hangar()
-	assert(host.progress.coins == 720)
+	assert(host.progress.coins == 1400)
 	host.start_mission()
 	assert(host.energy == 65)
-	assert(host.art.ship_variant == 1)
+	assert(host.art.ship_variant == 2)
 	host.shield = 50
 	host.use_repair()
 	assert(host.shield == 65)

@@ -42,7 +42,7 @@ func run() -> void:
 	host.show_workshop()
 	assert(labels(host).contains("ПОКАЖИ МЕНІ"))
 	host.show_hangar()
-	assert(labels(host).contains("Фіолетовий корпус"))
+	assert(labels(host).contains("Фіолетовий перехоплювач"))
 	host.show_menu()
 	await process_frame
 	await process_frame

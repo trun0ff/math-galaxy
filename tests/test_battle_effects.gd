@@ -52,6 +52,8 @@ func run() -> void:
 	var host := TestMain.new()
 	root.add_child(host)
 	host.set_process(false)
+	host.progress.rewards.equipped = "default"
+	host.progress.rewards.weapon = "laser"
 	host.start_mission()
 	host.art.set_process(false)
 	host.resolve_answer(-1, "skip")

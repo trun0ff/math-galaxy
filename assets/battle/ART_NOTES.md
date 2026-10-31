@@ -21,3 +21,17 @@ Built-in image_gen edit prompts (one call per subject):
 - Extract ONLY the BOTTOM LEFT purple single eye spiky alien / BOTTOM CENTER orange armored robot monster / BOTTOM RIGHT turquoise crystalline many-eyed monster. Keep its design and left-facing view. Entire monster centered with generous clear padding, horns and cannons completely visible. No other objects, no ships, no fragments of neighbors, no background or backdrop glow. Single monster only, fully transparent alpha background.
 
 Ship engine exhaust is painted into each sprite. SpaceScene only adds a subtle cyan/gold/violet pulsing light, without drawing a second polygon flame. Native Godot animation remains available without GIF playback.
+
+
+## Fleet expansion, 2026-10-31
+
+27 new isolated sprites generated using the built-in `image_gen` tool, one call
+per asset with `transparent_background: true`. Destinations: `ship_1.png` through
+`ship_10.png`, `weapon_1.png` through `weapon_7.png`, `monster_1.png` through
+`monster_10.png` in this directory. Full prompt subjects and the shared prompt
+are recorded in `fleet_expansion_generation.json`. Generated alpha is preserved.
+
+These override the historical integration description above: the hull and
+weapon are equipped independently; one monster is chosen at mission start from
+a difficulty pool, HP persists across phases, and damage/armor follow
+`FleetBalance.gd`. Existing three hulls and three weapon effects remain available.
