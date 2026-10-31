@@ -46,9 +46,11 @@ var last_key: String = ""
 var recent_keys: Array[String] = []
 var pending_defeat: bool = false
 var workshop_session: Dictionary = {}
-var workshop_entry: LineEdit
+var workshop_keypad: VBoxContainer
+var workshop_value: String = ""
 var workshop_feedback: Label
 var workshop_next: Button
+var workshop_path: VBoxContainer
 
 var header: Label
 var info: Label
@@ -292,63 +294,175 @@ func start_workshop(mode: String) -> void:
 
 func show_workshop_step() -> void:
 	screen = "workshop_step"
+	workshop_value = ""
+	workshop_keypad = null
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
 	root.add_child(make_button("◀  BACK TO WORKSHOP", show_workshop, Color("425d88"), 270, 50, 19))
 	var q: Dictionary = workshop_session["question"]
-	root.add_child(make_label("%d %s %d = ?" % [int(q["a"]), str(q["sign"]), int(q["b"])], 48, Color("8de8ff")))
+	root.add_child(make_label("%d %s %d = ?" % [int(q["a"]), str(q["sign"]), int(q["b"])], 43, Color("8de8ff")))
 	var step: Dictionary = WORKSHOP_ENGINE.current_step(workshop_session)
 	if step.is_empty():
 		finish_workshop()
 		return
 	var idx: int = int(workshop_session["index"])
 	var count: int = workshop_session["steps"].size()
-	root.add_child(make_label("STEP %d OF %d" % [idx + 1, count], 21, Color("fcd34d")))
-	root.add_child(make_label(str(step["prompt"]), 29, Color.WHITE))
-	workshop_feedback = make_label("", 20, Color("c4e5ff"))
+	root.add_child(make_label("STEP %d OF %d" % [idx + 1, count], 19, Color("fcd34d")))
+	root.add_child(make_label(str(step["prompt"]), 25, Color.WHITE))
+	# Concrete decomposition stays visible. It is an explanation, not an input field.
+	root.add_child(make_label(DECOMPOSITION_ENGINE.explanation(q, str(workshop_session.get("strategy", "tens"))), 19, Color("bbd6f3")))
+	add_workshop_solution_path(root)
+	if world == 5:
+		root.add_child(make_button("↻  ANOTHER DIVISION METHOD", switch_workshop_strategy, Color("425d88"), 340, 42, 17))
+	workshop_feedback = make_label("", 19, Color("c4e5ff"))
 	if workshop_session["mode"] == "demo":
-		root.add_child(make_label("Answer: %d" % int(step["answer"]), 34, Color("8fffc4")))
-		root.add_child(make_button("NEXT STEP ▶", advance_workshop_demo, Color("00a978"), 230, 65, 23))
+		root.add_child(make_label("Answer: %d" % int(step["answer"]), 30, Color("8fffc4")))
+		root.add_child(make_button("NEXT STEP ▶", advance_workshop_demo, Color("00a978"), 230, 58, 22))
 	else:
-		var answer_row := HBoxContainer.new()
-		answer_row.add_theme_constant_override("separation", 14)
-		root.add_child(answer_row)
-		workshop_entry = LineEdit.new()
-		workshop_entry.placeholder_text = "Enter a number"
-		workshop_entry.custom_minimum_size = Vector2(270, 60)
-		workshop_entry.max_length = 7
-		workshop_entry.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
-		answer_row.add_child(workshop_entry)
-		answer_row.add_child(make_button("CHECK", submit_workshop_step, Color("00a978"), 170, 60, 23))
-		answer_row.add_child(make_button("HINT", reveal_workshop_step, Color("425d88"), 140, 60, 21))
-		workshop_entry.text_submitted.connect(func(_value: String): submit_workshop_step())
+		# The same actual scene script, buttons, colours and behaviour as battle mode.
+		var center := CenterContainer.new()
+		root.add_child(center)
+		workshop_keypad = VBoxContainer.new()
+		workshop_keypad.set_script(KEYPAD_SCRIPT)
+		workshop_keypad.custom_minimum_size.x = 420
+		center.add_child(workshop_keypad)
+		workshop_keypad.call("set_value", "")
+		workshop_keypad.connect("key_pressed", Callable(self, "press_workshop_digit"))
 		root.add_child(workshop_feedback)
-		workshop_next = make_button("NEXT STEP ▶", advance_workshop_step, Color("2865ad"), 240, 58, 21)
+		var actions := HBoxContainer.new()
+		actions.alignment = BoxContainer.ALIGNMENT_CENTER
+		root.add_child(actions)
+		actions.add_child(make_button("HINT", reveal_workshop_step, Color("425d88"), 140, 44, 19))
+		workshop_next = make_button("NEXT STEP ▶", advance_workshop_step, Color("2865ad"), 220, 44, 19)
 		workshop_next.visible = false
-		root.add_child(workshop_next)
+		actions.add_child(workshop_next)
+
+# Persistent solution board: unresolved values remain hidden until supplied or shown.
+func add_workshop_solution_path(root: VBoxContainer) -> void:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", space_panel(Color("0d2041", 0.94), Color("3e9dd9"), 12, 0.12))
+	root.add_child(panel)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size.y = 162
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(scroll)
+	workshop_path = VBoxContainer.new()
+	workshop_path.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	workshop_path.add_theme_constant_override("separation", 3)
+	scroll.add_child(workshop_path)
+	refresh_workshop_solution_path()
+
+func refresh_workshop_solution_path() -> void:
+	if not is_instance_valid(workshop_path):
+		return
+	for child in workshop_path.get_children():
+		workshop_path.remove_child(child)
+		child.queue_free()
+	workshop_path.add_child(make_label("SOLUTION PATH", 19, Color("8de8ff")))
+	var session_steps: Array = workshop_session.get("steps", [])
+	var results: Array = workshop_session.get("step_results", [])
+	var completed: Dictionary = {}
+	for entry in results:
+		completed[int(entry["step"])] = entry
+	var last_index: int = session_steps.size() - 1
+	var pieces: Array[String] = []
+	for i in range(session_steps.size()):
+		var part: Dictionary = session_steps[i]
+		var is_final: bool = i == last_index
+		if is_final:
+			continue
+		var expression: String = str(part.get("expression", part["prompt"]))
+		var value_text: String = "?"
+		var status: String = "TO SOLVE"
+		var color := Color("bbd6f3")
+		if completed.has(i):
+			var recorded: Dictionary = completed[i]
+			value_text = str(recorded["answer"])
+			match str(recorded["source"]):
+				"self": status = "MY ANSWER"; color = Color("8fffc4")
+				"hint": status = "WITH HINT"; color = Color("fcd34d")
+				_: status = "SHOWN"; color = Color("b6d2fa")
+		elif i == int(workshop_session.get("index", 0)) and bool(workshop_session.get("current_hint", false)):
+			status = "HINT OPENED"
+		var line := make_label("%d. %s = %s   [%s]" % [i + 1, expression, value_text, status], 17, color)
+		line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		workshop_path.add_child(line)
+		pieces.append(value_text)
+	if session_steps.size() == 1:
+		var solo_line := make_label("Solve the complete expression without intermediate hints.", 17, Color("bbd6f3"))
+		workshop_path.add_child(solo_line)
+	else:
+		var current_world: int = int(workshop_session["question"]["world"])
+		var combined_text: String = "Add partial products: %s" % " + ".join(pieces.slice(0, maxi(0, pieces.size() - 1)))
+		if current_world == 5:
+			combined_text = "Divide the remaining part, then add the quotients."
+		var combined := make_label(combined_text, 18, Color("8de8ff"))
+		combined.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		workshop_path.add_child(combined)
+	if last_index >= 0:
+		var final_value: String = "?"
+		var final_status: String = "TO SOLVE"
+		if completed.has(last_index):
+			final_value = str(completed[last_index]["answer"])
+			final_status = "MY ANSWER" if str(completed[last_index]["source"]) == "self" else "ASSISTED / SHOWN"
+		var q: Dictionary = workshop_session["question"]
+		var final_line := make_label("Result: %d %s %d = %s   [%s]" % [int(q["a"]), str(q["sign"]), int(q["b"]), final_value, final_status], 18, Color("8fffc4"))
+		final_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		workshop_path.add_child(final_line)
+
+func switch_workshop_strategy() -> void:
+	if world != 5:
+		return
+	var strategy: String = "halves" if str(workshop_session.get("strategy", "tens")) == "tens" else "tens"
+	# Changing a method starts a fresh attempt; previous mistakes are retained.
+	WORKSHOP_ENGINE.change_strategy(workshop_session, strategy)
+	show_workshop_step()
+
+func press_workshop_digit(digit: String) -> void:
+	if screen != "workshop_step" or workshop_session.get("mode", "demo") == "demo":
+		return
+	if not is_instance_valid(workshop_next) or workshop_next.visible:
+		return
+	if digit == "⌫":
+		workshop_value = workshop_value.substr(0, maxi(0, workshop_value.length() - 1))
+	elif digit == "OK":
+		submit_workshop_step()
+	else:
+		if workshop_value.length() < 7 and digit.is_valid_int():
+			workshop_value += digit
+	if is_instance_valid(workshop_keypad):
+		workshop_keypad.call("set_value", workshop_value)
 
 func advance_workshop_demo() -> void:
-	workshop_session["index"] = int(workshop_session["index"]) + 1
+	var demo_index: int = int(workshop_session["index"])
+	var history: Array = workshop_session.get("step_results", [])
+	history.append({"step": demo_index, "answer": int(WORKSHOP_ENGINE.current_step(workshop_session)["answer"]), "source": "shown"})
+	workshop_session["step_results"] = history
+	workshop_session["index"] = demo_index + 1
 	workshop_session["complete"] = int(workshop_session["index"]) >= workshop_session["steps"].size()
 	show_workshop_step()
 
 func submit_workshop_step() -> void:
-	if workshop_next.visible or not workshop_entry.text.strip_edges().is_valid_int():
+	if not is_instance_valid(workshop_next) or workshop_next.visible:
+		return
+	if not workshop_value.is_valid_int():
 		workshop_feedback.text = "Enter a whole number first."
 		return
-	var correct: bool = WORKSHOP_ENGINE.check(workshop_session, int(workshop_entry.text))
+	var correct: bool = WORKSHOP_ENGINE.check(workshop_session, int(workshop_value))
+	workshop_keypad.call("flash", correct)
 	if correct:
 		workshop_feedback.text = "Correct! Continue to the next step."
 		workshop_next.visible = true
-		workshop_entry.editable = false
+		refresh_workshop_solution_path()
 	else:
 		workshop_feedback.text = "Not quite. Try again or use HINT."
 
 func reveal_workshop_step() -> void:
-	if workshop_next.visible:
+	if is_instance_valid(workshop_next) and workshop_next.visible:
 		return
 	WORKSHOP_ENGINE.reveal(workshop_session)
 	var step: Dictionary = WORKSHOP_ENGINE.current_step(workshop_session)
 	workshop_feedback.text = "Hint: this step equals %d. Type it to continue." % int(step["answer"])
+	refresh_workshop_solution_path()
 
 func advance_workshop_step() -> void:
 	show_workshop_step()
@@ -623,7 +737,15 @@ func press_digit(digit: String) -> void:
 		keypad.call("set_value", input_value)
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if screen != "battle" or not question_active or not event.pressed: return
+	if not event.pressed: return
+	if screen == "workshop_step" and workshop_session.get("mode", "demo") != "demo":
+		if event is InputEventKey:
+			var workshop_key := OS.get_keycode_string(event.keycode)
+			if workshop_key.length() == 1 and workshop_key.is_valid_int(): press_workshop_digit(workshop_key)
+			elif event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER: press_workshop_digit("OK")
+			elif event.keycode == KEY_BACKSPACE: press_workshop_digit("⌫")
+		return
+	if screen != "battle" or not question_active: return
 	if event is InputEventKey:
 		var key := OS.get_keycode_string(event.keycode)
 		if key.length() == 1 and key.is_valid_int(): press_digit(key)
@@ -736,7 +858,7 @@ func exit_mission() -> void:
 	finish_mission()
 
 func save_progress() -> void:
-	progress["schema_version"] = 5
+	progress["schema_version"] = 6
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(progress))
@@ -752,4 +874,4 @@ func load_progress() -> void:
 		progress = parsed
 		if not progress.has("skills"): progress["skills"] = {}
 	if not progress.has("strategies"): progress["strategies"] = {}
-	progress["schema_version"] = 5
+	progress["schema_version"] = 6
