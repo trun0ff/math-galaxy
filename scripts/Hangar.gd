@@ -8,10 +8,16 @@ static func show(host: Control, notice: String = "") -> void:
 	REWARDS.migrate(host.progress)
 	host.screen = "hangar"
 	var root: VBoxContainer = host.build_root(host.MENU_GALAXY)
-	root.add_child(host.make_button(L10N.text("◀ GALAXY"), host.show_menu, Color("425d88"), 180, 48, 20))
-	root.add_child(host.make_label(L10N.text("HANGAR  •  %d CRYSTALS") % int(host.progress.coins), 34, Color("84d8ff")))
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 16)
+	root.add_child(header)
+	header.add_child(host.make_button(L10N.text("◀ GALAXY"), host.show_menu, Color("425d88"), 0, 64, 20))
+	var title: Label = host.make_label(L10N.text("HANGAR  •  %d CRYSTALS") % int(host.progress.coins), 34, Color("84d8ff"))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	header.add_child(title)
 	if not notice.is_empty(): root.add_child(host.make_label(notice, 20, Color("ffd85b")))
-	var scroll := ScrollContainer.new()
+	var scroll := preload("res://scripts/ui/TouchScroll.gd").new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(scroll)
 	var content := VBoxContainer.new()
@@ -72,16 +78,16 @@ static func show(host: Control, notice: String = "") -> void:
 	tip_panel.add_child(row)
 	var caption: Label = host.make_label("", 19, Color("d5e4ff"))
 	caption.name = "HangarTip"
-	caption.custom_minimum_size.y = 58
+	caption.custom_minimum_size.y = 88
 	caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var update_tip := func(direction: int):
 		var index: int = posmod(int(host.get_meta("hangar_tip", 0)) + direction, tips.size())
 		host.set_meta("hangar_tip", index)
 		caption.text = "%d / %d   •   %s" % [index + 1, tips.size(), L10N.text(tips[index])]
-	row.add_child(host.make_button("‹", func(): update_tip.call(-1), Color("6651b4"), 54, 54, 28))
+	row.add_child(host.make_button("‹", func(): update_tip.call(-1), Color("6651b4"), 64, 68, 28))
 	row.add_child(caption)
-	row.add_child(host.make_button("›", func(): update_tip.call(1), Color("6651b4"), 54, 54, 28))
+	row.add_child(host.make_button("›", func(): update_tip.call(1), Color("6651b4"), 64, 68, 28))
 	update_tip.call(0)
 
 static func add_item(host: Control, grid: GridContainer, id: String, kind: String) -> void:

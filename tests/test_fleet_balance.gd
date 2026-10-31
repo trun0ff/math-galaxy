@@ -14,6 +14,8 @@ func run() -> void:
 		for level in range(P.levels(world).size()):
 			var minimum := 12 if P.is_final(world, level) else 10
 			var data := F.encounter(world, level, minimum)
+			assert(data.monster_species in F.monster_pool(data.tier))
+			assert(F.encounter(world, level, minimum + 3).monster_species == data.monster_species)
 			var attainable := false
 			for ship in range(F.SHIP_IDS.size()):
 				for weapon in range(F.WEAPON_IDS.size()):
@@ -48,6 +50,13 @@ func run() -> void:
 	battle.set_process(false)
 	var data := F.encounter(1, 0, 10)
 	battle.configure_encounter("default", "laser", data)
+	battle.update_actors()
+	var initial_size: Vector2 = battle.monster_actor.size
+	assert(is_equal_approx(initial_size.y, 155.0 * 1.35))
+	for retry in range(12):
+		battle.configure_encounter(F.SHIP_IDS[retry], "laser", F.encounter(1, 0, 10))
+		assert(battle.monster_species() == data.monster_species)
+	battle.configure_encounter("default", "laser", data)
 	var species := battle.monster_species()
 	for i in range(10):
 		battle.hit_enemy()
@@ -55,6 +64,8 @@ func run() -> void:
 		assert(battle.monster_species() == species)
 		var hp := battle.enemy_hp
 		battle.set_boss_mode(i % 2 == 0)
+		battle.update_actors()
+		assert(battle.monster_actor.size.is_equal_approx(initial_size))
 		assert(battle.enemy_hp == hp)
 	assert(battle.enemy_hp == 0 and battle.enemy_index == 0)
 	battle._process(2)

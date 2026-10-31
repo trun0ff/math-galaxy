@@ -2,6 +2,8 @@ extends RefCounted
 
 # English source templates map to Ukrainian; keep format placeholders unchanged.
 const UK := {
+	"Training": "Тренування",
+	"No progress": "Без прогресу",
 	"PRACTICE • NO UNLOCKS": "ТРЕНУВАННЯ • БЕЗ НОВИХ ЛОКАЦІЙ",
 	"Practice does not open locations. Play a location card to advance.": "Тренування не відкриває локації. Для просування обери картку локації.",
 	"Practice complete. Play the location to unlock the next one.": "Тренування завершено. Пройди локацію, щоб відкрити наступну.",
@@ -191,6 +193,7 @@ const UK := {
 	"Learn multiplication. Power your spaceship.": "Вивчай множення. Заряджай свій корабель.",
 	"CHOOSE A WORLD": "ОБЕРИ СВІТ",
 	"SELECT SUBLEVEL": "ОБЕРИ ЛОКАЦІЮ",
+	"▶  CONTINUE": "▶  ПРОДОВЖИТИ",
 	"▶  CHOOSE MISSION": "▶  ОБЕРИ МІСІЮ",
 	"✦  MATH WORKSHOP": "✦  МАТЕМАТИЧНА МАЙСТЕРНЯ",
 	"Prototype • Offline • Landscape • No account required": "Прототип • Офлайн • Без реєстрації",

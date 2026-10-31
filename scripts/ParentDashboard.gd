@@ -28,7 +28,7 @@ func setup(owner_node: Control) -> void:
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "top", "right", "bottom"]: margin.add_theme_constant_override("margin_" + side, 20)
 	add_child(margin)
-	var scroll := ScrollContainer.new()
+	var scroll := preload("res://scripts/ui/TouchScroll.gd").new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	margin.add_child(scroll)
 	body = VBoxContainer.new()

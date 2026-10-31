@@ -326,27 +326,24 @@ func show_menu() -> void:
 	var cards := HBoxContainer.new()
 	cards.alignment = BoxContainer.ALIGNMENT_CENTER
 	cards.add_theme_constant_override("separation", 12)
-	var world_scroll := horizontal_strip(root, 236)
+	var world_scroll := horizontal_strip(root, 356)
 	world_scroll.add_child(cards)
 	for id in PROGRESSION.WORLD_ORDER:
 		cards.add_child(make_world_card(id))
-	world_scroll.set_deferred("scroll_horizontal", maxi(0, PROGRESSION.WORLD_ORDER.find(world) * 222 - 400))
+	world_scroll.set_deferred("scroll_horizontal", maxi(0, PROGRESSION.WORLD_ORDER.find(world) * 312 - 400))
 	var fill := Control.new()
 	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(fill)
-	var level_wrap := CenterContainer.new()
-	root.add_child(level_wrap)
-	level_wrap.add_child(make_button(L10N.text("SELECT SUBLEVEL"), show_levels, Color("2865ad"), 340, 58, 22))
-	var start_wrap := CenterContainer.new()
-	root.add_child(start_wrap)
-	start_wrap.add_child(make_button(L10N.text("▶  CHOOSE MISSION"), show_levels, Color("00e485"), 520, 78, 29))
-	var workshop_wrap := CenterContainer.new()
-	root.add_child(workshop_wrap)
-	var workshop_button := make_button(L10N.text("✦  MATH WORKSHOP"), show_workshop, Color("2865ad"), 340, 60, 23)
-	var caption: Label = workshop_button.get_node("Caption")
-	caption.autowrap_mode = TextServer.AUTOWRAP_OFF
-	workshop_button.custom_minimum_size.x = maxf(340, caption.get_theme_font("font").get_string_size(caption.text, HORIZONTAL_ALIGNMENT_LEFT, -1, caption.get_theme_font_size("font_size")).x + 64)
-	workshop_wrap.add_child(workshop_button)
+	var actions := HBoxContainer.new()
+	actions.name = "WorldActions"
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	actions.add_theme_constant_override("separation", 18)
+	root.add_child(actions)
+	actions.add_child(make_button(L10N.text("✦  MATH WORKSHOP"), show_workshop, Color("2865ad"), 440, 78, 26))
+	var continue_button := make_button(L10N.text("▶  CONTINUE"), continue_game, Color("00e485"), 340, 78, 29)
+	continue_button.name = "ContinueGame"
+	continue_button.disabled = PROGRESSION.continue_target(progress).is_empty()
+	actions.add_child(continue_button)
 	root.add_child(make_label(L10N.text("Prototype • Offline • Landscape • No account required"), 16, Color("b2c2dd")))
 
 func show_workshop() -> void:
@@ -354,7 +351,7 @@ func show_workshop() -> void:
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
 	var top := HBoxContainer.new()
 	root.add_child(top)
-	top.add_child(make_button(L10N.text("◀  GALAXY"), show_menu, Color("425d88"), 190, 54, 19))
+	top.add_child(make_button(L10N.text("◀  GALAXY"), show_menu, Color("425d88"), 190, 64, 19))
 	top.add_child(make_label(L10N.text("   MATH WORKSHOP - WORLD %d") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 30, Color("84d8ff")))
 	if world == 1:
 		root.add_child(make_label(L10N.text("Workshop begins in World 2. Select worlds 2-5."), 23))
@@ -383,7 +380,7 @@ func show_workshop_step() -> void:
 	workshop_value = ""
 	workshop_keypad = null
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
-	root.add_child(make_button(L10N.text("◀  BACK TO WORKSHOP"), show_workshop, Color("425d88"), 270, 50, 19))
+	root.add_child(make_button(L10N.text("◀  BACK TO WORKSHOP"), show_workshop, Color("425d88"), 270, 64, 19))
 	var q: Dictionary = workshop_session["question"]
 	root.add_child(make_label("%d %s %d = ?" % [int(q["a"]), str(q["sign"]), int(q["b"])], 43, Color("8de8ff")))
 	var step: Dictionary = WORKSHOP_ENGINE.current_step(workshop_session)
@@ -427,7 +424,7 @@ func add_workshop_solution_path(root: VBoxContainer) -> void:
 	var panel := PanelContainer.new()
 	panel.add_theme_stylebox_override("panel", space_panel(Color("0d2041", 0.94), Color("3e9dd9"), 12, 0.12))
 	root.add_child(panel)
-	var scroll := ScrollContainer.new()
+	var scroll := preload("res://scripts/ui/TouchScroll.gd").new()
 	scroll.custom_minimum_size.y = 162
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(scroll)
@@ -597,7 +594,7 @@ func finish_workshop() -> void:
 	root.add_child(make_label(L10N.text("Independent: YES") if outcome["independent"] else L10N.text("Guided practice completed"), 23, Color("c4e5ff")))
 	root.add_child(make_button(L10N.text("REVIEW SOLUTION"), show_workshop_review, Color("2865ad"), 280, 58, 20))
 	root.add_child(make_button(L10N.text("TRY ANOTHER"), func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 64, 22))
-	root.add_child(make_button(L10N.text("BACK TO WORKSHOP"), show_workshop, Color("425d88"), 280, 60, 21))
+	root.add_child(make_button(L10N.text("BACK TO WORKSHOP"), show_workshop, Color("425d88"), 280, 64, 21))
 
 func show_workshop_review() -> void:
 	screen = "workshop_review"
@@ -607,13 +604,13 @@ func show_workshop_review() -> void:
 	root.add_child(make_label(DECOMPOSITION_ENGINE.explanation(workshop_session["question"], str(workshop_session.get("strategy", "tens"))), 20, Color("bbd6f3")))
 	# Reuse the same solution-path renderer, with all completed steps intact.
 	add_workshop_solution_path(root)
-	root.add_child(make_button(L10N.text("BACK TO WORKSHOP"), show_workshop, Color("425d88"), 280, 58, 20))
+	root.add_child(make_button(L10N.text("BACK TO WORKSHOP"), show_workshop, Color("425d88"), 280, 64, 20))
 	root.add_child(make_button(L10N.text("TRY ANOTHER"), func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 58, 20))
 
 func horizontal_strip(root: Control, height: float) -> ScrollContainer:
 	var navigation := HBoxContainer.new()
 	root.add_child(navigation)
-	var scroll := ScrollContainer.new()
+	var scroll := preload("res://scripts/ui/TouchScroll.gd").new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -630,7 +627,7 @@ func horizontal_strip(root: Control, height: float) -> ScrollContainer:
 
 func make_world_card(idx: int) -> Button:
 	var selected: bool = idx == world
-	var b := make_button("", func(): select_world(idx), Color("2dcdf6") if selected else Color("4260a4"), 210, 210, 20)
+	var b := make_button("", func(): select_world(idx), Color("2dcdf6") if selected else Color("4260a4"), 300, 330, 20)
 	b.clip_contents = true
 	var picture_clip := Control.new()
 	picture_clip.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -666,7 +663,7 @@ func make_world_card(idx: int) -> Button:
 	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	footer.offset_left = 8
 	footer.offset_right = -8
-	footer.offset_top = -103
+	footer.offset_top = -172
 	footer.offset_bottom = -21
 	footer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	footer.add_theme_stylebox_override("panel", space_panel(Color(0.03,0.05,0.12,0.70), Color("57cfff") if selected else Color("7184b5"), 12, 0.05))
@@ -675,9 +672,27 @@ func make_world_card(idx: int) -> Button:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 0)
 	footer.add_child(box)
-	box.add_child(make_label(L10N.text("WORLD %d") % (PROGRESSION.WORLD_ORDER.find(idx) + 1), 14, Color("fff2a6")))
-	box.add_child(make_label(L10N.text(WORLD_NAMES[idx - 1]), 17, Color("f8fdff")))
-	box.add_child(make_label(L10N.text(WORLD_SUBTITLES[idx - 1]), 13, Color("8ff0ff" if selected else Color("b0d0ff"))))
+	box.add_child(make_label(L10N.text("WORLD %d") % (PROGRESSION.WORLD_ORDER.find(idx) + 1), 20, Color("fff2a6")))
+	var title := make_label(L10N.text(WORLD_NAMES[idx - 1]), 26, Color("f8fdff"))
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(title)
+	var subtitle := make_label(L10N.text(WORLD_SUBTITLES[idx - 1]), 19, Color("8ff0ff" if selected else Color("b0d0ff")))
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(subtitle)
+	ignore_card_mouse(box)
+	var open_locations := Button.new()
+	open_locations.name = "OpenWorldLocations"
+	open_locations.mouse_filter = Control.MOUSE_FILTER_STOP
+	open_locations.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	open_locations.tooltip_text = L10N.text("WORLD %d - SUBLEVELS") % (PROGRESSION.WORLD_ORDER.find(idx) + 1)
+	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
+		open_locations.add_theme_stylebox_override(state, StyleBoxEmpty.new())
+	var text_hit_area := Control.new()
+	text_hit_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	footer.add_child(text_hit_area)
+	text_hit_area.add_child(open_locations)
+	open_locations.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	open_locations.pressed.connect(func(): open_world_locations(idx))
 	return b
 
 func select_world(value: int) -> void:
@@ -685,41 +700,82 @@ func select_world(value: int) -> void:
 	level = 0
 	show_menu()
 
+func open_world_locations(value: int) -> void:
+	world = value
+	level = 0
+	show_levels()
+
+func continue_game() -> void:
+	var target: Dictionary = PROGRESSION.continue_target(progress)
+	if target.is_empty(): return
+	world = int(target.world)
+	select_level(int(target.level))
+
 func show_levels() -> void:
 	screen = "levels"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
-	root.add_child(make_label(L10N.text("WORLD %d - SUBLEVELS") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 34, Color("84d8ff")))
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 16)
+	root.add_child(top)
+	var back := make_button(L10N.text("◀  GALAXY"), show_menu, Color("4260a4"), 0, 64, 19)
+	back.name = "LocationsBack"
+	top.add_child(back)
+	var title := make_label(L10N.text("WORLD %d - SUBLEVELS") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 34, Color("84d8ff"))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	top.add_child(title)
+	var practice := make_button("", start_level_practice, Color("4260a4"), 190, 64, 19)
+	practice.name = "PracticeOnly"
+	practice.tooltip_text = L10N.text("Practice does not open locations. Play a location card to advance.")
+	practice.disabled = not PROGRESSION.is_unlocked(progress, world, 0)
+	top.add_child(practice)
+	var practice_content := HBoxContainer.new()
+	practice.add_child(practice_content)
+	practice_content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	practice_content.offset_left = 14
+	practice_content.offset_right = -14
+	practice_content.offset_top = 6
+	practice_content.offset_bottom = -6
+	practice_content.alignment = BoxContainer.ALIGNMENT_CENTER
+	practice_content.add_theme_constant_override("separation", 8)
+	var icon := TextureRect.new()
+	icon.texture = load("res://assets/ui/practice.svg")
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = Vector2(32, 32)
+	practice_content.add_child(icon)
+	var caption := VBoxContainer.new()
+	caption.alignment = BoxContainer.ALIGNMENT_CENTER
+	caption.add_theme_constant_override("separation", 0)
+	practice_content.add_child(caption)
+	caption.add_child(make_label(L10N.text("Training"), 20, Color("eefaff")))
+	caption.add_child(make_label(L10N.text("No progress"), 15, Color("ffe49b")))
+	ignore_card_mouse(practice_content)
 	var instruction := make_label(L10N.text("Each victory opens the next location. Choose first, then solve on your own."), 19, Color("c1dcff"))
 	instruction.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(instruction)
-	var scroll := ScrollContainer.new()
+	var scroll := preload("res://scripts/ui/TouchScroll.gd").new()
 	scroll.name = "SublevelScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	root.add_child(scroll)
 	var grid := GridContainer.new()
 	grid.name = "SublevelGrid"
-	grid.columns = 3
+	grid.columns = 2
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 14)
 	grid.add_theme_constant_override("v_separation", 14)
 	scroll.add_child(grid)
-	scroll.resized.connect(func(): grid.columns = clampi(int((scroll.size.x - 16) / 360), 1, 3))
+	scroll.resized.connect(func(): grid.columns = clampi(int((scroll.size.x + 14) / 440), 1, 2))
 	for i in range(PROGRESSION.levels(world).size()):
 		grid.add_child(make_sublevel_card(i))
-	var practice := make_button(L10N.text("PRACTICE • NO UNLOCKS"), start_level_practice, Color("4260a4"), 320, 50, 19)
-	practice.name = "PracticeOnly"
-	practice.tooltip_text = L10N.text("Practice does not open locations. Play a location card to advance.")
-	practice.disabled = not PROGRESSION.is_unlocked(progress, world, 0)
-	root.add_child(practice)
-	root.add_child(make_button(L10N.text("BACK"), show_menu, Color("4260a4"), 180, 50, 19))
 
 func make_sublevel_card(index: int) -> Button:
 	var available: bool = PROGRESSION.is_unlocked(progress, world, index)
 	var completed: bool = bool(progress.get("completed_levels", {}).get(PROGRESSION.id_for(world, index), false))
 	var choice: bool = PROGRESSION.input_mode(index) == "choices"
 	var color := Color("28cfe6") if choice else Color("bc8aff")
-	var card := make_button("", func(): select_level(index), color if available else Color("425473"), 280, 360, 20)
+	var card := make_button("", func(): select_level(index), color if available else Color("425473"), 320, 480, 20)
 	card.name = "Sublevel_%d" % index
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.disabled = not available
@@ -738,7 +794,7 @@ func make_sublevel_card(index: int) -> Button:
 	image.texture = LOCATIONS.texture(world, index)
 	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	image.custom_minimum_size.y = 112
+	image.custom_minimum_size.y = 190
 	if not available:
 		var blur := ShaderMaterial.new()
 		blur.shader = preload("res://assets/shaders/locked_location.gdshader")
@@ -751,12 +807,12 @@ func make_sublevel_card(index: int) -> Button:
 		lock.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	content.add_child(image)
 	var status: String = L10N.text("Completed · replay") if completed else L10N.text("Ready to explore") if available else L10N.text("Locked")
-	content.add_child(make_card_label("%02d  ·  %s" % [index + 1, status], 15, Color("ffe49b")))
-	content.add_child(make_card_label(LOCATIONS.title(world, index), 19, Color("c8ecff")))
-	content.add_child(make_card_label(L10N.text(PROGRESSION.TRACKS[world - 1][int(index / 2)]), 21, Color.WHITE))
+	content.add_child(make_card_label("%02d  ·  %s" % [index + 1, status], 20, Color("ffe49b")))
+	content.add_child(make_card_label(LOCATIONS.title(world, index), 26, Color("c8ecff")))
+	content.add_child(make_card_label(L10N.text(PROGRESSION.TRACKS[world - 1][int(index / 2)]), 26, Color.WHITE))
 	var explanation: String = L10N.text("Choose the correct answer from 4 options.\nYou have 5 seconds per example.") if choice else L10N.text("Solve the same skill on your own.\nType your answer using the keypad.")
-	content.add_child(make_card_label(explanation, 17, Color("dce8ff")))
-	var footer := make_card_label(L10N.text("Choose · 5 seconds") if choice else L10N.text("Enter · reinforcement"), 16, color.lightened(0.25))
+	content.add_child(make_card_label(explanation, 21, Color("dce8ff")))
+	var footer := make_card_label(L10N.text("Choose · 5 seconds") if choice else L10N.text("Enter · reinforcement"), 20, color.lightened(0.25))
 	footer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	footer.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	content.add_child(footer)
@@ -827,7 +883,7 @@ func build_battle() -> void:
 	root.add_child(top_panel)
 	var top := HBoxContainer.new()
 	top.alignment = BoxContainer.ALIGNMENT_CENTER
-	top.add_theme_constant_override("separation", 16)
+	top.add_theme_constant_override("separation", 10)
 	top_panel.add_child(top)
 	shield_label = make_label("100%", 20, Color("8de5ff"))
 	shield_label.custom_minimum_size.x = 64
@@ -843,26 +899,44 @@ func build_battle() -> void:
 	shield_bar = ProgressBar.new()
 	shield_bar.max_value = 100
 	shield_bar.value = 100
-	shield_bar.custom_minimum_size = Vector2(220, 22)
+	shield_bar.custom_minimum_size = Vector2(160, 22)
 	shield_bar.set_script(preload("res://scripts/ui/ShieldMeter.gd"))
 	shield_bar.custom_minimum_size.y = 28
 	shield_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	top.add_child(shield_bar)
-	header = make_label(L10N.text("WORLD %d • %s") % [PROGRESSION.WORLD_ORDER.find(world) + 1, L10N.text(WORLD_NAMES[world - 1])], 22, Color("ffe270"))
+	if progress.rewards.owned.has("repair"):
+		var repair := make_button("+15", use_repair, Color("2865ad"), 110, 64, 20)
+		repair.name = "BattleRepair"
+		repair.tooltip_text = L10N.text("Repair pulse restores 15 shield once per mission.")
+		var repair_caption: Label = repair.get_node("Caption")
+		repair_caption.offset_left = 42
+		var wrench := TextureRect.new()
+		wrench.texture = load("res://assets/ui/repair.svg")
+		wrench.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		wrench.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		wrench.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		repair.add_child(wrench)
+		wrench.position = Vector2(13, 16)
+		wrench.size = Vector2(30, 30)
+		top.add_child(repair)
+	header = make_label(L10N.text("WORLD %d") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 18, Color("ffe270"))
+	header.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(header)
-	energy_label = make_label(L10N.text("ENERGY 50  •  COMBO 0"), 20, Color("ffd85d"))
-	energy_label.custom_minimum_size.x = 250
+	energy_label = make_label(L10N.text("ENERGY 50  •  COMBO 0"), 18, Color("ffd85d"))
+	energy_label.custom_minimum_size.x = 200
 	top.add_child(energy_label)
-	info = make_label("", 16, Color.WHITE)
+	info = make_label("", 14, Color.WHITE)
 	info.custom_minimum_size.x = 92
 	top.add_child(info)
+	top.add_child(make_button(L10N.text("◀ EXIT"), exit_mission, Color("4f8cdb"), 120, 64, 20))
 
 	art = Control.new()
 	art.set_script(SCENE_SCRIPT)
 	art.call("set_world", world)
 	art.call("set_location", LOCATIONS.texture(world, level))
-	art.custom_minimum_size.y = 204
+	art.set("actor_layout_scale", 0.6 if PROGRESSION.input_mode(level) == "numeric" else 1.0)
+	art.custom_minimum_size.y = 132 if PROGRESSION.input_mode(level) == "numeric" else 204
 	art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	root.add_child(art)
 	var location_caption := make_label(LOCATIONS.title(world, level) + " · " + L10N.text(PROGRESSION.TRACKS[world - 1][int(level / 2)]), 16, Color("bfe8ff"))
@@ -874,26 +948,24 @@ func build_battle() -> void:
 	root.add_child(question_card)
 	var qbox := VBoxContainer.new()
 	qbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	qbox.add_theme_constant_override("separation", 8)
+	qbox.add_theme_constant_override("separation", 4)
 	question_card.add_child(qbox)
-	var question_row := Control.new()
-	question_row.custom_minimum_size.y = 75
+	var question_row := HBoxContainer.new()
+	question_row.add_theme_constant_override("separation", 12)
 	question_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	qbox.add_child(question_row)
-	question_label = make_label("7 × 8 = ?", 52, Color.WHITE)
+	hint_button = make_button(L10N.text("✦ HINT 1/3  -25"), use_hint, Color("9d50ff"), 220, 64, 20)
+	question_row.add_child(hint_button)
+	hint_close_button = make_button(L10N.text("CONTINUE ▶"), close_hint, Color("2865ad"), 220, 64, 20)
+	hint_close_button.visible = false
+	question_row.add_child(hint_close_button)
+	question_label = make_label("7 × 8 = ?", 46, Color.WHITE)
+	question_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	question_row.add_child(question_label)
-	question_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var timer_shell := VBoxContainer.new()
 	question_row.add_child(timer_shell)
-	timer_shell.custom_minimum_size = Vector2(150, 56)
-	timer_shell.anchor_left = 1.0
-	timer_shell.anchor_right = 1.0
-	timer_shell.anchor_top = 0.0
-	timer_shell.anchor_bottom = 0.0
-	timer_shell.offset_left = -168.0
-	timer_shell.offset_right = -12.0
-	timer_shell.offset_top = 5.0
-	timer_shell.offset_bottom = 64.0
+	timer_shell.custom_minimum_size = Vector2(142, 56)
+	timer_shell.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	timer_shell.alignment = BoxContainer.ALIGNMENT_CENTER
 	timer_label = make_label("8.0 s", 23, Color("ffd85b"))
 	timer_shell.add_child(timer_label)
@@ -901,28 +973,18 @@ func build_battle() -> void:
 	timer_bar.custom_minimum_size = Vector2(142, 13)
 	style_progress(timer_bar, Color("ffc857"))
 	timer_shell.add_child(timer_bar)
+	var skip := make_button(L10N.text("↻ SKIP  -%d SHIELD") % (20 - FLEET.ARMOR[FLEET.ship_index(str(progress.rewards.equipped))]), func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 64, 20)
+	skip.name = "BattleSkip"
+	question_row.add_child(skip)
 	feedback = make_label("", 22, Color("a7f3d0"))
 	feedback.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	qbox.add_child(feedback)
 
 	answer_area = VBoxContainer.new()
-	answer_area.custom_minimum_size.y = 203
+	answer_area.custom_minimum_size.y = 81
 	answer_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(answer_area)
 
-	var footer := HBoxContainer.new()
-	footer.alignment = BoxContainer.ALIGNMENT_CENTER
-	footer.add_theme_constant_override("separation", 12)
-	root.add_child(footer)
-	hint_button = make_button(L10N.text("✦ HINT 1/3  -25"), use_hint, Color("9d50ff"), 230, 51, 19)
-	footer.add_child(hint_button)
-	hint_close_button = make_button(L10N.text("CONTINUE ▶"), close_hint, Color("2865ad"), 165, 51, 19)
-	hint_close_button.visible = false
-	footer.add_child(hint_close_button)
-	footer.add_child(make_button(L10N.text("↻ SKIP  -%d SHIELD") % (20 - FLEET.ARMOR[FLEET.ship_index(str(progress.rewards.equipped))]), func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 51, 19))
-	footer.add_child(make_button(L10N.text("◀ EXIT"), exit_mission, Color("4f8cdb"), 125, 51, 19))
-	if progress.rewards.owned.has("repair"):
-		footer.add_child(make_button(L10N.text("REPAIR +15"), use_repair, Color("2865ad"), 160, 51, 18))
 	art.call("configure_encounter", str(progress.rewards.equipped), str(progress.rewards.weapon), encounter_data)
 	update_hud()
 	update_phase_label()
@@ -995,10 +1057,11 @@ func next_question() -> void:
 		question_limit += 8.0
 	hint_used = false
 	hint_stage = 0
+	hint_button.visible = true
 	hint_visible = false
 	hint_close_button.visible = false
 	hint_texts = MathEngine.hint_stages(question, randf() < 0.5 and int(question.world) > 1)
-	hint_button.text = L10N.text("✦ HINT 1/3  -25")
+	hint_button.get_node("Caption").text = L10N.text("✦ HINT 1/3  -25")
 	question_active = true
 	input_value = ""
 	input_mode = PROGRESSION.input_mode(level)
@@ -1028,7 +1091,8 @@ func build_answers() -> void:
 		answer_area.add_child(center)
 		keypad = VBoxContainer.new()
 		keypad.set_script(KEYPAD_SCRIPT)
-		keypad.custom_minimum_size.x = 450
+		keypad.set("key_height", 64.0)
+		keypad.custom_minimum_size.x = 510
 		center.add_child(keypad)
 		keypad.call("set_value", "")
 		keypad.connect("key_pressed", Callable(self, "press_digit"))
@@ -1069,11 +1133,13 @@ func queue_review() -> void:
 		queue.append(retry)
 
 func show_hint_pause() -> void:
+	hint_button.visible = false
 	hint_visible = true
 	hint_close_button.visible = true
 	update_hud()
 
 func close_hint() -> void:
+	hint_button.visible = true
 	hint_visible = false
 	hint_close_button.visible = false
 	if question_active:
@@ -1097,7 +1163,7 @@ func use_hint() -> void:
 	question_limit += HINT_SECONDS[hint_stage]
 	hint_stage += 1
 	queue_review()
-	hint_button.text = L10N.text("✦ REVIEW HINT") if hint_stage == 3 else L10N.text("✦ HINT %d/3  -%d") % [hint_stage + 1, HINT_COSTS[hint_stage]]
+	hint_button.get_node("Caption").text = L10N.text("✦ REVIEW HINT") if hint_stage == 3 else L10N.text("✦ HINT %d/3  -%d") % [hint_stage + 1, HINT_COSTS[hint_stage]]
 	show_hint_pause()
 
 func resolve_answer(value: int, reason: String) -> void:
@@ -1209,7 +1275,7 @@ func finish_mission() -> void:
 	if passed and PROGRESSION.is_unlocked(progress, world, level + 1):
 		root.add_child(make_button(L10N.text("NEXT LOCATION ▶"), func(): select_level(level + 1), Color("2865ad"), 280, 56, 22))
 	root.add_child(make_button(L10N.text("◀  RETURN TO WORLD"), show_levels, Color("00e485"), 280, 68, 24))
-	root.add_child(make_button(L10N.text("◀  RETURN TO GALAXY"), show_menu, Color("425d88"), 280, 50, 20))
+	root.add_child(make_button(L10N.text("◀  RETURN TO GALAXY"), show_menu, Color("425d88"), 280, 64, 20))
 	var sp2 := Control.new()
 	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(sp2)
@@ -1314,6 +1380,8 @@ func equip_hangar(id: String) -> void:
 func use_repair() -> void:
 	if screen != "battle" or finished or pending_defeat or repair_used or not progress.rewards.owned.has("repair"): return
 	repair_used = true
+	var repair_button := find_child("BattleRepair", true, false)
+	if repair_button != null: repair_button.disabled = true
 	shield = mini(100, shield + 15)
 	feedback.text = L10N.text("Repair pulse used (+15 shield)")
 	update_hud()

@@ -47,7 +47,11 @@ static func encounter(world: int, level: int, minimum: int) -> Dictionary:
 		for w in range(WEAPON_IDS.size()):
 			if DRAW[w] <= POWER[s] and SHIP_COSTS[s] + WEAPON_COSTS[w] <= budget:
 				best = maxi(best, raw_damage(s, w))
-	return {"hp": best * minimum, "minimum": minimum, "budget": budget, "reference_damage": best, "tier": mini(4, int(ordinal / 23))}
+	var tier := mini(4, int(ordinal / 23))
+	# Location identity alone chooses the species, independently of retries or gear.
+	var pool := monster_pool(tier)
+	var monster_species: int = pool[ordinal % pool.size()]
+	return {"hp": best * minimum, "minimum": minimum, "budget": budget, "reference_damage": best, "tier": tier, "monster_species": monster_species}
 
 static func damage(ship: int, weapon: int, encounter_data: Dictionary) -> int:
 	# Focus assistance keeps starter equipment viable: at most 1.8x the ideal answers.

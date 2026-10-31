@@ -21,6 +21,12 @@ func run() -> void:
   assert(P.is_unlocked(host.progress, world, 0))
   assert(not P.is_unlocked(host.progress, world, 1))
  assert(SAVE.validate(host.progress))
+ host.select_world(6)
+ assert(host.world == 6 and host.screen == "menu")
+ host.open_world_locations(6)
+ assert(host.world == 6 and host.screen == "levels")
+ host.show_menu()
+ assert(host.find_child("WorldActions", true, false).get_child_count() == 2)
  for language in ["en", "uk"]:
   L10N.apply_language(language)
   for subtitle in host.WORLD_SUBTITLES:
@@ -38,11 +44,11 @@ func run() -> void:
    await process_frame
    await process_frame
    var grid: GridContainer = host.find_child("SublevelGrid", true, false)
-   assert(grid.columns == 3)
+   assert(grid.columns == 2)
    for card in grid.get_children():
     var preview: TextureRect = card.find_child("LocationPreview", true, false)
     assert(preview.texture.resource_path == host.LOCATIONS.asset_path(world, card.get_index()))
-    assert(card.size.x < 420)
+    assert(card.size.x > 420)
     var content: VBoxContainer = card.get_child(1)
     assert(content.get_combined_minimum_size().y <= card.size.y - 30, "Content overflow: " + str(world) + " / " + card.name)
    if world == 6 and language == "uk" and DisplayServer.get_name() != "headless":
@@ -80,7 +86,7 @@ func run() -> void:
     break
   assert(host.progress.parent_settings.independent_worlds)
  panel.free()
- for width in [960, 720]:
+ for width in [1600, 960, 720]:
   root.content_scale_size = Vector2i(width, 720)
   root.size = Vector2i(width, 720)
   host.show_levels()
@@ -88,7 +94,7 @@ func run() -> void:
   await process_frame
   var grid: GridContainer = host.find_child("SublevelGrid", true, false)
   assert(grid.size.x <= width)
-  assert(grid.columns == (2 if width == 960 else 1))
+  assert(grid.columns == (2 if width >= 960 else 1))
  host.free()
  print("Location layout, translations and independent worlds tests passed")
  quit()

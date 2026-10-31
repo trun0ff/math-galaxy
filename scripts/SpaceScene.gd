@@ -6,13 +6,14 @@ const FLEET = preload("res://scripts/FleetBalance.gd")
 const MONSTER_MOTION = [0, 1, 2, 3, 1, 3, 4, 1, 2, 3, 1, 4, 4]
 
 func monster_pose(species: int) -> Dictionary:
-	var charge := clampf((0.36 - enemy_attack_timer) / 0.14, 0, 1) if enemy_attack_timer > 0 else 0.0
+	var charge := smoothstep(0.0, 1.0, clampf((0.36 - enemy_attack_timer) / 0.14, 0, 1)) * smoothstep(0.16, 0.22, enemy_attack_timer) if enemy_attack_timer > 0 else 0.0
 	var recoil := sin(clampf((0.22 - enemy_attack_timer) / 0.22, 0, 1) * PI) if enemy_attack_timer > 0 else 0.0
 	return {"charge": charge, "recoil": recoil, "kind": MONSTER_MOTION[species]}
 
 const RIG = preload("res://scripts/MonsterRig.gd")
 const MONSTER_PARTS = RIG.PARTS
 
+var actor_layout_scale := 1.0
 var single_encounter := false
 var encounter_species := 0
 var attack_damage := 1
@@ -32,7 +33,7 @@ func configure_encounter(ship: String, weapon: String, data: Dictionary) -> void
 	attack_damage = FLEET.damage(ship_variant, FLEET.weapon_index(weapon), data)
 	incoming_damage = 20 - FLEET.ARMOR[ship_variant]
 	var pool: Array = FLEET.monster_pool(int(data.tier))
-	encounter_species = int(pool.pick_random())
+	encounter_species = int(data.get("monster_species", pool[0]))
 	enemy_max_hp = int(data.hp)
 	enemy_hp = enemy_max_hp
 	display_hp = enemy_hp
@@ -285,7 +286,7 @@ func update_actors() -> void:
 	if not equipped_ship.is_empty():
 		engine_color = Color(FLEET.SHIP_TINTS[ship_variant])
 	ship_actor.texture = FLEET.ship_texture(equipped_ship) if not equipped_ship.is_empty() else PLAYER_TEXTURES[clampi(ship_variant, 0, 2)]
-	ship_actor.size = Vector2(235, 235 * float(ship_actor.texture.get_height()) / float(ship_actor.texture.get_width()))
+	ship_actor.size = Vector2(235, 235 * float(ship_actor.texture.get_height()) / float(ship_actor.texture.get_width())) * actor_layout_scale
 	ship_actor.position = ship_position() - ship_actor.size * 0.5
 	if damage_timer > 0.0:
 		ship_actor.position += Vector2(sin(time_passed * 85) * 3, cos(time_passed * 67) * 2)
@@ -297,8 +298,8 @@ func update_actors() -> void:
 	var species := visual_species()
 	monster_actor.texture = FLEET.monster_texture(species) if single_encounter else ENEMY_TEXTURES[species]
 	var pose := monster_pose(species)
-	var scale_factor := 1.35 if boss_mode else 1.0
-	monster_actor.size = Vector2(155 * float(monster_actor.texture.get_width()) / float(monster_actor.texture.get_height()), 155) * scale_factor
+	var scale_factor := 1.35 if single_encounter or boss_mode else 1.0
+	monster_actor.size = Vector2(155 * float(monster_actor.texture.get_width()) / float(monster_actor.texture.get_height()), 155) * scale_factor * actor_layout_scale
 	monster_actor.pivot_offset = monster_actor.size * 0.5
 	monster_actor.rotation = 0.0
 	monster_actor.position = enemy_position() - monster_actor.size * 0.5
@@ -353,7 +354,7 @@ func draw_foreground(canvas: Control) -> void:
 	var ship := ship_position()
 	var enemy := enemy_position()
 	if enemy_defeated <= 0 and not encounter_defeated:
-		var scale_factor := 1.35 if boss_mode else 1.0
+		var scale_factor := 1.35 if single_encounter or boss_mode else 1.0
 		draw_enemy_hp(canvas, Vector2(enemy.x, minf(size.y - 19, enemy.y + 77.5 * scale_factor + 7)))
 		if enemy_impact > 0:
 			var flash := enemy_impact / 0.55

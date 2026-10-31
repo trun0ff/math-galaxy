@@ -4,8 +4,10 @@ signal key_pressed(key: String)
 
 const FANCY = preload("res://scripts/ui/FancyButton.gd")
 const BASE := Color("1689c4")
-const EDGE := Color("29d3ff")
+const EDGE := Color("2c86ff")
 const TEXT := Color("eefaff")
+
+@export var key_height: float = 44.0
 
 var display: Label
 var current_value := ""
@@ -29,11 +31,11 @@ func _ready() -> void:
 	grid.add_theme_constant_override("v_separation", 3)
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_child(grid)
-	for key in ["7", "8", "9", "4", "5", "6", "1", "2", "3", "⌫", "0", "OK"]:
+	for key in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", "0", "OK"]:
 		var button := Button.new()
 		button.set_script(FANCY)
 		button.text = ""
-		button.custom_minimum_size = Vector2(112, 44)
+		button.custom_minimum_size = Vector2(112, key_height)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.focus_mode = Control.FOCUS_NONE
 		button.add_theme_font_size_override("font_size", 24)
@@ -62,7 +64,7 @@ func _ready() -> void:
 		caption.text = key
 		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		caption.add_theme_font_size_override("font_size", 23)
+		caption.add_theme_font_size_override("font_size", 28 if key_height >= 60 else 23)
 		caption.add_theme_color_override("font_color", TEXT)
 		caption.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE

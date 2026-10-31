@@ -4,6 +4,19 @@ const P = preload("res://scripts/LearningProgression.gd")
 
 func _initialize() -> void:
  var progress: Dictionary = {"completed_levels": {}, "level_evidence": {}, "legacy_unlocked_world": 1, "mission_sequence": 1}
+ var independent: Dictionary = {"parent_settings": {"independent_worlds": true}, "completed_levels": {}}
+ assert(P.continue_target(independent) == {"world": 1, "level": 0})
+ independent.completed_levels["1:0"] = true
+ assert(P.continue_target(independent) == {"world": 1, "level": 1})
+ independent.completed_levels["6:2"] = true
+ assert(P.continue_target(independent) == {"world": 6, "level": 3})
+ independent.completed_levels["6:19"] = true
+ assert(P.continue_target(independent) == {"world": 2, "level": 0})
+ independent.completed_levels.clear()
+ for campaign_world in P.WORLD_ORDER:
+  for campaign_level in range(P.levels(campaign_world).size()):
+   independent.completed_levels[P.id_for(campaign_world, campaign_level)] = true
+ assert(P.continue_target(independent).is_empty())
  assert(P.is_unlocked(progress, 1, 0))
  assert(not P.is_unlocked(progress, 1, 1))
  assert(not P.is_unlocked(progress, 5, P.levels(5).size()))

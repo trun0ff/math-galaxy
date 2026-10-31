@@ -44,6 +44,21 @@ static func is_unlocked(progress: Dictionary, world: int, level: int) -> bool:
   return bool(progress.get("completed_levels", {}).get(id_for(previous_world(world), levels(previous_world(world)).size() - 1), false))
  return bool(progress.get("completed_levels", {}).get(id_for(world, level - 1), false))
 
+# Continue after the furthest victory in campaign order, ignoring independent unlocks.
+static func continue_target(progress: Dictionary) -> Dictionary:
+ var route: Array[Dictionary] = []
+ var last_completed: int = -1
+ for world in WORLD_ORDER:
+  for level in range(levels(world).size()):
+   route.append({"world": world, "level": level})
+   if bool(progress.get("completed_levels", {}).get(id_for(world, level), false)):
+    last_completed = route.size() - 1
+ for index in range(last_completed + 1, route.size()):
+  var target: Dictionary = route[index]
+  if is_unlocked(progress, int(target.world), int(target.level)):
+   return target
+ return {}
+
 static func requirement(progress: Dictionary, world: int, level: int) -> String:
  if is_unlocked(progress, world, level): return L10N.text("Available")
  if level == 0: return L10N.text("Complete World %d final challenge") % WORLD_ORDER.find(world)
