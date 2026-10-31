@@ -37,15 +37,26 @@ a difficulty pool, HP persists across phases, and damage/armor follow
 `FleetBalance.gd`. Existing three hulls and three weapon effects remain available.
 
 
-## Animation coverage
+## Animation coverage and isolation
 
-All 13 hulls use the engine shader both in battle and hangar previews. The shader
-finds bright saturated exhaust throughout the left side, rather than a fixed
-pair of nozzle coordinates. Painted flames ripple and pulse without adding a
-second detached flame sprite.
+All 13 hulls share the engine shader in battle and hangar previews. Each hull has
+inspected exhaust-only rectangles in `FleetBalance.ENGINE_REGIONS`. The shader
+never changes UV coordinates: travelling brightness and opacity animate the
+painted flames while hull/nozzle pixels remain unchanged. Bright blue or gold
+metal is never selected by an automatic colour mask.
 
-All 13 monsters have explicit motion profiles in `SpaceScene.MONSTER_MOTION`:
-organic breathing, mechanical appendage movement, crystal sway, soft-body and
-tentacle ripples, or wing/tail flex. Body motion, charge squash, firing lunge and
-recoil, impact flinch, flashes and persistent damage work for every species.
-`tests/test_actor_animation.gd` checks all hulls and species through these states.
+All 13 monsters use an authored rig in `MonsterRig.gd`: a jaw, up to eight
+hinged local appendages and up to six eye regions. Legs, claws, tails, wings,
+tentacles, antennae/horns move at independent phases. Eyelids sample nearby
+skin colour and blink automatically, including every visible eye on multi-eyed
+creatures. The mouth moves at rest and opens further on attacks. Node size,
+rotation and position remain fixed; damage keeps flashes and local flinches.
+
+`tests/test_actor_animation.gd` covers bindings, fixed monster transforms and
+attack/hit timing for every hull/species. `tests/render_actor_qa.gd` is a separate
+GPU regression, run without `--headless` and with
+`--rendering-method gl_compatibility`. It captures idle, attack and damage PNGs
+under `.test-user/animation-qa/` and compares idle frames pixel by pixel.
+Validated on the graphics renderer: all 26 actors animate inside their authored
+regions, with zero changed pixels outside those regions (including a small
+sampling margin). The captures were visually inspected as well.

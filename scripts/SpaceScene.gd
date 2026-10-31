@@ -6,18 +6,12 @@ const FLEET = preload("res://scripts/FleetBalance.gd")
 const MONSTER_MOTION = [0, 1, 2, 3, 1, 3, 4, 1, 2, 3, 1, 4, 4]
 
 func monster_pose(species: int) -> Dictionary:
-	var phase := time_passed * (2.4 + (species % 4) * 0.27) + species * 0.73
-	var kind: int = MONSTER_MOTION[species]
 	var charge := clampf((0.36 - enemy_attack_timer) / 0.14, 0, 1) if enemy_attack_timer > 0 else 0.0
 	var recoil := sin(clampf((0.22 - enemy_attack_timer) / 0.22, 0, 1) * PI) if enemy_attack_timer > 0 else 0.0
-	var breath := sin(phase) * (0.025 if kind == 3 else 0.012)
-	var impact := enemy_impact / 0.55
-	return {
-		"stretch": Vector2(1.0 + breath - charge * 0.035 + recoil * 0.08 + impact * 0.045, 1.0 - breath + charge * 0.045 - recoil * 0.06 - impact * 0.035),
-		"rotation": sin(phase * 0.7) * (0.018 if kind == 1 else 0.035) + sin(time_passed * 70) * impact * 0.045,
-		"offset": Vector2(charge * 5 - recoil * 19 + sin(time_passed * 76) * impact * 7, sin(phase) * 2.0 + cos(time_passed * 64) * impact * 5),
-		"charge": charge, "recoil": recoil, "kind": kind
-	}
+	return {"charge": charge, "recoil": recoil, "kind": MONSTER_MOTION[species]}
+
+const RIG = preload("res://scripts/MonsterRig.gd")
+const MONSTER_PARTS = RIG.PARTS
 
 var single_encounter := false
 var encounter_species := 0
@@ -180,7 +174,7 @@ func ship_position() -> Vector2:
 	return Vector2(size.x * 0.22 - retreat_distance, size.y * 0.51 + sin(time_passed * 2.6) * 5.0)
 
 func enemy_position() -> Vector2:
-	return Vector2(size.x * 0.78, size.y * 0.51 + sin(time_passed * 2.1) * 8.0)
+	return Vector2(size.x * 0.78, size.y * 0.51)
 
 func burst(at: Vector2, count: int, palette: Array[Color], speed: float = 165.0) -> void:
 	for i in range(count):
@@ -299,25 +293,27 @@ func update_actors() -> void:
 	ship_actor.flip_h = retreating
 	ship_actor.material.set_shader_parameter("clock", time_passed)
 	ship_actor.material.set_shader_parameter("engine_color", engine_color)
+	FLEET.configure_engine(ship_actor.material, FLEET.ship_index(equipped_ship) if not equipped_ship.is_empty() else [0, 2, 1][clampi(ship_variant, 0, 2)])
 	var species := visual_species()
 	monster_actor.texture = FLEET.monster_texture(species) if single_encounter else ENEMY_TEXTURES[species]
 	var pose := monster_pose(species)
 	var scale_factor := 1.35 if boss_mode else 1.0
-	monster_actor.size = Vector2(155 * float(monster_actor.texture.get_width()) / float(monster_actor.texture.get_height()), 155) * scale_factor * Vector2(pose.stretch)
+	monster_actor.size = Vector2(155 * float(monster_actor.texture.get_width()) / float(monster_actor.texture.get_height()), 155) * scale_factor
 	monster_actor.pivot_offset = monster_actor.size * 0.5
-	monster_actor.rotation = float(pose.rotation)
-	monster_actor.position = enemy_position() - monster_actor.size * 0.5 + Vector2(pose.offset)
+	monster_actor.rotation = 0.0
+	monster_actor.position = enemy_position() - monster_actor.size * 0.5
 	monster_actor.visible = enemy_defeated <= 0.0 and not encounter_defeated
 	var blink_phase := fposmod(time_passed + species * 0.71, 4.1)
 	var blink := maxf(0.0, 1.0 - absf(blink_phase - 3.7) / 0.13)
 	var attack_jaw := sin((1.0 - enemy_attack_timer / 0.36) * PI) if enemy_attack_timer > 0 else 0.0
-	var jaw := maxf(attack_jaw, enemy_impact * 2.2) + 0.08 * (0.5 + 0.5 * sin(time_passed * 2.5))
+	var jaw := maxf(attack_jaw, enemy_impact * 2.2) + 0.25 + 0.18 * sin(time_passed * 2.5 + species)
 	monster_actor.material.set_shader_parameter("damage_fraction", 1.0 - display_hp / float(enemy_max_hp))
 	monster_actor.material.set_shader_parameter("impact_flash", enemy_impact / 0.55)
 	monster_actor.material.set_shader_parameter("clock", time_passed)
 	monster_actor.material.set_shader_parameter("impact_color", shot_color)
 	monster_actor.material.set_shader_parameter("species", species)
 	monster_actor.material.set_shader_parameter("motion_kind", int(pose.kind))
+	RIG.configure(monster_actor.material, species)
 	monster_actor.material.set_shader_parameter("attack_charge", float(pose.charge))
 	monster_actor.material.set_shader_parameter("attack_recoil", float(pose.recoil))
 	monster_actor.material.set_shader_parameter("blink", blink)

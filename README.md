@@ -96,18 +96,18 @@ tests/test_storage_mission.gd, tests/run_tests.ps1 и Godot UID новых GDScr
 World display order is multiplication / division at each difficulty: table facts,
 two digits by one digit, three digits by one digit, then two digits by two digits
 and advanced exact division. Stable internal world IDs are `1, 6, 2, 7, 3, 8, 4, 5`.
-Each skill has a choice sublevel (exactly 5 seconds per question), followed by a
-numeric reinforcement sublevel. Both modes require their own completion evidence;
+Each skill has a choice location (exactly 5 seconds per question), followed by a
+numeric reinforcement location. Both modes require their own completion evidence;
 choice answers do not count as independent mastery. World cards use a horizontal single-row strip with arrows, scrollbar, wheel
-and touch scrolling. Sublevels use a responsive grid of location cards.
-Version 14 migrates old completed sublevels to both halves and retains existing
+and touch scrolling. locations use a responsive grid of location cards.
+Version 14 migrates old completed locations to both halves and retains existing
 world IDs, statistics and parent timing settings. World overview paintings and dedicated location illustrations are stored in
 `assets/locations/`; earlier vector drafts remain in `assets/worlds/`.
 
 
 ### Location cards and independent world starts
 
-Sublevels now use a responsive grid with separate location art, skill title, mode
+locations now use a responsive grid with separate location art, skill title, mode
 instructions and completion status. Each choice/input pair shares a location.
 Each location has its own full painting under `assets/locations/world_N/`;
 the selected painting is used as the mission background and combat scenery.
@@ -116,7 +116,7 @@ pair shares one location; different skills never share an image.
 Division world portraits and menus use the new painted art.
 
 Parent dashboard → Settings → **Start each world independently** opens only the
-first sublevel of every world; sublevels within each world remain sequential.
+first location of every world; locations within each world remain sequential.
 The option saves immediately and survives timing saves, restoring default timing,
 profile reloads and imports. It defaults to off. Choice rounds remain 5 seconds;
 parent timing controls apply to typed answers.
@@ -130,20 +130,21 @@ armor, reactor capacity and a damage bonus. Weapon draw cannot exceed
 the reactor rating; switching to a smaller ship safely selects the free laser.
 Previously purchased hulls and balances remain intact. No save reset is needed.
 
-A sublevel fights one random monster from its difficulty pool. Phase changes
+A location fights one random monster from its difficulty pool. Phase changes
 never heal or replace it. Hits show traveling projectiles, damage numbers,
 a trailing health bar, flashes, accumulated scorch marks, glowing cracks and
 embers. A dead monster stays defeated until the results screen.
 
 `FleetBalance.gd` owns the tuning. The curriculum ordinal follows the displayed
-world order; its reference budget is ordinal × 360 × 0.8 (two evidence missions
-per sublevel, with 20% held back). Monster HP is 10 times the strongest compatible
+world order; its reference budget is ordinal × 180 × 0.8 (one victory
+per location, with 20% held back). Monster HP is 10 times the strongest compatible
 ship/weapon damage affordable within that budget, or 12 times for a final.
 The actual wallet and selected equipment never increase monster HP. Effective
 damage is capped at the reference damage, preserving the educational minimum,
 and focus assistance sets a damage floor that keeps any loadout within 18
 correct hits (22 on finals). Misses do not reduce monster HP; combat continues
-until victory or retreat. Existing independent-learning requirements still apply.
+until victory or retreat. A victory immediately opens the next location;
+independent-learning evidence remains separate from map travel.
 Extra hits beyond the mission target do not generate extra base crystals.
 
 Paid ships cost 1,200–17,500 crystals; weapons cost 1,000–15,500.
@@ -156,3 +157,32 @@ Armor reduces the 20-point enemy hit by 0–9; shield regeneration is unchanged.
 Run `tests/run_tests.ps1` for encounter math across every curriculum level and
 compatible loadout, purchase/equipment migration, reactor restrictions, enemy
 persistence, answer timing, saves, and the existing learning/UI suites.
+
+
+### Living monsters, locked art, and victory unlocks
+
+The UI uses worlds and locations (including parent reports and translated UI).
+Each location victory opens the next location after one mission, allowing mistakes.
+The monster must be defeated, at least 10 correct hits made (12 on finals), and
+the shield must remain positive. Practice/retreat does not unlock the map.
+The results screen offers the next location directly. Mastery evidence and
+independent-answer requirements stay in the learning diagnostics.
+
+Schema-14 profiles recover full recorded victories on their first load under the
+new map policy. Older history cannot reliably be remapped to paired locations,
+and unsaved victories cannot be reconstructed. Existing completion data survives.
+Saving now accepts boolean `correct` values inside learning history while still
+requiring numeric counters in the aggregate stats; a real answered mission,
+including two mistakes, is covered by a write/reload/unlock integration test.
+
+Locked cards blur only their picture, with a separate crisp vector lock.
+Titles, instructions and status text have no blur material. Small cached
+antialiased source thumbnails make the blur soft rather than sparsely sampled.
+
+`MonsterRig.gd` defines a jaw, up to eight independently hinged appendages and
+all visible eyes for every species. Paws, claws, wings, tails, tentacles and horns
+move in separate rhythms. Eyes blink, the mouth moves at rest, and attacks/hits
+have stronger local motion. Torso transforms stay fixed. Gameplay uses native
+Godot animation; `output/monster-animation-preview.gif` is a rendered preview.
+The GPU QA exports 40 frames, idle/attack/damage captures and both location menus
+under `.test-user/animation-qa/`.

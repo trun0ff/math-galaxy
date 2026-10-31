@@ -11,12 +11,32 @@ uniform int species = 0;
 uniform int motion_kind = 0;
 uniform float attack_charge = 0.0;
 uniform float attack_recoil = 0.0;
+uniform vec4 mouth_region = vec4(0.3, 0.65, 0.12, 0.1);
+uniform vec4 part_0 = vec4(0.0);
+uniform vec4 part_1 = vec4(0.0);
+uniform vec4 part_2 = vec4(0.0);
+uniform vec4 part_3 = vec4(0.0);
+uniform vec4 part_4 = vec4(0.0);
+uniform vec4 part_5 = vec4(0.0);
+uniform vec4 part_6 = vec4(0.0);
+uniform vec4 part_7 = vec4(0.0);
+uniform vec4 eye_0 = vec4(0.0);
+uniform vec4 eye_1 = vec4(0.0);
+uniform vec4 eye_2 = vec4(0.0);
+uniform vec4 eye_3 = vec4(0.0);
+uniform vec4 eye_4 = vec4(0.0);
+uniform vec4 eye_5 = vec4(0.0);
 uniform vec3 skin_color : source_color = vec3(0.25, 0.05, 0.4);
-vec4 eyelid(vec4 color, vec2 uv, vec2 center, vec2 radius) {
-	vec2 eye = (uv - center) / radius;
-	float boundary = (1.0 - smoothstep(0.88, 1.0, length(eye)));
-	float lid = smoothstep(1.0 - blink, 1.06 - blink, abs(eye.y));
-	color.rgb = mix(color.rgb, skin_color * (0.7 + 0.3 * (1.0 - abs(eye.y))), boundary * lid * step(0.01, blink));
+vec4 eyelid(vec4 color, vec2 uv, vec4 region, float offset, vec4 brow) {
+	if (region.z <= 0.0) { return color; }
+	vec2 eye = (uv - region.xy) / region.zw;
+	float boundary = 1.0 - smoothstep(0.86, 1.0, length(eye));
+	float cycle = mod(clock + float(species) * 0.37 + offset * 0.035, 3.2 + float(species % 3) * 0.4);
+	float closure = max(blink, 1.0 - smoothstep(0.0, 0.115, abs(cycle - 0.18)));
+	float cover = smoothstep(1.0 - closure, 1.055 - closure, abs(eye.y));
+	vec3 lid_color = brow.a > 0.5 ? brow.rgb : skin_color;
+	lid_color *= 0.8 + 0.2 * (1.0 - abs(eye.y));
+	color.rgb = mix(color.rgb, lid_color, boundary * cover * smoothstep(0.0, 0.07, closure));
 	return color;
 }
 float crack_distance(vec2 point, vec2 start, vec2 finish) {
@@ -24,42 +44,45 @@ float crack_distance(vec2 point, vec2 start, vec2 finish) {
 	float distance_along = clamp(dot(point - start, line) / dot(line, line), 0.0, 1.0);
 	return length(point - start - line * distance_along);
 }
+float part_mask(vec2 uv, vec4 region) {
+	if (region.z <= 0.0) { return 0.0; }
+	return 1.0 - smoothstep(0.65, 1.0, length((uv - region.xy) / region.zw));
+}
+vec2 articulate(vec2 uv, vec4 region, float phase) {
+	float mask = part_mask(uv, region);
+	if (mask == 0.0) { return vec2(0.0); }
+	float amplitude = motion_kind == 1 ? 0.10 : (motion_kind == 2 ? 0.065 : 0.20);
+	float angle = sin(phase) * amplitude * (1.0 + attack_charge * 0.35);
+	vec2 pivot = region.xy;
+	if (region.y > 0.65) { pivot.y -= region.w * 0.8; }
+	else { pivot.x += region.x < 0.5 ? region.z * 0.75 : -region.z * 0.75; }
+	vec2 point = uv - pivot;
+	vec2 rotated = vec2(cos(angle) * point.x + sin(angle) * point.y, -sin(angle) * point.x + cos(angle) * point.y);
+	return (rotated - point) * mask;
+}
 void fragment() {
 	vec2 uv = UV;
 	float phase = clock * (2.4 + float(species % 4) * 0.27) + float(species) * 0.73;
-	float edge = smoothstep(0.12, 0.42, abs(uv.x - 0.5));
-	if (motion_kind == 3) {
-		// Rippling lower tentacles and the soft outline of jelly/slug creatures.
-		uv.x += sin(phase * 1.8 + uv.y * 18.0) * smoothstep(0.4, 0.92, uv.y) * 0.014;
-		uv.y += sin(phase + uv.x * 12.0) * edge * 0.009;
-	} else if (motion_kind == 4) {
-		// Wings flex around their roots; tail tips sway independently.
-		uv.y += sin(phase * 2.0 + uv.x * 5.0) * edge * 0.022;
-		uv.x += sin(phase + uv.y * 8.0) * smoothstep(0.65, 0.94, uv.x) * 0.012;
-	} else if (motion_kind == 1) {
-		uv.y += sin(phase * 1.3 + floor(uv.x * 5.0)) * edge * 0.005;
-	} else if (motion_kind == 2) {
-		uv.x += sin(phase + uv.y * 11.0) * edge * 0.005;
-	} else {
-		uv.x += sin(phase) * sin(uv.y * 3.14159) * 0.006;
-	}
-	// Charge expands the throat; firing snaps it forward. Damage flinches the skin.
-	float face = 1.0 - smoothstep(0.25, 0.65, uv.x);
-	uv.x += face * (attack_charge * 0.009 - attack_recoil * 0.018);
-	uv.y += sin(uv.x * 24.0 + clock * 65.0) * impact_flash * 0.006;
-	// Deform only the lower jaw; the eye and skull stay anchored.
-	float lower = smoothstep(0.63, 0.85, uv.y) * (1.0 - smoothstep(0.68, 0.9, uv.x));
-	if (species != 1) { uv.y -= jaw * 0.035 * lower; uv.x += jaw * 0.012 * lower; }
-	else { uv.x += jaw * 0.008 * (1.0 - smoothstep(0.2, 0.5, uv.x)); }
+	// Hinged movement is local to each limb; head and torso stay anchored.
+	uv += articulate(UV, part_0, phase * 0.85 + 0.00);
+	uv += articulate(UV, part_1, phase * 1.08 + 1.70);
+	uv += articulate(UV, part_2, phase * 1.31 + 3.40);
+	uv += articulate(UV, part_3, phase * 0.85 + 5.10);
+	uv += articulate(UV, part_4, phase * 1.08 + 6.80);
+	uv += articulate(UV, part_5, phase * 1.31 + 8.50);
+	uv += articulate(UV, part_6, phase * 0.85 + 10.20);
+	uv += articulate(UV, part_7, phase * 1.08 + 11.90);
+	float mouth = part_mask(UV, mouth_region);
+	uv.y -= mouth * (jaw * 0.028 + sin(phase) * 0.004);
+	uv.x += mouth * (attack_charge * 0.009 - attack_recoil * 0.022);
+	uv.y += mouth * sin(clock * 60.0) * impact_flash * 0.006;
 	vec4 color = texture(TEXTURE, uv);
-	if (species == 0) { color = eyelid(color, uv, vec2(0.33, 0.43), vec2(0.13, 0.16)); }
-	if (species == 1) { color = eyelid(color, uv, vec2(0.40, 0.50), vec2(0.115, 0.15)); }
-	if (species == 2) {
-		color = eyelid(color, uv, vec2(0.38, 0.46), vec2(0.10, 0.12));
-		color = eyelid(color, uv, vec2(0.65, 0.36), vec2(0.07, 0.09));
-		color = eyelid(color, uv, vec2(0.56, 0.55), vec2(0.055, 0.07));
-		color = eyelid(color, uv, vec2(0.61, 0.68), vec2(0.055, 0.07));
-	}
+	color = eyelid(color, UV, eye_0, 0.0, texture(TEXTURE, eye_0.xy + vec2(0.0, -eye_0.w * 1.12)));
+	color = eyelid(color, UV, eye_1, 1.0, texture(TEXTURE, eye_1.xy + vec2(0.0, -eye_1.w * 1.12)));
+	color = eyelid(color, UV, eye_2, 2.0, texture(TEXTURE, eye_2.xy + vec2(0.0, -eye_2.w * 1.12)));
+	color = eyelid(color, UV, eye_3, 3.0, texture(TEXTURE, eye_3.xy + vec2(0.0, -eye_3.w * 1.12)));
+	color = eyelid(color, UV, eye_4, 4.0, texture(TEXTURE, eye_4.xy + vec2(0.0, -eye_4.w * 1.12)));
+	color = eyelid(color, UV, eye_5, 5.0, texture(TEXTURE, eye_5.xy + vec2(0.0, -eye_5.w * 1.12)));
 	color.rgb *= 1.0 - damage_fraction * 0.16;
 	// Scorch marks and branching fissures accumulate with lost HP.
 	for (int scar = 0; scar < 6; scar++) {

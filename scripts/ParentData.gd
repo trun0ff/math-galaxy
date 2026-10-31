@@ -60,9 +60,9 @@ static func summary(b: Dictionary) -> String:
 	if n == 0: return L10N.text("No data")
 	return L10N.text("%d/%d correct (%.1f%%), mean %.2fs, median %.2fs") % [int(b.get("ok", 0)), n, 100.0 * float(b.get("ok", 0)) / n, float(b.get("seconds", 0)) / n, median(b)]
 
-static func mission(p: Dictionary, world: int, level: int, seconds: float, hits: int, misses: int, won: bool) -> void:
+static func mission(p: Dictionary, world: int, level: int, seconds: float, hits: int, misses: int, won: bool, practice: bool = false) -> void:
 	var rows: Array = p.get("mission_history", [])
-	rows.append({"date": Time.get_datetime_string_from_system(true), "world": world, "level": level, "seconds": seconds, "hits": hits, "misses": misses, "won": won})
+	rows.append({"date": Time.get_datetime_string_from_system(true), "world": world, "level": level, "seconds": seconds, "hits": hits, "misses": misses, "won": won, "practice": practice})
 	p["mission_history"] = rows.slice(maxi(0, rows.size() - 100))
 	p["missions_recorded"] = int(p.get("missions_recorded", 0)) + 1
 

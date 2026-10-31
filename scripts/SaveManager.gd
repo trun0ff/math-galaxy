@@ -24,6 +24,11 @@ static func migrate(value: Dictionary) -> Dictionary:
 				remapped[base + str(index + 1)] = p[bucket][key]
 				if bucket == "completed_levels": remapped[base + str(index)] = p[bucket][key]
 			p[bucket] = remapped
+	if not bool(p.get("victory_map_migrated", false)):
+		# History before paired-location schema 14 uses different indices.
+		if int(value.get("schema_version", 0)) >= 14:
+			preload("res://scripts/LearningProgression.gd").restore_recorded_victories(p)
+		p["victory_map_migrated"] = true
 	REWARDS.migrate(p)
 	p["schema_version"] = VERSION
 	return p
@@ -104,14 +109,15 @@ static func validate(value: Variant) -> bool:
 			if not row is Dictionary or not row.has(key): return false
 	return true
 
-static func valid_tree(value: Variant, depth: int = 0) -> bool:
+static func valid_tree(value: Variant, depth: int = 0, context: String = "") -> bool:
 	if value is float and not is_finite(value): return false
 	if depth > 24: return false
 	if value is Dictionary:
 		for key in value:
 			var item: Variant = value[key]
 			if str(key) in ["coins", "schema_version", "mission_sequence", "workshop_sequence", "attempt_sequence", "legacy_unlocked_world", "unlocked_world", "n", "ok", "seconds", "world", "level", "hits", "misses", "attempts", "correct", "wrong", "total_ms", "independent_correct", "fast", "evidence_version", "review_stage", "next_review_day", "hints", "duration"]:
-				if not (item is int or item is float) or not is_finite(float(item)) or float(item) < -1: return false
+				var history_flag := str(key) == "correct" and context == "history" and item is bool
+				if not history_flag and (not (item is int or item is float) or not is_finite(float(item)) or float(item) < -1): return false
 			if str(key) in ["history", "step_results", "limits", "mission_history", "workshop_history"] and not item is Array: return false
 			if str(key) in ["history", "step_results", "mission_history", "workshop_history"]:
 				for row in item:
@@ -120,8 +126,8 @@ static func valid_tree(value: Variant, depth: int = 0) -> bool:
 			if str(key) == "times":
 				for time in item:
 					if not str(time).is_valid_int() or not (item[time] is int or item[time] is float) or float(item[time]) < 0: return false
-			if not valid_tree(item, depth + 1): return false
+			if not valid_tree(item, depth + 1, str(key)): return false
 	elif value is Array:
 		for item in value:
-			if not valid_tree(item, depth + 1): return false
+			if not valid_tree(item, depth + 1, context): return false
 	return true

@@ -134,3 +134,25 @@ static func complete(progress: Dictionary, world: int, level: int) -> bool:
  completed[id_for(world, level)] = true
  progress["completed_levels"] = completed
  return true
+
+
+# Map travel is a game reward. Mastery remains independently measured by can_pass.
+static func complete_victory(progress: Dictionary, world: int, level: int, hits: int, monster_hp: int, shield: int, practice: bool = false) -> bool:
+ if practice or monster_hp > 0 or shield <= 0 or hits < (12 if is_final(world, level) else 10): return false
+ if not is_unlocked(progress, world, level): return false
+ var completed: Dictionary = progress.get("completed_levels", {})
+ completed[id_for(world, level)] = true
+ progress["completed_levels"] = completed
+ return true
+
+static func restore_recorded_victories(progress: Dictionary) -> void:
+ # Old history contains no practice flag. Only full, won encounters qualify.
+ var completed: Dictionary = progress.get("completed_levels", {})
+ for row in progress.get("mission_history", []):
+  if not bool(row.get("won", false)) or bool(row.get("practice", false)): continue
+  var world := int(row.get("world", 0))
+  var level := int(row.get("level", -1))
+  if world < 1 or world > 8 or level < 0 or level >= levels(world).size(): continue
+  if int(row.get("hits", 0)) < (12 if is_final(world, level) else 10): continue
+  completed[id_for(world, level)] = true
+ progress["completed_levels"] = completed

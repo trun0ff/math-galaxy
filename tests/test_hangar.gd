@@ -28,6 +28,7 @@ func run() -> void:
 	assert(host.progress.coins == balance)
 	host.start_mission()
 	host.hits = 10
+	host.art.enemy_hp = 0
 	host.finish_mission()
 	balance = host.progress.coins
 	host.finish_mission()

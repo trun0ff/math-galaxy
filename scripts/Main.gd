@@ -689,7 +689,9 @@ func show_levels() -> void:
 	screen = "levels"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
 	root.add_child(make_label(L10N.text("WORLD %d - SUBLEVELS") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 34, Color("84d8ff")))
-	root.add_child(make_label(L10N.text("Explore a location: choose first, then solve on your own."), 19, Color("c1dcff")))
+	var instruction := make_label(L10N.text("Each victory opens the next location. Choose first, then solve on your own."), 19, Color("c1dcff"))
+	instruction.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	root.add_child(instruction)
 	var scroll := ScrollContainer.new()
 	scroll.name = "SublevelScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -705,7 +707,9 @@ func show_levels() -> void:
 	scroll.resized.connect(func(): grid.columns = clampi(int((scroll.size.x - 16) / 360), 1, 3))
 	for i in range(PROGRESSION.levels(world).size()):
 		grid.add_child(make_sublevel_card(i))
-	var practice := make_button(L10N.text("PRACTICE NEXT SKILL"), start_level_practice, Color("4260a4"), 320, 50, 19)
+	var practice := make_button(L10N.text("PRACTICE • NO UNLOCKS"), start_level_practice, Color("4260a4"), 320, 50, 19)
+	practice.name = "PracticeOnly"
+	practice.tooltip_text = L10N.text("Practice does not open locations. Play a location card to advance.")
 	practice.disabled = not PROGRESSION.is_unlocked(progress, world, 0)
 	root.add_child(practice)
 	root.add_child(make_button(L10N.text("BACK"), show_menu, Color("4260a4"), 180, 50, 19))
@@ -735,7 +739,16 @@ func make_sublevel_card(index: int) -> Button:
 	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	image.custom_minimum_size.y = 112
-	image.modulate = Color.WHITE if available else Color(0.6, 0.65, 0.75, 0.8)
+	if not available:
+		var blur := ShaderMaterial.new()
+		blur.shader = preload("res://assets/shaders/locked_location.gdshader")
+		blur.set_shader_parameter("blurred_image", preload("res://scripts/ui/LocationArt.gd").blurred_thumbnail(image.texture))
+		image.material = blur
+		var lock := Control.new()
+		lock.name = "LocationLock"
+		lock.set_script(preload("res://scripts/ui/LocationLock.gd"))
+		image.add_child(lock)
+		lock.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	content.add_child(image)
 	var status: String = L10N.text("Completed · replay") if completed else L10N.text("Ready to explore") if available else L10N.text("Locked")
 	content.add_child(make_card_label("%02d  ·  %s" % [index + 1, status], 15, Color("ffe49b")))
@@ -751,7 +764,7 @@ func make_sublevel_card(index: int) -> Button:
 		card.tooltip_text = PROGRESSION.requirement(progress, world, index)
 		footer.text = L10N.text("Finish the previous sublevel") if index > 0 else PROGRESSION.requirement(progress, world, index)
 	else:
-		card.tooltip_text = PROGRESSION.required_evidence(world, index)
+		card.tooltip_text = L10N.text("Defeat the monster to unlock the next location. Mistakes are allowed.")
 	ignore_card_mouse(content)
 	return card
 
@@ -1139,7 +1152,7 @@ func fail_mission() -> void:
 	if finished: return
 	finished = true
 	REWARD_MANAGER.settle(progress, int(progress.mission_sequence), false, hits, misses, 0, 0, Time.get_date_string_from_system(true), world)
-	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, false)
+	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, false, level_practice)
 	question_active = false
 	transition_delay = 0.0
 	save_progress()
@@ -1157,7 +1170,8 @@ func fail_mission() -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 18)
 	root.add_child(row)
-	row.add_child(make_button(L10N.text("↻  RETRY LEVEL"), start_mission, Color("00e485"), 260, 68, 24))
+	row.add_child(make_button(L10N.text("◀  RETURN TO WORLD"), show_levels, Color("00e485"), 280, 68, 24))
+	row.add_child(make_button(L10N.text("↻  RETRY LEVEL"), start_mission, Color("2865ad"), 260, 68, 24))
 	row.add_child(make_button(L10N.text("◀  RETURN TO GALAXY"), show_menu, Color("425d88"), 280, 68, 24))
 	var sp2 := Control.new()
 	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1168,15 +1182,16 @@ func finish_mission() -> void:
 	if shield <= 0 or pending_defeat:
 		fail_mission()
 		return
+	if art == null or int(art.get("enemy_hp")) > 0 or hits < question_target: return
 	finished = true
-	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, true)
+	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, true, level_practice)
 	question_active = false
 	var payout: Dictionary = REWARD_MANAGER.settle(progress, int(progress.mission_sequence), true, hits, misses, coins_earned, difficult_facts.size(), Time.get_date_string_from_system(true), world)
 	coins_earned = int(payout.amount)
 	progress["missions"] = int(progress.get("missions",0)) + 1
 	var passed: bool = false
 	if not level_practice:
-		passed = PROGRESSION.complete(progress, world, level)
+		passed = PROGRESSION.complete_victory(progress, world, level, hits, int(art.get("enemy_hp")), shield, level_practice)
 	save_progress()
 	screen = "results"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
@@ -1190,8 +1205,11 @@ func finish_mission() -> void:
 	var reward_note := make_label(str(payout.details), 17, Color("ffd85b"))
 	reward_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(reward_note)
-	root.add_child(make_label(L10N.text("SUBLEVEL PASSED") if passed else L10N.text("Practice completed - challenge needs more independent answers") if level_practice else L10N.text("More independent evidence needed - retry this level"), 21, Color("a7f3d0")))
-	root.add_child(make_button(L10N.text("◀  RETURN TO GALAXY"), show_menu, Color("00e485"), 280, 68, 24))
+	root.add_child(make_label(L10N.text("SUBLEVEL PASSED") if passed else L10N.text("Practice complete. Play the location to unlock the next one.") if level_practice else L10N.text("Victory recorded."), 21, Color("a7f3d0")))
+	if passed and PROGRESSION.is_unlocked(progress, world, level + 1):
+		root.add_child(make_button(L10N.text("NEXT LOCATION ▶"), func(): select_level(level + 1), Color("2865ad"), 280, 56, 22))
+	root.add_child(make_button(L10N.text("◀  RETURN TO WORLD"), show_levels, Color("00e485"), 280, 68, 24))
+	root.add_child(make_button(L10N.text("◀  RETURN TO GALAXY"), show_menu, Color("425d88"), 280, 50, 20))
 	var sp2 := Control.new()
 	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(sp2)

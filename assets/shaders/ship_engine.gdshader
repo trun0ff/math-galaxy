@@ -1,20 +1,21 @@
 shader_type canvas_item;
 uniform float clock = 0.0;
 uniform vec3 engine_color : source_color = vec3(0.2, 0.8, 1.0);
+uniform vec4 flame_region_0 = vec4(0.08, 0.36, 0.155, 0.45);
+uniform vec4 flame_region_1 = vec4(0.075, 0.52, 0.145, 0.61);
+uniform vec4 flame_region_2 = vec4(0.0);
+float flame_mask(vec2 uv, vec4 region) {
+	return smoothstep(region.x, region.x + 0.004, uv.x) * (1.0 - smoothstep(region.z - 0.004, region.z, uv.x))
+		* smoothstep(region.y, region.y + 0.004, uv.y) * (1.0 - smoothstep(region.w - 0.004, region.w, uv.y));
+}
 void fragment() {
-	vec2 uv = UV;
-	// All hulls have painted exhaust on the left, but at different heights.
-	// Follow bright saturated flame pixels instead of assuming two fixed nozzles.
-	vec4 original = texture(TEXTURE, uv);
-	float bright = max(original.r, max(original.g, original.b));
-	float saturation = bright - min(original.r, min(original.g, original.b));
-	float plume = (1.0 - smoothstep(0.23, 0.43, uv.x)) * smoothstep(0.4, 0.85, bright) * smoothstep(0.15, 0.5, saturation);
-	uv.x += plume * (sin(uv.y * 130.0 + clock * 34.0) * 0.008 + sin(clock * 27.0) * 0.012);
-	uv.y += plume * sin(uv.x * 150.0 - clock * 29.0) * 0.006;
-	vec4 sample_color = texture(TEXTURE, uv);
-	float flicker = 0.78 + 0.22 * sin(clock * 24.0 + uv.x * 80.0) * sin(clock * 39.0);
-	sample_color.rgb *= mix(1.0, flicker + 0.13, plume);
-	sample_color.rgb += engine_color * plume * (0.07 + 0.06 * sin(clock * 31.0));
-	sample_color.a *= mix(1.0, flicker, plume);
-	COLOR = sample_color * COLOR;
+	// Never offset texture coordinates: the hull and nozzle remain pixel-stable.
+	vec4 color = texture(TEXTURE, UV);
+	float flame = max(flame_mask(UV, flame_region_0), max(flame_mask(UV, flame_region_1), flame_mask(UV, flame_region_2)));
+	float wave = 0.5 + 0.5 * sin(clock * 28.0 - UV.x * 110.0 + UV.y * 24.0);
+	color.rgb *= 1.0 + flame * (wave * 0.32 - 0.12);
+	color.rgb += engine_color * flame * wave * 0.07;
+	// Travelling brightness/opacity makes the flame flicker without bending metal.
+	color.a *= 1.0 - flame * (1.0 - wave) * 0.22;
+	COLOR = color * COLOR;
 }
