@@ -35,3 +35,17 @@ These override the historical integration description above: the hull and
 weapon are equipped independently; one monster is chosen at mission start from
 a difficulty pool, HP persists across phases, and damage/armor follow
 `FleetBalance.gd`. Existing three hulls and three weapon effects remain available.
+
+
+## Animation coverage
+
+All 13 hulls use the engine shader both in battle and hangar previews. The shader
+finds bright saturated exhaust throughout the left side, rather than a fixed
+pair of nozzle coordinates. Painted flames ripple and pulse without adding a
+second detached flame sprite.
+
+All 13 monsters have explicit motion profiles in `SpaceScene.MONSTER_MOTION`:
+organic breathing, mechanical appendage movement, crystal sway, soft-body and
+tentacle ripples, or wing/tail flex. Body motion, charge squash, firing lunge and
+recoil, impact flinch, flashes and persistent damage work for every species.
+`tests/test_actor_animation.gd` checks all hulls and species through these states.

@@ -2,6 +2,23 @@ extends Control
 ## Textured fighters, monster variants and layered battle effects.
 
 const FLEET = preload("res://scripts/FleetBalance.gd")
+# One motion profile for every species, including the original three.
+const MONSTER_MOTION = [0, 1, 2, 3, 1, 3, 4, 1, 2, 3, 1, 4, 4]
+
+func monster_pose(species: int) -> Dictionary:
+	var phase := time_passed * (2.4 + (species % 4) * 0.27) + species * 0.73
+	var kind: int = MONSTER_MOTION[species]
+	var charge := clampf((0.36 - enemy_attack_timer) / 0.14, 0, 1) if enemy_attack_timer > 0 else 0.0
+	var recoil := sin(clampf((0.22 - enemy_attack_timer) / 0.22, 0, 1) * PI) if enemy_attack_timer > 0 else 0.0
+	var breath := sin(phase) * (0.025 if kind == 3 else 0.012)
+	var impact := enemy_impact / 0.55
+	return {
+		"stretch": Vector2(1.0 + breath - charge * 0.035 + recoil * 0.08 + impact * 0.045, 1.0 - breath + charge * 0.045 - recoil * 0.06 - impact * 0.035),
+		"rotation": sin(phase * 0.7) * (0.018 if kind == 1 else 0.035) + sin(time_passed * 70) * impact * 0.045,
+		"offset": Vector2(charge * 5 - recoil * 19 + sin(time_passed * 76) * impact * 7, sin(phase) * 2.0 + cos(time_passed * 64) * impact * 5),
+		"charge": charge, "recoil": recoil, "kind": kind
+	}
+
 var single_encounter := false
 var encounter_species := 0
 var attack_damage := 1
@@ -284,9 +301,12 @@ func update_actors() -> void:
 	ship_actor.material.set_shader_parameter("engine_color", engine_color)
 	var species := visual_species()
 	monster_actor.texture = FLEET.monster_texture(species) if single_encounter else ENEMY_TEXTURES[species]
-	var scale_factor := (1.35 if boss_mode else 1.0) * (1.0 + sin(time_passed * 3) * 0.025)
-	monster_actor.size = Vector2(155 * float(monster_actor.texture.get_width()) / float(monster_actor.texture.get_height()), 155) * scale_factor
-	monster_actor.position = enemy_position() - monster_actor.size * 0.5 + Vector2(sin(time_passed * 76) * enemy_impact * 13, cos(time_passed * 64) * enemy_impact * 9)
+	var pose := monster_pose(species)
+	var scale_factor := 1.35 if boss_mode else 1.0
+	monster_actor.size = Vector2(155 * float(monster_actor.texture.get_width()) / float(monster_actor.texture.get_height()), 155) * scale_factor * Vector2(pose.stretch)
+	monster_actor.pivot_offset = monster_actor.size * 0.5
+	monster_actor.rotation = float(pose.rotation)
+	monster_actor.position = enemy_position() - monster_actor.size * 0.5 + Vector2(pose.offset)
 	monster_actor.visible = enemy_defeated <= 0.0 and not encounter_defeated
 	var blink_phase := fposmod(time_passed + species * 0.71, 4.1)
 	var blink := maxf(0.0, 1.0 - absf(blink_phase - 3.7) / 0.13)
@@ -297,6 +317,9 @@ func update_actors() -> void:
 	monster_actor.material.set_shader_parameter("clock", time_passed)
 	monster_actor.material.set_shader_parameter("impact_color", shot_color)
 	monster_actor.material.set_shader_parameter("species", species)
+	monster_actor.material.set_shader_parameter("motion_kind", int(pose.kind))
+	monster_actor.material.set_shader_parameter("attack_charge", float(pose.charge))
+	monster_actor.material.set_shader_parameter("attack_recoil", float(pose.recoil))
 	monster_actor.material.set_shader_parameter("blink", blink)
 	monster_actor.material.set_shader_parameter("jaw", jaw)
 	monster_actor.material.set_shader_parameter("skin_color", ENEMY_COLORS[species % ENEMY_COLORS.size()].darkened(0.65))

@@ -6,6 +6,11 @@ uniform vec3 impact_color : source_color = vec3(0.5, 0.85, 1.0);
 uniform float blink = 0.0;
 uniform float jaw = 0.0;
 uniform int species = 0;
+// 0: organic, 1: mechanical/crustacean, 2: crystalline,
+// 3: soft body/tentacles, 4: wings/tail.
+uniform int motion_kind = 0;
+uniform float attack_charge = 0.0;
+uniform float attack_recoil = 0.0;
 uniform vec3 skin_color : source_color = vec3(0.25, 0.05, 0.4);
 vec4 eyelid(vec4 color, vec2 uv, vec2 center, vec2 radius) {
 	vec2 eye = (uv - center) / radius;
@@ -21,6 +26,27 @@ float crack_distance(vec2 point, vec2 start, vec2 finish) {
 }
 void fragment() {
 	vec2 uv = UV;
+	float phase = clock * (2.4 + float(species % 4) * 0.27) + float(species) * 0.73;
+	float edge = smoothstep(0.12, 0.42, abs(uv.x - 0.5));
+	if (motion_kind == 3) {
+		// Rippling lower tentacles and the soft outline of jelly/slug creatures.
+		uv.x += sin(phase * 1.8 + uv.y * 18.0) * smoothstep(0.4, 0.92, uv.y) * 0.014;
+		uv.y += sin(phase + uv.x * 12.0) * edge * 0.009;
+	} else if (motion_kind == 4) {
+		// Wings flex around their roots; tail tips sway independently.
+		uv.y += sin(phase * 2.0 + uv.x * 5.0) * edge * 0.022;
+		uv.x += sin(phase + uv.y * 8.0) * smoothstep(0.65, 0.94, uv.x) * 0.012;
+	} else if (motion_kind == 1) {
+		uv.y += sin(phase * 1.3 + floor(uv.x * 5.0)) * edge * 0.005;
+	} else if (motion_kind == 2) {
+		uv.x += sin(phase + uv.y * 11.0) * edge * 0.005;
+	} else {
+		uv.x += sin(phase) * sin(uv.y * 3.14159) * 0.006;
+	}
+	// Charge expands the throat; firing snaps it forward. Damage flinches the skin.
+	float face = 1.0 - smoothstep(0.25, 0.65, uv.x);
+	uv.x += face * (attack_charge * 0.009 - attack_recoil * 0.018);
+	uv.y += sin(uv.x * 24.0 + clock * 65.0) * impact_flash * 0.006;
 	// Deform only the lower jaw; the eye and skull stay anchored.
 	float lower = smoothstep(0.63, 0.85, uv.y) * (1.0 - smoothstep(0.68, 0.9, uv.x));
 	if (species != 1) { uv.y -= jaw * 0.035 * lower; uv.x += jaw * 0.012 * lower; }
