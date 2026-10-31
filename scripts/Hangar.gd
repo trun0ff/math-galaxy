@@ -54,7 +54,7 @@ static func show(host: Control, notice: String = "") -> void:
 			if hull_id == "default": host.equip_hangar(hull_id)
 			else: host.buy_hangar(hull_id)
 		, accent, 220, 48, 18)
-		button.disabled = equipped or (not owned and int(host.progress.coins) < int(REWARDS.CATALOG[id].cost))
+		button.disabled = equipped
 		card.add_child(button)
 	var upgrades := HBoxContainer.new()
 	upgrades.add_theme_constant_override("separation", 18)
@@ -74,7 +74,7 @@ static func show(host: Control, notice: String = "") -> void:
 		card.add_child(description)
 		var owned: bool = host.progress.rewards.owned.has(id)
 		var button: Button = host.make_button(L10N.text("OWNED") if owned else L10N.text("%d CRYSTALS") % int(item.cost), func(): host.buy_hangar(upgrade_id), Color("2865ad"), 220, 46, 18)
-		button.disabled = owned or int(host.progress.coins) < int(item.cost)
+		button.disabled = owned
 		card.add_child(button)
 	var details := VBoxContainer.new()
 	details.visible = false

@@ -2,7 +2,7 @@ extends RefCounted
 
 const L10N = preload("res://scripts/Localization.gd")
 
-const VERSION := 13
+const VERSION := 14
 const REWARDS = preload("res://scripts/RewardManager.gd")
 
 static func migrate(value: Dictionary) -> Dictionary:
@@ -12,6 +12,18 @@ static func migrate(value: Dictionary) -> Dictionary:
 		if not p.has(key): p[key] = {}
 	if not p.has("legacy_unlocked_world"):
 		p["legacy_unlocked_world"] = int(p.get("unlocked_world", 1))
+	if int(p.get("schema_version", 0)) < 14:
+		# Preserve old independent passes as both halves of the same skill.
+		for bucket in ["completed_levels", "level_evidence"]:
+			var remapped: Dictionary = {}
+			for key in p[bucket]:
+				var parts: PackedStringArray = str(key).split(":")
+				if parts.size() != 2: continue
+				var base: String = parts[0] + ":"
+				var index: int = int(parts[1]) * 2
+				remapped[base + str(index + 1)] = p[bucket][key]
+				if bucket == "completed_levels": remapped[base + str(index)] = p[bucket][key]
+			p[bucket] = remapped
 	REWARDS.migrate(p)
 	p["schema_version"] = VERSION
 	return p
@@ -63,7 +75,7 @@ static func validate(value: Variant) -> bool:
 	if not value is Dictionary or not value.get("skills") is Dictionary: return false
 	if not valid_tree(value): return false
 	if value.has("missions") and not (value.missions is int or value.missions is float): return false
-	if int(value.get("schema_version", 0)) > 13: return false
+	if int(value.get("schema_version", 0)) > VERSION: return false
 	for key in ["skills", "strategies", "workshop_steps", "completed_levels", "level_evidence", "parent_settings", "diagnostics", "parent_pin", "learning_config", "workshop_clean_streak", "workshop_totals", "rewards"]:
 		if value.has(key) and not value[key] is Dictionary: return false
 	for key in ["mission_history", "workshop_history"]:
@@ -82,7 +94,7 @@ static func validate(value: Variant) -> bool:
 	var settings: Dictionary = value.get("parent_settings", {})
 	if settings.has("duration") and not (settings.duration is float or settings.duration is int): return false
 	if settings.has("limits"):
-		if not settings.limits is Array or settings.limits.size() != 5: return false
+		if not settings.limits is Array or settings.limits.size() not in [5, 8]: return false
 		for number in settings.limits:
 			if not (number is float or number is int): return false
 	for row in value.get("mission_history", []):

@@ -44,7 +44,7 @@ func _initialize() -> void:
 	var loaded := S.load_profile(path)
 	assert(loaded.writable and loaded.warning == "")
 	assert(loaded.data.coins == 123 and loaded.data.legacy_unlocked_world == 3)
-	assert(loaded.data.skills["1_2_3"].correct == 5 and loaded.data.schema_version == 13)
+	assert(loaded.data.skills["1_2_3"].correct == 5 and loaded.data.schema_version == S.VERSION)
 	assert(S.write_save(path, loaded.data))
 	assert(S.read_profile(path + ".bak").coins == 123)
 	assert(S.write_text(path, "{broken"))

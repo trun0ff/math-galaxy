@@ -4,6 +4,8 @@ const L10N = preload("res://scripts/Localization.gd")
 
 const DATA = preload("res://scripts/ParentData.gd")
 const KEYPAD = preload("res://scripts/ui/NeonKeypad.gd")
+var pin_keypad: VBoxContainer
+var pin_exists := false
 var host: Control
 var body: VBoxContainer
 var pin := ""
@@ -16,6 +18,7 @@ var blocked_until := 0
 
 func setup(owner_node: Control) -> void:
 	host = owner_node
+	theme = preload("res://assets/ui/game_theme.tres")
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var bg := ColorRect.new()
 	bg.color = Color("07122d")
@@ -30,10 +33,12 @@ func setup(owner_node: Control) -> void:
 	margin.add_child(scroll)
 	body = VBoxContainer.new()
 	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override("separation", 12)
 	scroll.add_child(body)
 	gate()
 
 func clear() -> void:
+	pin_keypad = null
 	for child in body.get_children():
 		body.remove_child(child)
 		child.queue_free()
@@ -42,38 +47,72 @@ func clear() -> void:
 func label(text: String) -> Label:
 	var node := Label.new()
 	node.text = L10N.text(text)
+	node.add_theme_color_override("font_color", Color("cde6ff"))
+	node.add_theme_font_size_override("font_size", 20)
 	node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_child(node)
 	return node
 
 func button(text: String, action: Callable) -> void:
-	var node := Button.new()
-	node.text = L10N.text(text)
-	node.custom_minimum_size.y = 44
-	node.pressed.connect(action)
+	var node: Button = host.make_button(text, action, Color("2865ad"), 200, 60, 21)
+	node.custom_minimum_size.x = 0
+	var caption: Label = node.get_node("Caption")
+	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_child(node)
 
 func gate() -> void:
 	clear()
 	pin = ""
-	var exists: bool = host.progress.has("parent_pin") and not changing_pin
-	label(L10N.text("PARENT DASHBOARD — ") + (L10N.text("Enter PIN") if exists else L10N.text("Create a 4–8 digit PIN, then repeat it")))
-	label(L10N.text("Offline protection against accidental actions. This is not cryptographic security. PIN cannot be recovered here."))
-	notice = label("")
-	var keypad := VBoxContainer.new()
-	keypad.set_script(KEYPAD)
-	body.add_child(keypad)
-	keypad.connect("key_pressed", func(key: String):
-		if Time.get_ticks_msec() < blocked_until:
-			notice.text = L10N.text("Please wait 30 seconds.")
-			return
-		if key == "⌫": pin = pin.left(maxi(0, pin.length() - 1))
-		elif key == "OK":
-			check_pin(exists)
-			return
-		elif pin.length() < 8 and key.is_valid_int(): pin += key
-		keypad.call("set_value", "•".repeat(pin.length()))
-	)
+	pin_exists = host.progress.has("parent_pin") and not changing_pin
+	var heading := label(L10N.text("PARENT DASHBOARD"))
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	heading.add_theme_font_size_override("font_size", 34)
+	heading.add_theme_color_override("font_color", Color("72daff"))
+	var instruction := label(L10N.text("Enter PIN") if pin_exists else L10N.text("Create a 4–8 digit PIN, then repeat it"))
+	instruction.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	instruction.add_theme_font_size_override("font_size", 24)
+	var center := CenterContainer.new()
+	body.add_child(center)
+	var card := PanelContainer.new()
+	card.custom_minimum_size.x = 540
+	card.add_theme_stylebox_override("panel", host.space_panel(Color("0b1935"), Color("36bfff"), 18, 0.3))
+	center.add_child(card)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 10)
+	card.add_child(content)
+	notice = host.make_label("", 20, Color("ffd477"))
+	notice.custom_minimum_size.y = 30
+	notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(notice)
+	pin_keypad = VBoxContainer.new()
+	pin_keypad.name = "PinKeypad"
+	pin_keypad.set_script(KEYPAD)
+	content.add_child(pin_keypad)
+	pin_keypad.connect("key_pressed", handle_pin_key)
+	var keyboard_tip := label(L10N.text("Digits • Backspace to erase • Enter to confirm"))
+	keyboard_tip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	keyboard_tip.add_theme_color_override("font_color", Color("84b4d6"))
+	var security := label(L10N.text("Offline protection against accidental actions. This is not cryptographic security. PIN cannot be recovered here."))
+	security.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	security.add_theme_font_size_override("font_size", 17)
+	security.add_theme_color_override("font_color", Color("91a8c4"))
+
+func handle_pin_key(key: String) -> void:
+	if pin_keypad == null: return
+	if Time.get_ticks_msec() < blocked_until:
+		notice.text = L10N.text("Please wait 30 seconds.")
+		return
+	if key == "⌫": pin = pin.left(maxi(0, pin.length() - 1))
+	elif key == "OK": check_pin(pin_exists)
+	elif pin.length() < 8 and key.length() == 1 and key.is_valid_int(): pin += key
+	if is_instance_valid(pin_keypad): pin_keypad.call("set_value", "•".repeat(pin.length()))
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if pin_keypad == null or unlocked: return
+	var key: String = KEYPAD.key_from_event(event)
+	if key.is_empty(): return
+	handle_pin_key(key)
+	get_viewport().set_input_as_handled()
 
 func check_pin(exists: bool) -> void:
 	if pin.length() < 4:
@@ -127,7 +166,7 @@ func worlds() -> void:
 	clear()
 	button(L10N.text("Overview"), dashboard)
 	var d: Dictionary = host.progress.get("diagnostics", {})
-	for w in range(1, 6):
+	for w in host.PROGRESSION.WORLD_ORDER:
 		label(host.WORLD_NAMES[w - 1])
 		for category in ["independent", "choice", "assisted"]:
 			label(L10N.text(category) + ": " + DATA.summary(d.get("world/%d/%s" % [w, category], {})))
@@ -201,8 +240,8 @@ func settings() -> void:
 	button(L10N.text("Overview"), dashboard)
 	label(L10N.text("Missions: 10 examples; final challenges: 12. No mission timer."))
 	var inputs: Array = []
-	for i in range(5):
-		inputs.append(spin(L10N.text("World %d answer seconds: 5–180 (default %d)") % [i + 1, DATA.DEFAULT_LIMITS[i]], DATA.limits(host.progress)[i], 5, 180))
+	for i in range(8):
+		inputs.append(spin(L10N.text("World %d answer seconds: 5–180 (default %d)") % [host.PROGRESSION.WORLD_ORDER.find(i + 1) + 1, DATA.DEFAULT_LIMITS[i]], DATA.limits(host.progress)[i], 5, 180))
 	button(L10N.text("Save timing"), func():
 		var values: Array = []
 		for item in inputs: values.append(item.value)

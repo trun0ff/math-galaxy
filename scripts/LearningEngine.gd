@@ -19,8 +19,8 @@ static func criteria_for(progress: Dictionary, world: int) -> Dictionary:
 	var config: Dictionary = progress.get("learning_config", {})
 	var result: Dictionary = DEFAULT_CRITERIA.duplicate(true)
 	var limits: Array = [8.0, 20.0, 35.0, 60.0, 45.0]
-	result["fast_seconds"] = float(limits[clampi(world, 1, 5) - 1]) * 0.375
-	result["good_seconds"] = float(limits[clampi(world, 1, 5) - 1]) * 0.625
+	result["fast_seconds"] = float(limits[clampi(world, 1, 8) - 1]) * 0.375
+	result["good_seconds"] = float(limits[clampi(world, 1, 8) - 1]) * 0.625
 	result.merge(config.get("default", {}), true)
 	result.merge(config.get("worlds", {}).get(str(world), {}), true)
 	return result

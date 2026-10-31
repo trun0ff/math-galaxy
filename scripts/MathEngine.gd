@@ -23,6 +23,11 @@ static func generate(world: int) -> Dictionary:
 		4:
 			a = randi_range(10, 99); b = randi_range(10, 99)
 			result = a * b
+		6, 7, 8:
+			sign_text = "÷"
+			b = randi_range(2, 9)
+			result = randi_range(2, 9) if world == 6 else randi_range(10, 99) if world == 7 else randi_range(100, 999)
+			a = result * b
 		_:
 			sign_text = "÷"
 			if randf() < 0.5:

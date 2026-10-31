@@ -1,5 +1,7 @@
 extends Control
 
+const UI_FONT = preload("res://assets/fonts/InterfaceFont.tres")
+const UI_THEME = preload("res://assets/ui/game_theme.tres")
 const L10N = preload("res://scripts/Localization.gd")
 
 const REWARD_MANAGER = preload("res://scripts/RewardManager.gd")
@@ -17,10 +19,10 @@ const WORKSHOP_ENGINE = preload("res://scripts/WorkshopEngine.gd")
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
 const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
 const FANCY_BUTTON = preload("res://scripts/ui/FancyButton.gd")
-const WORLD_ART = [preload("res://assets/worlds/1_lightning_clean.jpg"), preload("res://assets/worlds/2_desert_clean.jpg"), preload("res://assets/worlds/3_crystal_clean.jpg"), preload("res://assets/worlds/4_titan_clean.jpg"), preload("res://assets/worlds/5_blackhole_clean.jpg")]
+const WORLD_ART = [preload("res://assets/worlds/1_lightning_clean.jpg"), preload("res://assets/worlds/2_desert_clean.jpg"), preload("res://assets/worlds/3_crystal_clean.jpg"), preload("res://assets/worlds/4_titan_clean.jpg"), preload("res://assets/worlds/5_blackhole_clean.jpg"), preload("res://assets/worlds/6_tide.svg"), preload("res://assets/worlds/7_aurora.svg"), preload("res://assets/worlds/8_solar.svg")]
 const MENU_GALAXY = preload("res://assets/battle/menu_galaxy.jpg")
-const MENU_BACKGROUNDS = [preload("res://assets/battle/world_1_background.jpg"), preload("res://assets/battle/world_2_background.jpg"), preload("res://assets/battle/world_3_background.jpg"), preload("res://assets/battle/world_4_background.jpg"), preload("res://assets/battle/world_5_background.jpg")]
-const WORLD_SUBTITLES = ["TABLE 2-9", "2 DIGITS × 1", "3 DIGITS × 1", "2 DIGITS × 2", "EXACT DIVISION"]
+const MENU_BACKGROUNDS = [preload("res://assets/battle/world_1_background.jpg"), preload("res://assets/battle/world_2_background.jpg"), preload("res://assets/battle/world_3_background.jpg"), preload("res://assets/battle/world_4_background.jpg"), preload("res://assets/battle/world_5_background.jpg"), preload("res://assets/worlds/6_tide.svg"), preload("res://assets/worlds/7_aurora.svg"), preload("res://assets/worlds/8_solar.svg")]
+const WORLD_SUBTITLES = ["TABLE 2-9", "2 DIGITS × 1", "3 DIGITS × 1", "2 DIGITS × 2", "EXACT DIVISION", "TABLE ÷ 2–9", "2 DIGITS ÷ 1", "3 DIGITS ÷ 1"]
 const SAVE_MANAGER = preload("res://scripts/SaveManager.gd")
 const MISSION_MANAGER = preload("res://scripts/MissionManager.gd")
 var save_writable := true
@@ -28,7 +30,7 @@ var save_warning := ""
 const SAVE_PATH = "user://math_galaxy_progress.json"
 var question_target := 10
 const PHASE_NAMES := ["WARM-UP", "WORKSHOP", "SPACE BATTLE", "BOSS", "REWARDS"]
-const WORLD_NAMES := ["Lightning Academy", "Mechanic Desert", "Crystal Planet", "Titan City", "Black Hole"]
+const WORLD_NAMES := ["Lightning Academy", "Mechanic Desert", "Crystal Planet", "Titan City", "Black Hole", "Tidal Ocean", "Aurora Gardens", "Solar Forge"]
 const BACK := Color("07122d")
 const BLUE := Color("2388ef")
 
@@ -93,6 +95,7 @@ var art: Control
 var main_box: VBoxContainer
 
 func _ready() -> void:
+	theme = UI_THEME
 	L10N.initialize()
 	randomize()
 	load_progress()
@@ -137,6 +140,7 @@ func clear_screen() -> void:
 func make_label(value: String, font_size: int = 24, color: Color = Color.WHITE) -> Label:
 	var l := Label.new()
 	l.text = L10N.text(value)
+	l.add_theme_font_override("font", UI_FONT)
 	l.add_theme_font_size_override("font_size", font_size)
 	l.add_theme_color_override("font_color", color)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -166,9 +170,10 @@ func decorate_button_text(btn: Button, value: String, font_size: int = 21, color
 	var cap := Label.new()
 	cap.name = "Caption"
 	cap.text = L10N.text(value)
-	cap.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	cap.autowrap_mode = TextServer.AUTOWRAP_OFF
 	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cap.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	cap.add_theme_font_override("font", UI_FONT)
 	cap.add_theme_font_size_override("font_size", font_size)
 	cap.add_theme_color_override("font_color", color)
 	cap.add_theme_constant_override("outline_size", 2)
@@ -176,12 +181,16 @@ func decorate_button_text(btn: Button, value: String, font_size: int = 21, color
 	cap.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cap.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	btn.add_child(cap)
+	cap.offset_left = 20
+	cap.offset_right = -20
+	cap.offset_top = 6
+	cap.offset_bottom = -6
 
 func make_button(value: String, fn: Callable, color: Color = BLUE, min_x: float = 100.0, min_y: float = 56.0, font_size: int = 22) -> Button:
 	var btn := Button.new()
 	btn.set_script(FANCY_BUTTON)
 	btn.set("accent_color", color)
-	btn.custom_minimum_size = Vector2(min_x, min_y)
+	btn.custom_minimum_size = Vector2(maxf(min_x, UI_FONT.get_string_size(L10N.text(value), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 48), maxf(min_y, font_size + 24))
 	btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	btn.focus_mode = Control.FOCUS_NONE
 	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -238,6 +247,7 @@ func build_root(bg_texture: Texture2D = null) -> VBoxContainer:
 func make_stat_chip(icon: String, text: String) -> PanelContainer:
 	var p := PanelContainer.new()
 	p.custom_minimum_size = Vector2(180, 56)
+	p.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	p.add_theme_stylebox_override("panel", space_panel(Color("102548"), Color("2ca7ff"), 14, 0.22))
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -256,13 +266,31 @@ func show_menu() -> void:
 	var root := build_root(MENU_GALAXY)
 	var top := HBoxContainer.new()
 	top.alignment = BoxContainer.ALIGNMENT_END
-	top.add_child(Control.new())
+	var logo := TextureRect.new()
+	logo.name = "GameLogo"
+	logo.texture = load("res://assets/ui/math_galaxy_logo.png")
+	logo.custom_minimum_size = Vector2(240, 110)
+	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top.add_child(logo)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(spacer)
 	top.add_child(make_stat_chip("💎", L10N.text("Crystals %d") % progress.get("coins",0)))
 	top.add_child(make_stat_chip("🏅", L10N.text("Missions %d") % progress.get("missions",0)))
-	var settings := make_button("⚙", open_parent, Color("274784"), 58, 56, 24)
+	var settings := make_button("", open_parent, Color("274784"), 58, 56, 24)
+	var settings_icon := TextureRect.new()
+	settings_icon.texture = preload("res://assets/ui/settings.svg")
+	settings_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	settings_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	settings_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	settings.add_child(settings_icon)
+	settings_icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	settings_icon.offset_left = 16
+	settings_icon.offset_right = -16
+	settings_icon.offset_top = 15
+	settings_icon.offset_bottom = -15
 	top.add_child(make_button(L10N.text("HANGAR"), show_hangar, Color("2865ad"), 150, 56, 20))
 	top.add_child(settings)
 	var languages := HBoxContainer.new()
@@ -290,15 +318,16 @@ func show_menu() -> void:
 		languages.add_child(flag)
 	top.add_child(languages)
 	root.add_child(top)
-	root.add_child(make_label("MATH GALAXY", 56, Color("84d8ff")))
-	root.add_child(make_label(L10N.text("Learn multiplication. Power your spaceship."), 24, Color("d5e4ff")))
+	root.add_child(make_label(L10N.text("Learn multiplication and division. Power your spaceship."), 24, Color("d5e4ff")))
 	root.add_child(make_label(L10N.text("CHOOSE A WORLD"), 21, Color("ffd85b")))
 	var cards := HBoxContainer.new()
 	cards.alignment = BoxContainer.ALIGNMENT_CENTER
 	cards.add_theme_constant_override("separation", 12)
-	root.add_child(cards)
-	for i in range(5):
-		cards.add_child(make_world_card(i + 1))
+	var world_scroll := horizontal_strip(root, 236)
+	world_scroll.add_child(cards)
+	for id in PROGRESSION.WORLD_ORDER:
+		cards.add_child(make_world_card(id))
+	world_scroll.set_deferred("scroll_horizontal", maxi(0, PROGRESSION.WORLD_ORDER.find(world) * 222 - 400))
 	var fill := Control.new()
 	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(fill)
@@ -323,7 +352,7 @@ func show_workshop() -> void:
 	var top := HBoxContainer.new()
 	root.add_child(top)
 	top.add_child(make_button(L10N.text("◀  GALAXY"), show_menu, Color("425d88"), 190, 54, 19))
-	top.add_child(make_label(L10N.text("   MATH WORKSHOP - WORLD %d") % world, 30, Color("84d8ff")))
+	top.add_child(make_label(L10N.text("   MATH WORKSHOP - WORLD %d") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 30, Color("84d8ff")))
 	if world == 1:
 		root.add_child(make_label(L10N.text("Workshop begins in World 2. Select worlds 2-5."), 23))
 		return
@@ -365,7 +394,7 @@ func show_workshop_step() -> void:
 	# Concrete decomposition stays visible. It is an explanation, not an input field.
 	root.add_child(make_label(DECOMPOSITION_ENGINE.explanation(q, str(workshop_session.get("strategy", "tens"))), 19, Color("bbd6f3")))
 	add_workshop_solution_path(root)
-	if world == 5:
+	if world >= 5:
 		root.add_child(make_button(L10N.text("↻  ANOTHER DIVISION METHOD"), switch_workshop_strategy, Color("425d88"), 340, 42, 17))
 	workshop_feedback = make_label("", 19, Color("c4e5ff"))
 	if workshop_session["mode"] == "demo":
@@ -377,7 +406,7 @@ func show_workshop_step() -> void:
 		root.add_child(center)
 		workshop_keypad = VBoxContainer.new()
 		workshop_keypad.set_script(KEYPAD_SCRIPT)
-		workshop_keypad.custom_minimum_size.x = 420
+		workshop_keypad.custom_minimum_size.x = 450
 		center.add_child(workshop_keypad)
 		workshop_keypad.call("set_value", "")
 		workshop_keypad.connect("key_pressed", Callable(self, "press_workshop_digit"))
@@ -462,7 +491,7 @@ func refresh_workshop_solution_path() -> void:
 		row_panel.add_child(row_label)
 		partial_values.append(value_text)
 	if last_index > 0:
-		var is_division: bool = int(q["world"]) == 5
+		var is_division: bool = int(q["world"]) >= 5
 		if is_division:
 			var first_quotient: int = int(q["a"] / q["b"]) - int(session_steps[2]["answer"])
 			var remaining_quotient: String = partial_values[2] if partial_values.size() > 2 else "?"
@@ -479,7 +508,7 @@ func refresh_workshop_solution_path() -> void:
 		workshop_path.add_child(make_label(L10N.text("Result: %d %s %d = %s   [%s]") % [int(q["a"]), str(q["sign"]), int(q["b"]), final_value, final_status], 18, Color("8fffc4")))
 
 func switch_workshop_strategy() -> void:
-	if world != 5:
+	if world < 5:
 		return
 	var strategy: String = "halves" if str(workshop_session.get("strategy", "tens")) == "tens" else "tens"
 	# Changing a method starts a fresh attempt; previous mistakes are retained.
@@ -578,6 +607,24 @@ func show_workshop_review() -> void:
 	root.add_child(make_button(L10N.text("BACK TO WORKSHOP"), show_workshop, Color("425d88"), 280, 58, 20))
 	root.add_child(make_button(L10N.text("TRY ANOTHER"), func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 58, 20))
 
+func horizontal_strip(root: Control, height: float) -> ScrollContainer:
+	var navigation := HBoxContainer.new()
+	root.add_child(navigation)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size.y = height
+	navigation.add_child(make_button("‹", func(): scroll.scroll_horizontal -= 400, Color("2865ad"), 48, 60, 30))
+	navigation.add_child(scroll)
+	navigation.add_child(make_button("›", func(): scroll.scroll_horizontal += 400, Color("2865ad"), 48, 60, 30))
+	scroll.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			scroll.scroll_horizontal += 160 if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else -160
+			scroll.accept_event()
+	)
+	return scroll
+
 func make_world_card(idx: int) -> Button:
 	var selected: bool = idx == world
 	var b := make_button("", func(): select_world(idx), Color("2dcdf6") if selected else Color("4260a4"), 210, 210, 20)
@@ -625,7 +672,7 @@ func make_world_card(idx: int) -> Button:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 0)
 	footer.add_child(box)
-	box.add_child(make_label(L10N.text("WORLD %d") % idx, 14, Color("fff2a6")))
+	box.add_child(make_label(L10N.text("WORLD %d") % (PROGRESSION.WORLD_ORDER.find(idx) + 1), 14, Color("fff2a6")))
 	box.add_child(make_label(L10N.text(WORLD_NAMES[idx - 1]), 17, Color("f8fdff")))
 	box.add_child(make_label(WORLD_SUBTITLES[idx - 1], 13, Color("8ff0ff" if selected else Color("b0d0ff"))))
 	return b
@@ -638,11 +685,9 @@ func select_world(value: int) -> void:
 func show_levels() -> void:
 	screen = "levels"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
-	root.add_child(make_label(L10N.text("WORLD %d - SUBLEVELS") % world, 34, Color("84d8ff")))
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(scroll)
-	var list := VBoxContainer.new()
+	root.add_child(make_label(L10N.text("WORLD %d - SUBLEVELS") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 34, Color("84d8ff")))
+	var scroll := horizontal_strip(root, 240)
+	var list := HBoxContainer.new()
 	scroll.add_child(list)
 	for i in range(PROGRESSION.levels(world).size()):
 		var index: int = i
@@ -652,9 +697,10 @@ func show_levels() -> void:
 		if completed: label_text += L10N.text("  ✓ Replay")
 		if not available: label_text += "  -  " + PROGRESSION.requirement(progress, world, i)
 		elif not completed: label_text += "  -  " + PROGRESSION.required_evidence(world, i)
-		var btn := make_button(label_text, func(): select_level(index), Color("267aa8") if available else Color("34415e"), 650, 48, 19)
+		var btn := make_button(label_text, func(): select_level(index), Color("267aa8") if available else Color("34415e"), 290, 210, 19)
 		btn.disabled = not available
 		list.add_child(btn)
+	scroll.set_deferred("scroll_horizontal", maxi(0, PROGRESSION.practice_target(progress, world) * 294 - 300))
 	root.add_child(make_button(L10N.text("PRACTICE NEXT SKILL"), start_level_practice, Color("4260a4"), 320, 50, 19))
 	root.add_child(make_button(L10N.text("BACK"), show_menu, Color("4260a4"), 180, 50, 19))
 
@@ -706,11 +752,12 @@ func build_battle() -> void:
 	top.alignment = BoxContainer.ALIGNMENT_CENTER
 	top.add_theme_constant_override("separation", 16)
 	top_panel.add_child(top)
-	shield_label = make_label(L10N.text("SHIELD 100%"), 20, Color("8de5ff"))
-	shield_label.custom_minimum_size.x = 160
+	shield_label = make_label("100%", 20, Color("8de5ff"))
+	shield_label.custom_minimum_size.x = 64
 	var shield_icon := TextureRect.new()
 	shield_icon.texture = preload("res://assets/ui/shield.svg")
 	shield_icon.custom_minimum_size = Vector2(34, 40)
+	shield_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	shield_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	shield_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	top.add_child(shield_icon)
@@ -722,8 +769,9 @@ func build_battle() -> void:
 	shield_bar.custom_minimum_size = Vector2(220, 22)
 	shield_bar.set_script(preload("res://scripts/ui/ShieldMeter.gd"))
 	shield_bar.custom_minimum_size.y = 28
+	shield_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	top.add_child(shield_bar)
-	header = make_label(L10N.text("WORLD %d • %s") % [world, L10N.text(WORLD_NAMES[world - 1])], 22, Color("ffe270"))
+	header = make_label(L10N.text("WORLD %d • %s") % [PROGRESSION.WORLD_ORDER.find(world) + 1, L10N.text(WORLD_NAMES[world - 1])], 22, Color("ffe270"))
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(header)
 	energy_label = make_label(L10N.text("ENERGY 50  •  COMBO 0"), 20, Color("ffd85d"))
@@ -736,7 +784,7 @@ func build_battle() -> void:
 	art = Control.new()
 	art.set_script(SCENE_SCRIPT)
 	art.call("set_world", world)
-	art.custom_minimum_size.y = 220
+	art.custom_minimum_size.y = 204
 	art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	root.add_child(art)
 	art.connect("ship_impact", update_hud)
@@ -778,7 +826,7 @@ func build_battle() -> void:
 	qbox.add_child(feedback)
 
 	answer_area = VBoxContainer.new()
-	answer_area.custom_minimum_size.y = 175
+	answer_area.custom_minimum_size.y = 203
 	answer_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(answer_area)
 
@@ -814,14 +862,14 @@ func style_progress(bar: ProgressBar, fill: Color) -> void:
 
 func update_phase_label() -> void:
 	if header != null:
-		header.text = L10N.text("%s  •  WORLD %d") % [L10N.text(PHASE_NAMES[phase]), world]
+		header.text = L10N.text("%s  •  WORLD %d") % [L10N.text(PHASE_NAMES[phase]), PROGRESSION.WORLD_ORDER.find(world) + 1]
 	if art != null and is_instance_valid(art):
 		art.call("set_boss_mode", phase == 3)
 
 func update_hud() -> void:
 	info.text = L10N.text("Examples: %d/%d") % [hits + misses, question_target]
 	if art == null or float(art.get("enemy_attack_timer")) <= 0.0:
-		shield_label.text = L10N.text("SHIELD %d%%") % shield
+		shield_label.text = "%d%%" % shield
 		shield_bar.value = shield
 	energy_label.text = L10N.text("ENERGY %d  •  COMBO %d") % [energy, combo]
 	timer_label.text = L10N.text("PAUSED") if hint_visible else "%.1f s" % maxf(0.0, question_limit - question_elapsed)
@@ -836,7 +884,7 @@ func choose_question() -> Dictionary:
 			retry.erase("retry_after")
 			return retry
 	# Spiral review is deliberately excluded from level evidence and challenges.
-	if not level_practice and not PROGRESSION.is_final(world, level) and randf() < 0.15:
+	if PROGRESSION.input_mode(level) == "numeric" and not level_practice and not PROGRESSION.is_final(world, level) and randf() < 0.15:
 		var previous_world: int = PROGRESSION.review_world(world, level)
 		if previous_world > 0:
 			return PROGRESSION.generate(previous_world, randi_range(0, PROGRESSION.levels(previous_world).size() - 2))
@@ -877,7 +925,8 @@ func next_question() -> void:
 	hint_button.text = L10N.text("✦ HINT 1/3  -25")
 	question_active = true
 	input_value = ""
-	input_mode = "choices" if randf() < 0.25 else "numeric"
+	input_mode = PROGRESSION.input_mode(level)
+	if input_mode == "choices": question_limit = 5.0
 	question_label.text = "%d %s %d = ?" % [question["a"],question["sign"],question["b"]]
 	feedback.text = L10N.text("Enter your answer") if input_mode == "numeric" else L10N.text("Choose the answer")
 	build_answers()
@@ -903,7 +952,7 @@ func build_answers() -> void:
 		answer_area.add_child(center)
 		keypad = VBoxContainer.new()
 		keypad.set_script(KEYPAD_SCRIPT)
-		keypad.custom_minimum_size.x = 420
+		keypad.custom_minimum_size.x = 450
 		center.add_child(keypad)
 		keypad.call("set_value", "")
 		keypad.connect("key_pressed", Callable(self, "press_digit"))
@@ -932,7 +981,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		var key := OS.get_keycode_string(event.keycode)
 		if key.length() == 1 and key.is_valid_int(): press_digit(key)
-		elif event.keycode == KEY_ENTER: press_digit("OK")
+		elif event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER: press_digit("OK")
 		elif event.keycode == KEY_BACKSPACE: press_digit("⌫")
 
 func queue_review() -> void:
@@ -1036,7 +1085,7 @@ func fail_mission() -> void:
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(spacer)
 	root.add_child(make_label(L10N.text("EMERGENCY RETREAT"), 58, Color("fb7185")))
-	root.add_child(make_label(L10N.text("World %d: %s") % [world, L10N.text(WORLD_NAMES[world - 1])], 26))
+	root.add_child(make_label(L10N.text("World %d: %s") % [PROGRESSION.WORLD_ORDER.find(world) + 1, L10N.text(WORLD_NAMES[world - 1])], 26))
 	root.add_child(make_label(L10N.text("Correct: %d        Missed: %d") % [hits, misses], 31))
 	root.add_child(make_label(L10N.text("Shield: 0%  •  No mission crystals awarded"), 24, Color("fda4af")))
 	root.add_child(make_label(L10N.text("Your answers were saved for future practice"), 21, Color("a7bddf")))
@@ -1071,7 +1120,7 @@ func finish_mission() -> void:
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(spacer)
 	root.add_child(make_label(L10N.text("MISSION COMPLETE"), 58, Color("fcd34d")))
-	root.add_child(make_label(L10N.text("World %d: %s") % [world,L10N.text(WORLD_NAMES[world - 1])], 26))
+	root.add_child(make_label(L10N.text("World %d: %s") % [PROGRESSION.WORLD_ORDER.find(world) + 1,L10N.text(WORLD_NAMES[world - 1])], 26))
 	root.add_child(make_label(L10N.text("Correct: %d        Missed: %d        Shield: %d%%") % [hits,misses,shield], 31))
 	root.add_child(make_label(L10N.text("+%d crystals    •    %d questions awaiting review") % [coins_earned,queue.size()], 29, Color("7dd3fc")))
 	var reward_note := make_label(str(payout.details), 17, Color("ffd85b"))
@@ -1160,7 +1209,7 @@ func buy_hangar(id: String) -> void:
 		return
 	var before := progress.duplicate(true)
 	if not REWARD_MANAGER.purchase(progress, id):
-		HANGAR.show(self, L10N.text("Not enough crystals or already owned"))
+		show_game_notice(L10N.text("Not enough crystals"), L10N.text("Need %d more crystals. Complete missions to earn them.") % maxi(0, int(REWARD_MANAGER.CATALOG.get(id, {}).get("cost", 0)) - int(progress.coins)))
 		return
 	if not PARENT_DATA.write_save(SAVE_PATH, progress):
 		progress = before
@@ -1184,3 +1233,29 @@ func use_repair() -> void:
 	shield = mini(100, shield + 15)
 	feedback.text = L10N.text("Repair pulse used (+15 shield)")
 	update_hud()
+
+func show_game_notice(title: String, message: String) -> void:
+	var existing := get_node_or_null("GameNotice")
+	if existing != null:
+		remove_child(existing)
+		existing.queue_free()
+	var overlay := ColorRect.new()
+	overlay.name = "GameNotice"
+	overlay.color = Color(0.01, 0.025, 0.08, 0.82)
+	add_child(overlay)
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var center := CenterContainer.new()
+	overlay.add_child(center)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(560, 220)
+	panel.add_theme_stylebox_override("panel", space_panel(Color("0b1935"), Color("ffbf59"), 18, 0.35))
+	center.add_child(panel)
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 20)
+	panel.add_child(content)
+	content.add_child(make_label(title, 30, Color("ffd16d")))
+	var description := make_label(message, 22, Color("d0e7ff"))
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(description)
+	content.add_child(make_button(L10N.text("GOT IT"), overlay.queue_free, Color("2865ad"), 220, 54, 22))

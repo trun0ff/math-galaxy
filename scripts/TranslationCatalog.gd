@@ -2,6 +2,26 @@ extends RefCounted
 
 # English source templates map to Ukrainian; keep format placeholders unchanged.
 const UK := {
+	"Choose · 5 seconds": "Вибір · 5 секунд",
+	"Enter · reinforcement": "Введення · закріплення",
+	"5 correct choices, 3 distinct examples and 2 missions": "5 правильних відповідей, 3 різні приклади та 2 місії",
+	"Tidal Ocean": "Припливний океан",
+	"Aurora Gardens": "Сади сяйва",
+	"Solar Forge": "Сонячна кузня",
+	"Learn multiplication and division. Power your spaceship.": "Вивчай множення й ділення. Заряджай свій корабель.",
+	"Divide by 2": "Ділення на 2",
+	"Divide by 3": "Ділення на 3",
+	"Divide by 4": "Ділення на 4",
+	"Divide by 5": "Ділення на 5",
+	"Divide by 6": "Ділення на 6",
+	"Divide by 7": "Ділення на 7",
+	"Divide by 8": "Ділення на 8",
+	"Divide by 9": "Ділення на 9",
+
+	"Not enough crystals": "Недостатньо кристалів",
+	"Need %d more crystals. Complete missions to earn them.": "Потрібно ще %d кристалів. Заробляй їх, завершуючи місії.",
+	"GOT IT": "ЗРОЗУМІЛО",
+	"Digits • Backspace to erase • Enter to confirm": "Цифри • Backspace — стерти • Enter — підтвердити",
 	"EMERGENCY RETREAT": "АВАРІЙНИЙ ВІДСТУП",
 	"SHIELD DEPLETED! RETREATING": "ЩИТ ВИЧЕРПАНО! ВІДСТУПАЄМО",
 	"Scout • Cyan laser": "Розвідник • Блакитний лазер",

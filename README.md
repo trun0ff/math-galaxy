@@ -89,3 +89,17 @@ tests/test_storage_mission.gd, tests/run_tests.ps1 и Godot UID новых GDScr
 На главном экране справа вверху выберите **English** или **Українська**. Перевод применяется сразу к меню и следующим открываемым экранам. По умолчанию используется английский. Выбор сохраняется в `user://language.cfg` отдельно от прогресса, поэтому сброс или импорт учебных данных его не меняет.
 
 Проверка вручную: переключите язык, откройте выбор уровней, мастерскую, бой, ангар и родительскую панель. Перезапустите игру и убедитесь, что выбранный язык сохранился; затем переключитесь обратно. Переводы находятся в `scripts/TranslationCatalog.gd`, автоматически включаемом в экспорт через preload.
+
+
+### Paired worlds and practice modes
+
+World display order is multiplication / division at each difficulty: table facts,
+two digits by one digit, three digits by one digit, then two digits by two digits
+and advanced exact division. Stable internal world IDs are `1, 6, 2, 7, 3, 8, 4, 5`.
+Each skill has a choice sublevel (exactly 5 seconds per question), followed by a
+numeric reinforcement sublevel. Both modes require their own completion evidence;
+choice answers do not count as independent mastery. World and sublevel cards use
+horizontal single-row strips with arrow buttons, scrollbar, wheel and touch scrolling.
+Version 14 migrates old completed sublevels to both halves and retains existing
+world IDs, statistics and parent timing settings. New vector world art is in
+`assets/worlds/6_tide.svg`, `7_aurora.svg`, and `8_solar.svg`.

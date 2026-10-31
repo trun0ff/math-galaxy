@@ -28,7 +28,7 @@ static func choose(world: int, skills: Dictionary, recent_keys: Array, day: int,
 			var b: int = int(pieces[2])
 			if a <= 0 or b <= 0:
 				continue
-			var division: bool = world == 5
+			var division: bool = world >= 5
 			if division and (a % b != 0):
 				continue
 			candidates.append({"a": a, "b": b, "answer": int(a / b) if division else a * b, "sign": "÷" if division else "×", "world": world, "key": str(key)})

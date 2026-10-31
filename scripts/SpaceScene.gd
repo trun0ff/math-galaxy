@@ -48,14 +48,14 @@ var shockwaves: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
 const PLAYER_TEXTURES = [preload("res://assets/battle/fighter_cyan.png"), preload("res://assets/battle/fighter_gold.png"), preload("res://assets/battle/fighter_violet.png")]
 const ENEMY_TEXTURES = [preload("res://assets/battle/monster_cyclops.png"), preload("res://assets/battle/monster_mech.png"), preload("res://assets/battle/monster_crystal.png")]
-const WORLD_BACKGROUNDS = [preload("res://assets/battle/world_1_background_fade.png"), preload("res://assets/battle/world_2_background_fade.png"), preload("res://assets/battle/world_3_background_fade.png"), preload("res://assets/battle/world_4_background_fade.png"), preload("res://assets/battle/world_5_background_fade.png")]
+const WORLD_BACKGROUNDS = [preload("res://assets/battle/world_1_background_fade.png"), preload("res://assets/battle/world_2_background_fade.png"), preload("res://assets/battle/world_3_background_fade.png"), preload("res://assets/battle/world_4_background_fade.png"), preload("res://assets/battle/world_5_background_fade.png"), preload("res://assets/worlds/6_tide.svg"), preload("res://assets/worlds/7_aurora.svg"), preload("res://assets/worlds/8_solar.svg")]
 var damage_labels: Array[Dictionary] = []
 var ship_variant: int = 0
 var ship_tint := Color.WHITE
 var current_world: int = 1
 
 func set_world(idx: int) -> void:
-	current_world = clampi(idx, 1, 5)
+	current_world = clampi(idx, 1, 8)
 	queue_redraw()
 
 func _ready() -> void:

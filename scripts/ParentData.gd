@@ -2,7 +2,7 @@ extends RefCounted
 
 const L10N = preload("res://scripts/Localization.gd")
 
-const DEFAULT_LIMITS = [8, 20, 35, 60, 45]
+const DEFAULT_LIMITS = [8, 20, 35, 60, 45, 8, 20, 35]
 
 static func duration(p: Dictionary) -> float:
 	return clampf(float(p.get("parent_settings", {}).get("duration", 300)), 120, 900)
@@ -10,8 +10,8 @@ static func duration(p: Dictionary) -> float:
 static func limits(p: Dictionary) -> Array:
 	var result: Array = DEFAULT_LIMITS.duplicate()
 	var values: Variant = p.get("parent_settings", {}).get("limits", result)
-	if values is Array and values.size() == 5:
-		for i in range(5):
+	if values is Array and values.size() in [5, 8]:
+		for i in range(values.size()):
 			result[i] = clampf(float(values[i]), 5, 180)
 	return result
 

@@ -13,7 +13,7 @@ var current_value := ""
 func _ready() -> void:
 	add_theme_constant_override("separation", 3)
 	var display_shell := PanelContainer.new()
-	display_shell.custom_minimum_size = Vector2(0, 33)
+	display_shell.custom_minimum_size = Vector2(0, 44)
 	display_shell.add_theme_stylebox_override("panel", _style(Color("0d1d3c"), Color("33b8df"), 12, 1))
 	add_child(display_shell)
 	display = Label.new()
@@ -33,7 +33,7 @@ func _ready() -> void:
 		var button := Button.new()
 		button.set_script(FANCY)
 		button.text = ""
-		button.custom_minimum_size = Vector2(104, 37)
+		button.custom_minimum_size = Vector2(112, 44)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.focus_mode = Control.FOCUS_NONE
 		button.add_theme_font_size_override("font_size", 24)
@@ -105,3 +105,11 @@ func flash(correct: bool) -> void:
 	var tw := create_tween()
 	tw.tween_property(display, "modulate", color, 0.10)
 	tw.tween_property(display, "modulate", Color.WHITE, 0.30)
+
+static func key_from_event(event: InputEvent) -> String:
+	if not event is InputEventKey or not event.pressed or event.echo: return ""
+	if event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER: return "OK"
+	if event.keycode == KEY_BACKSPACE or event.keycode == KEY_DELETE: return "⌫"
+	if event.keycode >= KEY_KP_0 and event.keycode <= KEY_KP_9: return str(event.keycode - KEY_KP_0)
+	var value := char(event.unicode) if event.unicode > 0 else OS.get_keycode_string(event.keycode)
+	return value if value.length() == 1 and value.is_valid_int() else ""

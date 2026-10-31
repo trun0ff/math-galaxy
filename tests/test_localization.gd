@@ -32,7 +32,7 @@ func run() -> void:
 	L10N.apply_language("en")
 	L10N.initialize()
 	assert(L10N.language == "uk", "Language must survive restart")
-	assert(PROGRESSION.levels(1)[0] == "Таблиця 2")
+	assert(PROGRESSION.levels(1)[0].begins_with("Таблиця 2"))
 	var steps := DECOMPOSITION.steps({"a": 24, "b": 3, "world": 2})
 	assert(steps[0].prompt.begins_with("Скільки"))
 	assert(steps[0].answer == 60)

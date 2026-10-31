@@ -6,19 +6,31 @@ const L10N = preload("res://scripts/Localization.gd")
 
 
 const TAXONOMY = preload("res://scripts/SkillTaxonomy.gd")
+const WORLD_ORDER = [1, 6, 2, 7, 3, 8, 4, 5]
 const TRACKS = [
  ["Table of 2", "Table of 3", "Table of 4", "Table of 5", "Table of 6", "Table of 7", "Table of 8", "Table of 9", "Mixed tables", "Final challenge"],
  ["No carrying", "Carrying", "Mixed practice", "Final challenge"],
  ["No carrying", "One carry", "Multiple carries", "Final challenge"],
  ["No carrying", "Carrying", "Mixed practice", "Final challenge"],
- ["One-digit divisor", "Two-digit divisor", "Mixed practice", "Final challenge"]
+ ["One-digit divisor", "Two-digit divisor", "Mixed practice", "Final challenge"],
+ ["Divide by 2", "Divide by 3", "Divide by 4", "Divide by 5", "Divide by 6", "Divide by 7", "Divide by 8", "Divide by 9", "Mixed practice", "Final challenge"],
+ ["Divide by 2", "Divide by 3", "Divide by 4", "Divide by 5", "Divide by 6", "Divide by 7", "Divide by 8", "Divide by 9", "Mixed practice", "Final challenge"],
+ ["Divide by 2", "Divide by 3", "Divide by 4", "Divide by 5", "Divide by 6", "Divide by 7", "Divide by 8", "Divide by 9", "Mixed practice", "Final challenge"]
 ]
 
 static func levels(world: int) -> Array:
  var translated: Array = []
- for title in TRACKS[clampi(world, 1, 5) - 1]:
-  translated.append(L10N.text(title))
+ for title in TRACKS[clampi(world, 1, 8) - 1]:
+  translated.append(L10N.text(title) + " · " + L10N.text("Choose · 5 seconds"))
+  translated.append(L10N.text(title) + " · " + L10N.text("Enter · reinforcement"))
  return translated
+
+static func input_mode(level: int) -> String:
+ return "choices" if level % 2 == 0 else "numeric"
+
+static func previous_world(world: int) -> int:
+ var index: int = WORLD_ORDER.find(world)
+ return WORLD_ORDER[index - 1] if index > 0 else 0
 
 static func id_for(world: int, level: int) -> String:
  return "%d:%d" % [world, level]
@@ -28,15 +40,18 @@ static func is_unlocked(progress: Dictionary, world: int, level: int) -> bool:
  if level == 0:
   if world == 1: return true
   if int(progress.get("legacy_unlocked_world", 1)) >= world: return true
-  return bool(progress.get("completed_levels", {}).get(id_for(world - 1, levels(world - 1).size() - 1), false))
+  return bool(progress.get("completed_levels", {}).get(id_for(previous_world(world), levels(previous_world(world)).size() - 1), false))
  return bool(progress.get("completed_levels", {}).get(id_for(world, level - 1), false))
 
 static func requirement(progress: Dictionary, world: int, level: int) -> String:
  if is_unlocked(progress, world, level): return L10N.text("Available")
- if level == 0: return L10N.text("Complete World %d final challenge") % (world - 1)
+ if level == 0: return L10N.text("Complete World %d final challenge") % WORLD_ORDER.find(world)
  return L10N.text("Complete %s") % levels(world)[level - 1]
 
 static func matches(world: int, level: int, q: Dictionary) -> bool:
+ level = int(level / 2)
+ if world >= 6:
+  return level >= 8 or int(q.get("b", 0)) == level + 2
  if world == 1:
   if level < 8: return int(q.get("a", 0)) == level + 2 or int(q.get("b", 0)) == level + 2
   return true
@@ -61,9 +76,9 @@ static func generate(world: int, level: int) -> Dictionary:
   var q: Dictionary = MathEngine.generate(world)
   if matches(world, level, q): return q
  # Fallback builds a matching example rather than silently using a wrong skill.
- if world == 1 and level < 8:
+ if world == 1 and int(level / 2) < 8:
   var b: int = randi_range(2, 9)
-  var a: int = level + 2
+  var a: int = int(level / 2) + 2
   return {"a": a, "b": b, "answer": a * b, "sign": "×", "world": 1, "key": "1_%d_%d" % [a, b]}
  # Keep searching rather than silently select an incorrect taxonomy skill.
  while true:
@@ -72,11 +87,12 @@ static func generate(world: int, level: int) -> Dictionary:
  return {}
 
 static func review_world(world: int, level: int) -> int:
- if world <= 1 or level == 0:
+ if WORLD_ORDER.find(world) <= 0 or level == 0:
   return 0
- return randi_range(1, world - 1)
+ return WORLD_ORDER[randi_range(0, WORLD_ORDER.find(world) - 1)]
 
 static func required_evidence(world: int, level: int) -> String:
+ if input_mode(level) == "choices": return L10N.text("5 correct choices, 3 distinct examples and 2 missions")
  return L10N.text("8 independent answers, including 2 boss answers, 5 distinct examples and 2 missions") if is_final(world, level) else L10N.text("5 independent answers, 3 distinct examples and 2 missions")
 
 
@@ -84,7 +100,7 @@ static func record(progress: Dictionary, world: int, level: int, q: Dictionary, 
  var key: String = id_for(world, level)
  var evidence: Dictionary = progress.get("level_evidence", {})
  var data: Dictionary = evidence.get(key, {}).duplicate(true)
- var independent: bool = correct and reason == "answer" and mode == "numeric" and not hinted
+ var independent: bool = correct and reason == "answer" and mode == input_mode(level) and not hinted
  if int(q.get("world", 0)) != world or not matches(world, level, q): return
  data["independent"] = int(data.get("independent", 0)) + int(independent)
  if boss_phase and independent:

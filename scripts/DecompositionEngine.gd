@@ -13,7 +13,7 @@ static func steps(q: Dictionary, strategy: String = "tens") -> Array[Dictionary]
 	var result: Array[Dictionary] = []
 	if world == 1:
 		return result
-	if world == 5:
+	if world >= 5:
 		var quotient: int = int(a / b)
 		var base: int = int(quotient / 10) * 10
 		if strategy == "halves" or base == 0 or base >= quotient:
@@ -54,7 +54,7 @@ static func explanation(q: Dictionary, strategy: String = "tens") -> String:
 	var a: int = int(q["a"])
 	var b: int = int(q["b"])
 	var world: int = int(q["world"])
-	if world == 5:
+	if world >= 5:
 		var quotient: int = int(a / b)
 		var first: int = int(quotient / 10) * 10
 		if strategy == "halves" or first == 0 or first >= quotient:

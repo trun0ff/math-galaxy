@@ -19,6 +19,8 @@ static func key_for(q: Dictionary) -> String:
 		4:
 			var products: int = (a % 10) * (b % 10)
 			return "w4_%s" % ("carry" if products >= 10 else "no_carry")
+		6, 7, 8:
+			return "w%d_divide_by_%d" % [world, b]
 		5:
 			return "w5_%s" % ("two_digit_divisor" if b >= 10 else "one_digit_divisor")
 	return "unknown"
