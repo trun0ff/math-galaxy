@@ -55,7 +55,7 @@ static func record(stats: Dictionary, correct: bool, reason: String, seconds: fl
 	s["skips"] = int(s.get("skips", 0)) + (1 if reason == "skip" else 0)
 	s["timeouts"] = int(s.get("timeouts", 0)) + (1 if reason == "timeout" else 0)
 	var history: Array = s.get("history", []).duplicate(true)
-	history.append({"day": day, "mission": mission_id, "correct": correct, "seconds": seconds, "mode": mode, "hinted": hinted, "reason": reason, "id": attempt_id})
+	history.append({"day": day, "mission": mission_id, "correct": correct, "seconds": seconds, "mode": mode, "hinted": hinted, "assisted": hinted or mode != "numeric", "reason": reason, "id": attempt_id})
 	if history.size() > MAX_HISTORY:
 		history = history.slice(history.size() - MAX_HISTORY)
 	s["history"] = history

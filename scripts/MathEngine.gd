@@ -51,14 +51,45 @@ static func options(question: Dictionary) -> Array[int]:
 	values.shuffle()
 	return values
 
+# Each path is selected once per question; all three stages share its parts.
+static func hint_stages(q: Dictionary, alternate: bool = false) -> Array[String]:
+	var a: int = int(q.a)
+	var b: int = int(q.b)
+	var parts: Array[int] = []
+	var expressions: Array[String] = []
+	var values: Array[String] = []
+	if q.sign == "÷":
+		var quotient: int = int(a / b)
+		var first: int = int(quotient / 10) * 10
+		if alternate or first == 0 or first == quotient:
+			first = maxi(1, int(quotient / 2))
+		var chunk: int = first * b
+		return ["Use a known multiple: %d × %d. Then divide what remains." % [b, first],
+			"%d ÷ %d = (%d ÷ %d) + (%d ÷ %d)" % [a, b, chunk, b, a - chunk, b],
+			"%d = %d + %d; %d ÷ %d = %d + %d = %d" % [a, chunk, a - chunk, a, b, first, quotient - first, quotient]]
+	var split: int = a
+	var factor: int = b
+	if int(q.world) == 4 and not alternate:
+		split = b
+		factor = a
+	if int(q.world) == 1:
+		var base: int = 5 if split > 5 else maxi(1, int(split / 2))
+		parts.assign([base, split - base])
+	elif alternate and split % 10 > 0:
+		parts.assign([split + 10 - split % 10, -(10 - split % 10)])
+	else:
+		for place in [100, 10, 1]:
+			var part: int = int(split / place) % 10 * place
+			if part > 0: parts.append(part)
+		# Round numbers still get a useful split rather than the original problem.
+		if parts.size() == 1:
+			parts.assign([int(split / 2), split - int(split / 2)])
+	for part in parts:
+		expressions.append("(%d × %d)" % [part, factor])
+		values.append(str(part * factor))
+	return ["Start with %d × %d; use the remaining groups. You can split into places or use a nearby round number." % [parts[0], factor],
+		"%d × %d = %s" % [a, b, " + ".join(expressions)],
+		"%s = %s = %d" % [" + ".join(expressions), " + ".join(values), a * b]]
+
 static func hint(question: Dictionary) -> String:
-	var a: int = question["a"]
-	var b: int = question["b"]
-	if question["sign"] == "÷":
-		return "Find how many times %d fits into %d.\nCheck: divisor × answer = dividend." % [b, a]
-	if a < 10 and b < 10:
-		return "%d × %d = (%d × %d) + (%d × %d)" % [a, b, a, 5, a, b-5] if b > 5 else "Think of %d groups of %d." % [a,b]
-	if a >= 10:
-		var high: int = int(a / 10) * 10
-		return "%d × %d = (%d × %d) + (%d × %d)" % [a,b,high,b,a-high,b]
-	return "Split the number into easier parts."
+	return hint_stages(question)[0]

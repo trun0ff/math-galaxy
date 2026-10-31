@@ -49,6 +49,11 @@ var queue: Array[Dictionary] = []
 var input_mode: String = "numeric"
 var input_value: String = ""
 var hint_used: bool = false
+var hint_stage: int = 0
+var hint_texts: Array[String] = []
+var hint_button: Button
+const HINT_COSTS = [25, 15, 10]
+const HINT_SECONDS = [8.0, 6.0, 4.0]
 var question_active: bool = false
 var transition_delay: float = 0.0
 var finished: bool = false
@@ -97,24 +102,30 @@ func _notification(what: int) -> void:
 func _process(delta: float) -> void:
 	if screen != "battle" or paused or finished:
 		return
-	if transition_delay > 0.0:
-		transition_delay -= delta
-		if transition_delay <= 0.0:
-			if pending_defeat:
-				fail_mission()
-			elif elapsed >= PHASE_LIMITS[4]:
-				finish_mission()
-			else:
-				next_question()
-		return
 	elapsed = minf(MISSION_LENGTH, elapsed + delta)
+	if pending_defeat:
+		transition_delay -= delta
+		if transition_delay <= 0.0: fail_mission()
+		return
+	if elapsed >= MISSION_LENGTH:
+		finish_mission()
+		return
 	var next_phase: int = determine_phase()
 	if next_phase != phase:
 		phase = next_phase
-		if phase == 4:
-			finish_mission()
-			return
 		update_phase_label()
+		if phase == 4:
+			question_active = false
+			transition_delay = 0.0
+			feedback.text = "Flight complete! Preparing rewards..."
+	if phase == 4:
+		update_hud()
+		return
+	if transition_delay > 0.0:
+		transition_delay -= delta
+		if transition_delay <= 0.0: next_question()
+		update_hud()
+		return
 	if question_active:
 		question_elapsed += delta
 		if question_elapsed >= question_limit:
@@ -729,6 +740,7 @@ func build_battle() -> void:
 	style_progress(timer_bar, Color("ffc857"))
 	timer_shell.add_child(timer_bar)
 	feedback = make_label("", 22, Color("a7f3d0"))
+	feedback.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	qbox.add_child(feedback)
 
 	answer_area = VBoxContainer.new()
@@ -740,7 +752,8 @@ func build_battle() -> void:
 	footer.alignment = BoxContainer.ALIGNMENT_CENTER
 	footer.add_theme_constant_override("separation", 12)
 	root.add_child(footer)
-	footer.add_child(make_button("✦ HINT  -25 ENERGY", use_hint, Color("9d50ff"), 230, 51, 19))
+	hint_button = make_button("✦ HINT 1/3  -25", use_hint, Color("9d50ff"), 230, 51, 19)
+	footer.add_child(hint_button)
 	footer.add_child(make_button("↻ SKIP  -20 SHIELD", func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 51, 19))
 	footer.add_child(make_button("◀ EXIT", exit_mission, Color("4f8cdb"), 125, 51, 19))
 	if progress.rewards.owned.has("repair"):
@@ -778,6 +791,12 @@ func update_hud() -> void:
 	timer_bar.value = maxf(0.0, question_limit - question_elapsed)
 
 func choose_question() -> Dictionary:
+	for i in range(queue.size()):
+		if int(progress.get("attempt_sequence", 0)) >= int(queue[i].get("retry_after", 0)):
+			var retry: Dictionary = queue[i]
+			queue.remove_at(i)
+			retry.erase("retry_after")
+			return retry
 	# Spiral review is deliberately excluded from level evidence and challenges.
 	if not level_practice and not PROGRESSION.is_final(world, level) and randf() < 0.15:
 		var previous_world: int = PROGRESSION.review_world(world, level)
@@ -807,10 +826,13 @@ func next_question() -> void:
 	if recent_keys.size() > 5:
 		recent_keys.pop_front()
 	question_elapsed = 0.0
-	question_limit = PARENT_DATA.limits(progress)[world - 1]
+	question_limit = PARENT_DATA.limits(progress)[int(question["world"]) - 1]
 	if phase == 1:
 		question_limit += 8.0
 	hint_used = false
+	hint_stage = 0
+	hint_texts = MathEngine.hint_stages(question, randf() < 0.5 and int(question.world) > 1)
+	hint_button.text = "✦ HINT 1/3  -25"
 	question_active = true
 	input_value = ""
 	input_mode = "choices" if randf() < 0.25 else "numeric"
@@ -871,16 +893,31 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_ENTER: press_digit("OK")
 		elif event.keycode == KEY_BACKSPACE: press_digit("⌫")
 
+func queue_review() -> void:
+	for pending in queue:
+		if pending.key == question.key: return
+	if queue.size() < 30:
+		var retry: Dictionary = question.duplicate(true)
+		retry["retry_after"] = int(progress.get("attempt_sequence", 0)) + 3
+		queue.append(retry)
+
 func use_hint() -> void:
-	if not question_active: return
-	if energy < 25:
-		feedback.text = "Not enough energy"
+	if not question_active or finished or paused: return
+	if hint_stage == 3:
+		feedback.text = hint_texts[2]
 		return
-	if hint_used: return
-	energy -= 25
+	var cost: int = HINT_COSTS[hint_stage]
+	if energy < cost:
+		feedback.text = "Not enough energy" + ("\n" + hint_texts[hint_stage - 1] if hint_stage > 0 else "")
+		return
+	energy -= cost
 	hint_used = true
-	feedback.text = MathEngine.hint(question)
-	question_limit += 8.0
+	feedback.text = "Hint %d/3: %s" % [hint_stage + 1, hint_texts[hint_stage]]
+	question_limit += HINT_SECONDS[hint_stage]
+	hint_stage += 1
+	queue_review()
+	hint_button.text = "✦ REVIEW HINT" if hint_stage == 3 else "✦ HINT %d/3  -%d" % [hint_stage + 1, HINT_COSTS[hint_stage]]
+	update_hud()
 
 func resolve_answer(value: int, reason: String) -> void:
 	if not question_active or finished: return
@@ -910,8 +947,7 @@ func resolve_answer(value: int, reason: String) -> void:
 		shield = maxi(0, shield - 20)
 		feedback.text = "%s! Answer: %d" % [reason.to_upper(), question["answer"]]
 		art.call("hit_ship")
-		if queue.size() < 30:
-			queue.append(question.duplicate(true))
+		queue_review()
 		if shield == 0:
 			feedback.text = "SHIELD DESTROYED! MISSION FAILED"
 	PROGRESSION.record(progress, world, level, question, correct, reason, input_mode, hint_used, phase == 3 and not level_practice)
@@ -959,6 +995,9 @@ func fail_mission() -> void:
 
 func finish_mission() -> void:
 	if finished: return
+	if shield <= 0 or pending_defeat:
+		fail_mission()
+		return
 	finished = true
 	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, true)
 	question_active = false
