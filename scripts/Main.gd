@@ -51,6 +51,7 @@ var workshop_value: String = ""
 var workshop_feedback: Label
 var workshop_next: Button
 var workshop_path: VBoxContainer
+var workshop_review_open: bool = false
 
 var header: Label
 var info: Label
@@ -290,6 +291,7 @@ func show_workshop() -> void:
 func start_workshop(mode: String) -> void:
 	var q: Dictionary = MathEngine.generate(world)
 	workshop_session = WORKSHOP_ENGINE.prepare(q, mode)
+	workshop_review_open = false
 	show_workshop_step()
 
 func show_workshop_step() -> void:
@@ -363,12 +365,19 @@ func refresh_workshop_solution_path() -> void:
 	var completed: Dictionary = {}
 	for entry in results:
 		completed[int(entry["step"])] = entry
+	var current_index: int = int(workshop_session.get("index", 0))
 	var last_index: int = session_steps.size() - 1
-	var pieces: Array[String] = []
+	var mode: String = str(workshop_session.get("mode", "guided"))
+	var guidance: int = WORKSHOP_ENGINE.guidance_level(progress, world, mode)
+	var show_structure: bool = mode != "solo" or workshop_review_open
+	if not show_structure:
+		workshop_path.add_child(make_label("Solve the full expression yourself. Open HINT to see support.", 17, Color("bbd6f3")))
+		return
+	var q: Dictionary = workshop_session["question"]
+	var partial_values: Array[String] = []
 	for i in range(session_steps.size()):
 		var part: Dictionary = session_steps[i]
-		var is_final: bool = i == last_index
-		if is_final:
+		if i == last_index:
 			continue
 		var expression: String = str(part.get("expression", part["prompt"]))
 		var value_text: String = "?"
@@ -381,33 +390,41 @@ func refresh_workshop_solution_path() -> void:
 				"self": status = "MY ANSWER"; color = Color("8fffc4")
 				"hint": status = "WITH HINT"; color = Color("fcd34d")
 				_: status = "SHOWN"; color = Color("b6d2fa")
-		elif i == int(workshop_session.get("index", 0)) and bool(workshop_session.get("current_hint", false)):
-			status = "HINT OPENED"
-		var line := make_label("%d. %s = %s   [%s]" % [i + 1, expression, value_text, status], 17, color)
-		line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		workshop_path.add_child(line)
-		pieces.append(value_text)
-	if session_steps.size() == 1:
-		var solo_line := make_label("Solve the complete expression without intermediate hints.", 17, Color("bbd6f3"))
-		workshop_path.add_child(solo_line)
-	else:
-		var current_world: int = int(workshop_session["question"]["world"])
-		var combined_text: String = "Add partial products: %s" % " + ".join(pieces.slice(0, maxi(0, pieces.size() - 1)))
-		if current_world == 5:
-			combined_text = "Divide the remaining part, then add the quotients."
-		var combined := make_label(combined_text, 18, Color("8de8ff"))
-		combined.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		workshop_path.add_child(combined)
+			if int(recorded.get("mistakes", 0)) > 0:
+				status += " / RETRIED"
+		elif i == current_index:
+			status = "CURRENT STEP" if not bool(workshop_session.get("current_hint", false)) else "HINT OPENED"
+			color = Color("8de8ff")
+		if guidance >= 2 and i > current_index and not workshop_review_open:
+			expression = "Next calculation"
+		elif guidance >= 1 and i > current_index + 1 and not workshop_review_open:
+			expression = "Upcoming calculation"
+		var row_panel := PanelContainer.new()
+		if i == current_index and not workshop_review_open:
+			row_panel.add_theme_stylebox_override("panel", space_panel(Color("193e65", 0.94), Color("69e5ff"), 7, 0.0))
+		else:
+			row_panel.add_theme_stylebox_override("panel", space_panel(Color("102348", 0.55), Color("253c62"), 7, 0.0))
+		workshop_path.add_child(row_panel)
+		var row_label := make_label("%d. %s = %s   [%s]" % [i + 1, expression, value_text, status], 17, color)
+		row_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		row_panel.add_child(row_label)
+		partial_values.append(value_text)
+	if last_index > 0:
+		var is_division: bool = int(q["world"]) == 5
+		if is_division:
+			var first_quotient: int = int(q["a"] / q["b"]) - int(session_steps[2]["answer"])
+			var remaining_quotient: String = partial_values[2] if partial_values.size() > 2 else "?"
+			workshop_path.add_child(make_label("Combine quotients: %d + %s = %s" % [first_quotient, remaining_quotient, partial_values[3] if partial_values.size() > 3 else "?"], 18, Color("8de8ff")))
+		else:
+			var products: Array = partial_values.slice(0, partial_values.size() - 1)
+			workshop_path.add_child(make_label("Add partial products: %s = %s" % [" + ".join(products), partial_values[partial_values.size() - 1]], 18, Color("8de8ff")))
 	if last_index >= 0:
 		var final_value: String = "?"
 		var final_status: String = "TO SOLVE"
 		if completed.has(last_index):
 			final_value = str(completed[last_index]["answer"])
 			final_status = "MY ANSWER" if str(completed[last_index]["source"]) == "self" else "ASSISTED / SHOWN"
-		var q: Dictionary = workshop_session["question"]
-		var final_line := make_label("Result: %d %s %d = %s   [%s]" % [int(q["a"]), str(q["sign"]), int(q["b"]), final_value, final_status], 18, Color("8fffc4"))
-		final_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		workshop_path.add_child(final_line)
+		workshop_path.add_child(make_label("Result: %d %s %d = %s   [%s]" % [int(q["a"]), str(q["sign"]), int(q["b"]), final_value, final_status], 18, Color("8fffc4")))
 
 func switch_workshop_strategy() -> void:
 	if world != 5:
@@ -454,12 +471,13 @@ func submit_workshop_step() -> void:
 		workshop_next.visible = true
 		refresh_workshop_solution_path()
 	else:
-		workshop_feedback.text = "Not quite. Try again or use HINT."
+		workshop_feedback.text = "Not quite. Check this calculation and try again. Your mistake is recorded."
 
 func reveal_workshop_step() -> void:
 	if is_instance_valid(workshop_next) and workshop_next.visible:
 		return
 	WORKSHOP_ENGINE.reveal(workshop_session)
+	workshop_review_open = true
 	var step: Dictionary = WORKSHOP_ENGINE.current_step(workshop_session)
 	workshop_feedback.text = "Hint: this step equals %d. Type it to continue." % int(step["answer"])
 	refresh_workshop_solution_path()
@@ -475,14 +493,27 @@ func finish_workshop() -> void:
 	if records.size() > 200:
 		records.pop_front()
 	progress["workshop_history"] = records
+	WORKSHOP_ENGINE.record_guided_streak(progress, outcome)
 	save_progress()
 	screen = "workshop_complete"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
 	root.add_child(make_label("WORKSHOP COMPLETE!", 48, Color("8fffc4")))
 	root.add_child(make_label("Mistakes: %d   Hints: %d" % [int(outcome["mistakes"]), int(outcome["hints"])], 27))
 	root.add_child(make_label("Independent: YES" if outcome["independent"] else "Guided practice completed", 23, Color("c4e5ff")))
+	root.add_child(make_button("REVIEW SOLUTION", show_workshop_review, Color("2865ad"), 280, 58, 20))
 	root.add_child(make_button("TRY ANOTHER", func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 64, 22))
 	root.add_child(make_button("BACK TO WORKSHOP", show_workshop, Color("425d88"), 280, 60, 21))
+
+func show_workshop_review() -> void:
+	screen = "workshop_review"
+	workshop_review_open = true
+	var root := build_root(MENU_BACKGROUNDS[world - 1])
+	root.add_child(make_label("REVIEW YOUR SOLUTION", 35, Color("8de8ff")))
+	root.add_child(make_label(DECOMPOSITION_ENGINE.explanation(workshop_session["question"], str(workshop_session.get("strategy", "tens"))), 20, Color("bbd6f3")))
+	# Reuse the same solution-path renderer, with all completed steps intact.
+	add_workshop_solution_path(root)
+	root.add_child(make_button("BACK TO WORKSHOP", show_workshop, Color("425d88"), 280, 58, 20))
+	root.add_child(make_button("TRY ANOTHER", func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 58, 20))
 
 func make_world_card(idx: int) -> Button:
 	var selected: bool = idx == world
@@ -858,7 +889,7 @@ func exit_mission() -> void:
 	finish_mission()
 
 func save_progress() -> void:
-	progress["schema_version"] = 6
+	progress["schema_version"] = 7
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(progress))
@@ -874,4 +905,4 @@ func load_progress() -> void:
 		progress = parsed
 		if not progress.has("skills"): progress["skills"] = {}
 	if not progress.has("strategies"): progress["strategies"] = {}
-	progress["schema_version"] = 6
+	progress["schema_version"] = 7
