@@ -1,5 +1,6 @@
 extends Control
 
+const PROGRESSION = preload("res://scripts/LearningProgression.gd")
 const LEARNING_ENGINE = preload("res://scripts/LearningEngine.gd")
 const ADAPTIVE_SELECTOR = preload("res://scripts/AdaptiveQuestionSelector.gd")
 const SKILL_TAXONOMY = preload("res://scripts/SkillTaxonomy.gd")
@@ -22,6 +23,8 @@ const BLUE := Color("2388ef")
 
 var progress: Dictionary = {"coins": 0, "missions": 0, "skills": {}}
 var world: int = 1
+var level: int = 0
+var level_practice: bool = false
 var screen: String = "menu"
 var elapsed: float = 0.0
 var question_elapsed: float = 0.0
@@ -45,6 +48,8 @@ var paused: bool = false
 var last_key: String = ""
 var recent_keys: Array[String] = []
 var pending_defeat: bool = false
+var question_attempt_id: String = ""
+var workshop_step_started: int = 0
 var workshop_session: Dictionary = {}
 var workshop_keypad: VBoxContainer
 var workshop_value: String = ""
@@ -70,6 +75,7 @@ var main_box: VBoxContainer
 func _ready() -> void:
 	randomize()
 	load_progress()
+	migrate_learning_data()
 	show_menu()
 
 func _notification(what: int) -> void:
@@ -261,9 +267,12 @@ func show_menu() -> void:
 	var fill := Control.new()
 	fill.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(fill)
+	var level_wrap := CenterContainer.new()
+	root.add_child(level_wrap)
+	level_wrap.add_child(make_button("SELECT SUBLEVEL", show_levels, Color("2865ad"), 340, 58, 22))
 	var start_wrap := CenterContainer.new()
 	root.add_child(start_wrap)
-	start_wrap.add_child(make_button("▶  START 5-MINUTE MISSION", start_mission, Color("00e485"), 520, 78, 29))
+	start_wrap.add_child(make_button("▶  CHOOSE MISSION", show_levels, Color("00e485"), 520, 78, 29))
 	var workshop_wrap := CenterContainer.new()
 	root.add_child(workshop_wrap)
 	workshop_wrap.add_child(make_button("✦  MATH WORKSHOP", show_workshop, Color("2865ad"), 340, 60, 23))
@@ -290,11 +299,15 @@ func show_workshop() -> void:
 
 func start_workshop(mode: String) -> void:
 	var q: Dictionary = MathEngine.generate(world)
+	progress["workshop_sequence"] = int(progress.get("workshop_sequence", 0)) + 1
 	workshop_session = WORKSHOP_ENGINE.prepare(q, mode)
+	workshop_session["session_id"] = "workshop:%d" % int(progress["workshop_sequence"])
+	save_progress()
 	workshop_review_open = false
 	show_workshop_step()
 
 func show_workshop_step() -> void:
+	workshop_step_started = Time.get_ticks_msec()
 	screen = "workshop_step"
 	workshop_value = ""
 	workshop_keypad = null
@@ -451,6 +464,7 @@ func press_workshop_digit(digit: String) -> void:
 
 func advance_workshop_demo() -> void:
 	var demo_index: int = int(workshop_session["index"])
+	record_workshop_attempt(true, "demo")
 	var history: Array = workshop_session.get("step_results", [])
 	history.append({"step": demo_index, "answer": int(WORKSHOP_ENGINE.current_step(workshop_session)["answer"]), "source": "shown"})
 	workshop_session["step_results"] = history
@@ -464,7 +478,10 @@ func submit_workshop_step() -> void:
 	if not workshop_value.is_valid_int():
 		workshop_feedback.text = "Enter a whole number first."
 		return
+	var expected: int = int(WORKSHOP_ENGINE.current_step(workshop_session)["answer"])
+	record_workshop_attempt(int(workshop_value) == expected, "answer")
 	var correct: bool = WORKSHOP_ENGINE.check(workshop_session, int(workshop_value))
+	workshop_step_started = Time.get_ticks_msec()
 	workshop_keypad.call("flash", correct)
 	if correct:
 		workshop_feedback.text = "Correct! Continue to the next step."
@@ -486,6 +503,9 @@ func advance_workshop_step() -> void:
 	show_workshop_step()
 
 func finish_workshop() -> void:
+	if bool(workshop_session.get("recorded", false)):
+		return
+	workshop_session["recorded"] = true
 	var outcome: Dictionary = WORKSHOP_ENGINE.summary(workshop_session)
 	var records: Array = progress.get("workshop_history", [])
 	outcome["timestamp"] = int(Time.get_unix_time_from_system())
@@ -564,7 +584,42 @@ func make_world_card(idx: int) -> Button:
 
 func select_world(value: int) -> void:
 	world = value
+	level = 0
 	show_menu()
+
+func show_levels() -> void:
+	screen = "levels"
+	var root := build_root(MENU_BACKGROUNDS[world - 1])
+	root.add_child(make_label("WORLD %d - SUBLEVELS" % world, 34, Color("84d8ff")))
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	root.add_child(scroll)
+	var list := VBoxContainer.new()
+	scroll.add_child(list)
+	for i in range(PROGRESSION.levels(world).size()):
+		var index: int = i
+		var available: bool = PROGRESSION.is_unlocked(progress, world, i)
+		var completed: bool = bool(progress.get("completed_levels", {}).get(PROGRESSION.id_for(world, i), false))
+		var label_text: String = "%d. %s" % [i + 1, PROGRESSION.levels(world)[i]]
+		if completed: label_text += "  ✓ Replay"
+		if not available: label_text += "  -  " + PROGRESSION.requirement(progress, world, i)
+		elif not completed: label_text += "  -  " + PROGRESSION.required_evidence(world, i)
+		var btn := make_button(label_text, func(): select_level(index), Color("267aa8") if available else Color("34415e"), 650, 48, 19)
+		btn.disabled = not available
+		list.add_child(btn)
+	root.add_child(make_button("PRACTICE NEXT SKILL", start_level_practice, Color("4260a4"), 320, 50, 19))
+	root.add_child(make_button("BACK", show_menu, Color("4260a4"), 180, 50, 19))
+
+func select_level(index: int) -> void:
+	if not PROGRESSION.is_unlocked(progress, world, index): return
+	level = index
+	level_practice = false
+	start_mission()
+
+func start_level_practice() -> void:
+	level = PROGRESSION.practice_target(progress, world)
+	level_practice = true
+	start_mission()
 
 func start_mission() -> void:
 	progress["mission_sequence"] = int(progress.get("mission_sequence", 0)) + 1
@@ -701,6 +756,14 @@ func update_hud() -> void:
 	timer_bar.value = maxf(0.0, question_limit - question_elapsed)
 
 func choose_question() -> Dictionary:
+ # Spiral review is deliberately excluded from level evidence and challenges.
+	if not level_practice and not PROGRESSION.is_final(world, level) and randf() < 0.15:
+		var previous_world: int = PROGRESSION.review_world(world, level)
+		if previous_world > 0:
+			return PROGRESSION.generate(previous_world, randi_range(0, PROGRESSION.levels(previous_world).size() - 2))
+	return PROGRESSION.generate(world, level)
+
+func choose_question_legacy() -> Dictionary:
 	var today: int = int(Time.get_unix_time_from_system() / 86400.0)
 	if phase >= 3 and not queue.is_empty() and randf() < 0.75:
 		var pending: Dictionary = queue.pop_front()
@@ -714,6 +777,9 @@ func next_question() -> void:
 		finish_mission()
 		return
 	question = choose_question()
+	progress["attempt_sequence"] = int(progress.get("attempt_sequence", 0)) + 1
+	question_attempt_id = "battle:%d" % int(progress["attempt_sequence"])
+	save_progress()
 	last_key = question["key"]
 	recent_keys.append(last_key)
 	if recent_keys.size() > 5:
@@ -801,7 +867,7 @@ func resolve_answer(value: int, reason: String) -> void:
 	var fast: bool = question_elapsed <= question_limit * 0.45 and not hint_used
 	var skill_key: String = question["key"]
 	var skills: Dictionary = progress["skills"]
-	var stats: Dictionary = LEARNING_ENGINE.record(skills.get(skill_key, {}), correct, reason, question_elapsed, input_mode, hint_used, int(progress.get("mission_sequence", 0)), int(Time.get_unix_time_from_system() / 86400.0))
+	var stats: Dictionary = LEARNING_ENGINE.record(skills.get(skill_key, {}), correct, reason, question_elapsed, input_mode, hint_used, int(progress.get("mission_sequence", 0)), int(Time.get_unix_time_from_system() / 86400.0), question_attempt_id, LEARNING_ENGINE.criteria_for(progress, int(question["world"])))
 	if keypad != null:
 		keypad.call("flash", correct)
 	if correct:
@@ -823,11 +889,12 @@ func resolve_answer(value: int, reason: String) -> void:
 			queue.append(question.duplicate(true))
 		if shield == 0:
 			feedback.text = "SHIELD DESTROYED! MISSION FAILED"
+	PROGRESSION.record(progress, world, level, question, correct, reason, input_mode, hint_used, phase == 3 and not level_practice)
 	skills[skill_key] = stats
-	if world > 1:
+	if int(question["world"]) > 1:
 		var strategy_key: String = SKILL_TAXONOMY.key_for(question)
 		var strategies: Dictionary = progress.get("strategies", {})
-		strategies[strategy_key] = LEARNING_ENGINE.record(strategies.get(strategy_key, {}), correct, reason, question_elapsed, input_mode, hint_used, int(progress.get("mission_sequence", 0)), int(Time.get_unix_time_from_system() / 86400.0))
+		strategies[strategy_key] = LEARNING_ENGINE.record(strategies.get(strategy_key, {}), correct, reason, question_elapsed, input_mode, hint_used, int(progress.get("mission_sequence", 0)), int(Time.get_unix_time_from_system() / 86400.0), question_attempt_id, LEARNING_ENGINE.criteria_for(progress, int(question["world"])))
 		progress["strategies"] = strategies
 	update_hud()
 	if shield == 0:
@@ -869,6 +936,9 @@ func finish_mission() -> void:
 	question_active = false
 	progress["coins"] = int(progress.get("coins",0)) + coins_earned
 	progress["missions"] = int(progress.get("missions",0)) + 1
+	var passed: bool = false
+	if not level_practice:
+		passed = PROGRESSION.complete(progress, world, level)
 	save_progress()
 	screen = "results"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
@@ -879,17 +949,18 @@ func finish_mission() -> void:
 	root.add_child(make_label("World %d: %s" % [world,WORLD_NAMES[world - 1]], 26))
 	root.add_child(make_label("Correct: %d        Missed: %d        Shield: %d%%" % [hits,misses,shield], 31))
 	root.add_child(make_label("+%d crystals    •    %d questions awaiting review" % [coins_earned,queue.size()], 29, Color("7dd3fc")))
-	root.add_child(make_label("Progress has been saved locally", 21, Color("a7f3d0")))
+	root.add_child(make_label("SUBLEVEL PASSED" if passed else "Practice completed - challenge needs more independent answers" if level_practice else "More independent evidence needed - retry this level", 21, Color("a7f3d0")))
 	root.add_child(make_button("◀  RETURN TO GALAXY", show_menu, Color("00e485"), 280, 68, 24))
 	var sp2 := Control.new()
 	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(sp2)
 
 func exit_mission() -> void:
-	finish_mission()
+	coins_earned = 0
+	fail_mission()
 
 func save_progress() -> void:
-	progress["schema_version"] = 7
+	progress["schema_version"] = 9
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
 		file.store_string(JSON.stringify(progress))
@@ -905,4 +976,36 @@ func load_progress() -> void:
 		progress = parsed
 		if not progress.has("skills"): progress["skills"] = {}
 	if not progress.has("strategies"): progress["strategies"] = {}
-	progress["schema_version"] = 7
+	if not progress.has("legacy_unlocked_world"):
+		progress["legacy_unlocked_world"] = int(progress.get("unlocked_world", 1))
+	if not progress.has("completed_levels"): progress["completed_levels"] = {}
+	if not progress.has("level_evidence"): progress["level_evidence"] = {}
+	progress["schema_version"] = 9
+
+func record_workshop_attempt(correct: bool, reason: String) -> void:
+	var q: Dictionary = workshop_session["question"]
+	var index: int = int(workshop_session["index"])
+	var final_step: bool = index == workshop_session["steps"].size() - 1
+	var mode: String = str(workshop_session["mode"])
+	var assisted: bool = mode != "solo" or int(workshop_session["hints"]) > 0 or int(workshop_session["mistakes"]) > 0
+	var count: int = int(workshop_session.get("attempt_count", 0)) + 1
+	workshop_session["attempt_count"] = count
+	var event_id: String = "%s:%d" % [workshop_session["session_id"], count]
+	var day: int = int(Time.get_unix_time_from_system() / 86400.0)
+	var seconds: float = (Time.get_ticks_msec() - workshop_step_started) / 1000.0
+	var bucket: String = "skills" if int(q["world"]) == 1 else "strategies"
+	var key: String = SKILL_TAXONOMY.key_for(q)
+	if not final_step:
+		bucket = "workshop_steps"
+		key += ":%s:%d" % [workshop_session.get("strategy", "tens"), index]
+	var records: Dictionary = progress.get(bucket, {})
+	records[key] = LEARNING_ENGINE.record(records.get(key, {}), correct, reason, seconds, "demo" if mode == "demo" else "numeric", assisted, -int(progress["workshop_sequence"]), day, event_id, LEARNING_ENGINE.criteria_for(progress, int(q["world"])))
+	progress[bucket] = records
+	save_progress()
+
+func migrate_learning_data() -> void:
+	for bucket in ["skills", "strategies", "workshop_steps"]:
+		var records: Dictionary = progress.get(bucket, {})
+		for key in records:
+			records[key] = LEARNING_ENGINE.migrate(records[key])
+		progress[bucket] = records
