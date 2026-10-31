@@ -1006,7 +1006,7 @@ func resolve_answer(value: int, reason: String) -> void:
 		art.call("hit_ship")
 		queue_review()
 		if shield == 0:
-			feedback.text = L10N.text("SHIELD DESTROYED! MISSION FAILED")
+			feedback.text = L10N.text("SHIELD DEPLETED! RETREATING")
 	PROGRESSION.record(progress, world, level, question, correct, reason, input_mode, hint_used, phase == 3 and not level_practice)
 	skills[skill_key] = stats
 	if int(question["world"]) > 1:
@@ -1035,7 +1035,7 @@ func fail_mission() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(spacer)
-	root.add_child(make_label(L10N.text("SHIP DESTROYED"), 58, Color("fb7185")))
+	root.add_child(make_label(L10N.text("EMERGENCY RETREAT"), 58, Color("fb7185")))
 	root.add_child(make_label(L10N.text("World %d: %s") % [world, L10N.text(WORLD_NAMES[world - 1])], 26))
 	root.add_child(make_label(L10N.text("Correct: %d        Missed: %d") % [hits, misses], 31))
 	root.add_child(make_label(L10N.text("Shield: 0%  •  No mission crystals awarded"), 24, Color("fda4af")))

@@ -45,7 +45,7 @@ static func show(host: Control, notice: String = "") -> void:
 		preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		card.add_child(preview)
-		var detail: String = "Scout • Cyan engines" if id == "default" else "Heavy hull • Golden engines" if id == "gold" else "Interceptor • Violet engines"
+		var detail: String = "Scout • Cyan laser" if id == "default" else "Heavy hull • 5-round burst" if id == "gold" else "Interceptor • Violet lightning"
 		card.add_child(host.make_label(L10N.text(detail), 17, Color("b3cbe7")))
 		var equipped: bool = host.progress.rewards.equipped == id
 		var owned: bool = id == "default" or host.progress.rewards.owned.has(id)

@@ -2,6 +2,11 @@ extends RefCounted
 
 # English source templates map to Ukrainian; keep format placeholders unchanged.
 const UK := {
+	"EMERGENCY RETREAT": "АВАРІЙНИЙ ВІДСТУП",
+	"SHIELD DEPLETED! RETREATING": "ЩИТ ВИЧЕРПАНО! ВІДСТУПАЄМО",
+	"Scout • Cyan laser": "Розвідник • Блакитний лазер",
+	"Heavy hull • 5-round burst": "Важкий корпус • Черга з 5 куль",
+	"Interceptor • Violet lightning": "Перехоплювач • Фіолетова блискавка",
 	"Scout • Cyan engines": "Розвідник • Блакитні двигуни",
 	"Heavy hull • Golden engines": "Важкий корпус • Золоті двигуни",
 	"Interceptor • Violet engines": "Перехоплювач • Фіолетові двигуни",
