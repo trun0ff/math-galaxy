@@ -75,14 +75,22 @@ static func validate(value: Variant) -> bool:
 	if not value is Dictionary or not value.get("skills") is Dictionary: return false
 	if not valid_tree(value): return false
 	if value.has("missions") and not (value.missions is int or value.missions is float): return false
-	if int(value.get("schema_version", 0)) > 10: return false
-	for key in ["skills", "strategies", "workshop_steps", "completed_levels", "level_evidence", "parent_settings", "diagnostics", "parent_pin", "learning_config", "workshop_clean_streak", "workshop_totals"]:
+	if int(value.get("schema_version", 0)) > 11: return false
+	for key in ["skills", "strategies", "workshop_steps", "completed_levels", "level_evidence", "parent_settings", "diagnostics", "parent_pin", "learning_config", "workshop_clean_streak", "workshop_totals", "rewards"]:
 		if value.has(key) and not value[key] is Dictionary: return false
 	for key in ["mission_history", "workshop_history"]:
 		if value.has(key) and not value[key] is Array: return false
 	for key in ["skills", "strategies", "workshop_steps", "diagnostics", "level_evidence"]:
 		for item in value.get(key, {}).values():
 			if not item is Dictionary: return false
+	var rewards: Dictionary = value.get("rewards", {})
+	for key in ["owned", "achievements", "days", "records"]:
+		if rewards.has(key) and not rewards[key] is Dictionary: return false
+	if rewards.has("settled") and (not (rewards.settled is int or rewards.settled is float) or not is_finite(float(rewards.settled)) or float(rewards.settled) < 0): return false
+	if rewards.has("equipped") and not rewards.equipped is String: return false
+	for record in rewards.get("records", {}).values():
+		if not record is Dictionary: return false
+		if record.has("accuracy") and (not (record.accuracy is int or record.accuracy is float) or not is_finite(float(record.accuracy)) or float(record.accuracy) < 0 or float(record.accuracy) > 1): return false
 	var settings: Dictionary = value.get("parent_settings", {})
 	if settings.has("duration") and not (settings.duration is float or settings.duration is int): return false
 	if settings.has("limits"):

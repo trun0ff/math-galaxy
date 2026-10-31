@@ -21,3 +21,6 @@ Thumbs.db
 # Local Android export credentials
 *.keystore
 *.jks
+
+# Isolated Godot test saves
+.test-user/

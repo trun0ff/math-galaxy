@@ -19,6 +19,7 @@ var rng := RandomNumberGenerator.new()
 const PLAYER_TEXTURE = preload("res://assets/battle/player.png")
 const ENEMY_TEXTURES = [preload("res://assets/battle/enemy_1.png"), preload("res://assets/battle/enemy_2.png"), preload("res://assets/battle/enemy_3.png")]
 const WORLD_BACKGROUNDS = [preload("res://assets/battle/world_1_background_fade.png"), preload("res://assets/battle/world_2_background_fade.png"), preload("res://assets/battle/world_3_background_fade.png"), preload("res://assets/battle/world_4_background_fade.png"), preload("res://assets/battle/world_5_background_fade.png")]
+var ship_tint := Color.WHITE
 var current_world: int = 1
 
 func set_world(idx: int) -> void:
@@ -131,7 +132,7 @@ func _draw() -> void:
 		draw_circle(ship + Vector2(-68, 0), 32.0 + flame * 0.3, Color(0.16, 0.65, 1.0, 0.14))
 		draw_colored_polygon(PackedVector2Array([ship + Vector2(-57, -12), ship + Vector2(-102 - flame, 0), ship + Vector2(-57, 12)]), Color(0.25, 0.78, 1.0, 0.48))
 		draw_colored_polygon(PackedVector2Array([ship + Vector2(-62, -5), ship + Vector2(-95 - flame * 0.65, 0), ship + Vector2(-62, 5)]), Color("e5ffff"))
-		draw_texture_rect(PLAYER_TEXTURE, Rect2(ship - Vector2(93, 93), Vector2(186, 186)), false)
+		draw_texture_rect(PLAYER_TEXTURE, Rect2(ship - Vector2(93, 93), Vector2(186, 186)), false, ship_tint)
 	if enemy_defeated <= 0.0:
 		var enemy_scale: float = (1.35 if boss_mode else 1.0) * (1.0 + sin(time_passed * 3.0) * 0.025)
 		var enemy_size := Vector2(125.0, 125.0) * enemy_scale

@@ -1,5 +1,8 @@
 extends Control
 
+const REWARD_MANAGER = preload("res://scripts/RewardManager.gd")
+const HANGAR = preload("res://scripts/Hangar.gd")
+
 const PARENT_DATA = preload("res://scripts/ParentData.gd")
 const PARENT_UI = preload("res://scripts/ParentDashboard.gd")
 
@@ -39,6 +42,8 @@ var combo: int = 0
 var hits: int = 0
 var misses: int = 0
 var coins_earned: int = 0
+var difficult_facts: Dictionary = {}
+var repair_used := false
 var question: Dictionary = {}
 var queue: Array[Dictionary] = []
 var input_mode: String = "numeric"
@@ -255,6 +260,7 @@ func show_menu() -> void:
 	top.add_child(make_stat_chip("💎", "Crystals %d" % progress.get("coins",0)))
 	top.add_child(make_stat_chip("🏅", "Missions %d" % progress.get("missions",0)))
 	var settings := make_button("⚙", open_parent, Color("274784"), 58, 56, 24)
+	top.add_child(make_button("HANGAR", show_hangar, Color("2865ad"), 150, 56, 20))
 	top.add_child(settings)
 	root.add_child(top)
 	root.add_child(make_label("MATH GALAXY", 56, Color("84d8ff")))
@@ -630,11 +636,15 @@ func start_level_practice() -> void:
 func start_mission() -> void:
 	MISSION_LENGTH = PARENT_DATA.duration(progress)
 	PHASE_LIMITS = [35.0, 85.0, 235.0, 280.0, 300.0].map(func(v): return v * MISSION_LENGTH / 300.0)
-	progress["mission_sequence"] = int(progress.get("mission_sequence", 0)) + 1
+	REWARD_MANAGER.migrate(progress)
+	progress["mission_sequence"] = maxi(int(progress.get("mission_sequence", 0)), int(progress.rewards.settled)) + 1
+	save_progress()
+	difficult_facts.clear()
+	repair_used = false
 	elapsed = 0.0
 	phase = 0
 	shield = 100
-	energy = 50
+	energy = 65 if progress.rewards.owned.has("battery") else 50
 	combo = 0
 	hits = 0
 	misses = 0
@@ -733,6 +743,10 @@ func build_battle() -> void:
 	footer.add_child(make_button("✦ HINT  -25 ENERGY", use_hint, Color("9d50ff"), 230, 51, 19))
 	footer.add_child(make_button("↻ SKIP  -20 SHIELD", func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 51, 19))
 	footer.add_child(make_button("◀ EXIT", exit_mission, Color("4f8cdb"), 125, 51, 19))
+	if progress.rewards.owned.has("repair"):
+		footer.add_child(make_button("REPAIR +15", use_repair, Color("2865ad"), 160, 51, 18))
+	art.set("ship_tint", Color("c89aff") if progress.rewards.equipped == "violet" else Color("ffe080") if progress.rewards.equipped == "gold" else Color.WHITE)
+	update_hud()
 	update_phase_label()
 
 func style_progress(bar: ProgressBar, fill: Color) -> void:
@@ -764,7 +778,7 @@ func update_hud() -> void:
 	timer_bar.value = maxf(0.0, question_limit - question_elapsed)
 
 func choose_question() -> Dictionary:
- # Spiral review is deliberately excluded from level evidence and challenges.
+	# Spiral review is deliberately excluded from level evidence and challenges.
 	if not level_practice and not PROGRESSION.is_final(world, level) and randf() < 0.15:
 		var previous_world: int = PROGRESSION.review_world(world, level)
 		if previous_world > 0:
@@ -876,6 +890,8 @@ func resolve_answer(value: int, reason: String) -> void:
 	var fast: bool = question_elapsed <= question_limit * 0.45 and not hint_used
 	var skill_key: String = question["key"]
 	var skills: Dictionary = progress["skills"]
+	if correct and input_mode == "numeric" and not hint_used and int(skills.get(skill_key, {}).get("wrong", 0)) > 0:
+		difficult_facts[skill_key] = true
 	var stats: Dictionary = LEARNING_ENGINE.record(skills.get(skill_key, {}), correct, reason, question_elapsed, input_mode, hint_used, int(progress.get("mission_sequence", 0)), int(Time.get_unix_time_from_system() / 86400.0), question_attempt_id, LEARNING_ENGINE.criteria_for(progress, int(question["world"])))
 	if keypad != null:
 		keypad.call("flash", correct)
@@ -886,7 +902,7 @@ func resolve_answer(value: int, reason: String) -> void:
 		shield = mini(100, shield + 5 + (10 if combo % 5 == 0 else 0))
 		var reward: int = 10 + (5 if fast else 0)
 		coins_earned += reward
-		feedback.text = "DIRECT HIT! +%d crystals" % reward
+		feedback.text = "DIRECT HIT! +%d pending crystals" % reward
 		art.call("hit_enemy")
 	else:
 		misses += 1
@@ -916,6 +932,7 @@ func resolve_answer(value: int, reason: String) -> void:
 func fail_mission() -> void:
 	if finished: return
 	finished = true
+	REWARD_MANAGER.settle(progress, int(progress.mission_sequence), false, hits, misses, 0, 0, Time.get_date_string_from_system(true), world)
 	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, false)
 	question_active = false
 	transition_delay = 0.0
@@ -945,7 +962,8 @@ func finish_mission() -> void:
 	finished = true
 	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, true)
 	question_active = false
-	progress["coins"] = int(progress.get("coins",0)) + coins_earned
+	var payout: Dictionary = REWARD_MANAGER.settle(progress, int(progress.mission_sequence), true, hits, misses, coins_earned, difficult_facts.size(), Time.get_date_string_from_system(true), world)
+	coins_earned = int(payout.amount)
 	progress["missions"] = int(progress.get("missions",0)) + 1
 	var passed: bool = false
 	if not level_practice:
@@ -960,6 +978,9 @@ func finish_mission() -> void:
 	root.add_child(make_label("World %d: %s" % [world,WORLD_NAMES[world - 1]], 26))
 	root.add_child(make_label("Correct: %d        Missed: %d        Shield: %d%%" % [hits,misses,shield], 31))
 	root.add_child(make_label("+%d crystals    •    %d questions awaiting review" % [coins_earned,queue.size()], 29, Color("7dd3fc")))
+	var reward_note := make_label(str(payout.details), 17, Color("ffd85b"))
+	reward_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	root.add_child(reward_note)
 	root.add_child(make_label("SUBLEVEL PASSED" if passed else "Practice completed - challenge needs more independent answers" if level_practice else "More independent evidence needed - retry this level", 21, Color("a7f3d0")))
 	root.add_child(make_button("◀  RETURN TO GALAXY", show_menu, Color("00e485"), 280, 68, 24))
 	var sp2 := Control.new()
@@ -971,7 +992,7 @@ func exit_mission() -> void:
 	fail_mission()
 
 func save_progress() -> void:
-	progress["schema_version"] = 10
+	REWARD_MANAGER.migrate(progress)
 	PARENT_DATA.write_save(SAVE_PATH, progress)
 
 func load_progress() -> void:
@@ -988,7 +1009,7 @@ func load_progress() -> void:
 		progress["legacy_unlocked_world"] = int(progress.get("unlocked_world", 1))
 	if not progress.has("completed_levels"): progress["completed_levels"] = {}
 	if not progress.has("level_evidence"): progress["level_evidence"] = {}
-	progress["schema_version"] = 10
+	REWARD_MANAGER.migrate(progress)
 
 func record_workshop_attempt(correct: bool, reason: String) -> void:
 	var q: Dictionary = workshop_session["question"]
@@ -1025,3 +1046,37 @@ func open_parent() -> void:
 	panel.set_script(PARENT_UI)
 	add_child(panel)
 	panel.call("setup", self)
+
+func show_hangar() -> void:
+	HANGAR.show(self)
+
+func buy_hangar(id: String) -> void:
+	REWARD_MANAGER.migrate(progress)
+	if progress.rewards.owned.has(id):
+		equip_hangar(id)
+		return
+	var before := progress.duplicate(true)
+	if not REWARD_MANAGER.purchase(progress, id):
+		HANGAR.show(self, "Not enough crystals or already owned")
+		return
+	if not PARENT_DATA.write_save(SAVE_PATH, progress):
+		progress = before
+		HANGAR.show(self, "Could not save purchase. Crystals returned.")
+		return
+	HANGAR.show(self, "Unlocked!" )
+
+func equip_hangar(id: String) -> void:
+	var before := progress.duplicate(true)
+	if REWARD_MANAGER.equip(progress, id):
+		if not PARENT_DATA.write_save(SAVE_PATH, progress):
+			progress = before
+			HANGAR.show(self, "Could not save selection")
+			return
+	HANGAR.show(self)
+
+func use_repair() -> void:
+	if screen != "battle" or finished or pending_defeat or repair_used or not progress.rewards.owned.has("repair"): return
+	repair_used = true
+	shield = mini(100, shield + 15)
+	feedback.text = "Repair pulse used (+15 shield)"
+	update_hud()
