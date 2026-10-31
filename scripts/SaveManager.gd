@@ -1,5 +1,7 @@
 extends RefCounted
 
+const L10N = preload("res://scripts/Localization.gd")
+
 const VERSION := 13
 const REWARDS = preload("res://scripts/RewardManager.gd")
 
@@ -29,9 +31,9 @@ static func load_profile(path: String) -> Dictionary:
 	if value != null: return {"data": value, "warning": "", "writable": true}
 	var backup: Variant = read_profile(path + ".bak")
 	if backup != null:
-		return {"data": backup, "warning": "Profile recovered from backup. The original file is preserved until the next save.", "writable": true}
+		return {"data": backup, "warning": L10N.text("Profile recovered from backup. The original file is preserved until the next save."), "writable": true}
 	var damaged := FileAccess.file_exists(path) or FileAccess.file_exists(path + ".bak")
-	return {"data": migrate({"coins": 0, "missions": 0, "skills": {}}), "warning": "Profile cannot be read. Files preserved; saving is disabled. Restore a valid profile from the parent screen." if damaged else "", "writable": not damaged}
+	return {"data": migrate({"coins": 0, "missions": 0, "skills": {}}), "warning": L10N.text("Profile cannot be read. Files preserved; saving is disabled. Restore a valid profile from the parent screen.") if damaged else "", "writable": not damaged}
 
 static func write_text(path: String, text: String) -> bool:
 	var file := FileAccess.open(path, FileAccess.WRITE)

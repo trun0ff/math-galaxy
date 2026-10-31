@@ -1,5 +1,9 @@
 extends RefCounted
+
 class_name LearningProgression
+
+const L10N = preload("res://scripts/Localization.gd")
+
 
 const TAXONOMY = preload("res://scripts/SkillTaxonomy.gd")
 const TRACKS = [
@@ -11,7 +15,10 @@ const TRACKS = [
 ]
 
 static func levels(world: int) -> Array:
- return TRACKS[clampi(world, 1, 5) - 1]
+ var translated: Array = []
+ for title in TRACKS[clampi(world, 1, 5) - 1]:
+  translated.append(L10N.text(title))
+ return translated
 
 static func id_for(world: int, level: int) -> String:
  return "%d:%d" % [world, level]
@@ -25,9 +32,9 @@ static func is_unlocked(progress: Dictionary, world: int, level: int) -> bool:
  return bool(progress.get("completed_levels", {}).get(id_for(world, level - 1), false))
 
 static func requirement(progress: Dictionary, world: int, level: int) -> String:
- if is_unlocked(progress, world, level): return "Available"
- if level == 0: return "Complete World %d final challenge" % (world - 1)
- return "Complete %s" % levels(world)[level - 1]
+ if is_unlocked(progress, world, level): return L10N.text("Available")
+ if level == 0: return L10N.text("Complete World %d final challenge") % (world - 1)
+ return L10N.text("Complete %s") % levels(world)[level - 1]
 
 static func matches(world: int, level: int, q: Dictionary) -> bool:
  if world == 1:
@@ -70,7 +77,7 @@ static func review_world(world: int, level: int) -> int:
  return randi_range(1, world - 1)
 
 static func required_evidence(world: int, level: int) -> String:
- return "8 independent answers, including 2 boss answers, 5 distinct examples and 2 missions" if is_final(world, level) else "5 independent answers, 3 distinct examples and 2 missions"
+ return L10N.text("8 independent answers, including 2 boss answers, 5 distinct examples and 2 missions") if is_final(world, level) else L10N.text("5 independent answers, 3 distinct examples and 2 missions")
 
 
 static func record(progress: Dictionary, world: int, level: int, q: Dictionary, correct: bool, reason: String, mode: String, hinted: bool, boss_phase: bool = false) -> void:

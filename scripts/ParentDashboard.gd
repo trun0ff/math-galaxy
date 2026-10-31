@@ -1,5 +1,7 @@
 extends Control
 
+const L10N = preload("res://scripts/Localization.gd")
+
 const DATA = preload("res://scripts/ParentData.gd")
 const KEYPAD = preload("res://scripts/ui/NeonKeypad.gd")
 var host: Control
@@ -35,18 +37,18 @@ func clear() -> void:
 	for child in body.get_children():
 		body.remove_child(child)
 		child.queue_free()
-	button("Close / lock", func(): host.show_menu(); queue_free())
+	button(L10N.text("Close / lock"), func(): host.show_menu(); queue_free())
 
 func label(text: String) -> Label:
 	var node := Label.new()
-	node.text = text
+	node.text = L10N.text(text)
 	node.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_child(node)
 	return node
 
 func button(text: String, action: Callable) -> void:
 	var node := Button.new()
-	node.text = text
+	node.text = L10N.text(text)
 	node.custom_minimum_size.y = 44
 	node.pressed.connect(action)
 	body.add_child(node)
@@ -55,15 +57,15 @@ func gate() -> void:
 	clear()
 	pin = ""
 	var exists: bool = host.progress.has("parent_pin") and not changing_pin
-	label("PARENT DASHBOARD — " + ("Enter PIN" if exists else "Create a 4–8 digit PIN, then repeat it"))
-	label("Offline protection against accidental actions. This is not cryptographic security. PIN cannot be recovered here.")
+	label(L10N.text("PARENT DASHBOARD — ") + (L10N.text("Enter PIN") if exists else L10N.text("Create a 4–8 digit PIN, then repeat it")))
+	label(L10N.text("Offline protection against accidental actions. This is not cryptographic security. PIN cannot be recovered here."))
 	notice = label("")
 	var keypad := VBoxContainer.new()
 	keypad.set_script(KEYPAD)
 	body.add_child(keypad)
 	keypad.connect("key_pressed", func(key: String):
 		if Time.get_ticks_msec() < blocked_until:
-			notice.text = "Please wait 30 seconds."
+			notice.text = L10N.text("Please wait 30 seconds.")
 			return
 		if key == "⌫": pin = pin.left(maxi(0, pin.length() - 1))
 		elif key == "OK":
@@ -75,26 +77,26 @@ func gate() -> void:
 
 func check_pin(exists: bool) -> void:
 	if pin.length() < 4:
-		notice.text = "Use 4–8 digits."
+		notice.text = L10N.text("Use 4–8 digits.")
 		return
 	if exists:
 		var stored: Dictionary = host.progress.parent_pin
 		if (str(stored.get("salt", "")) + pin).sha256_text() != stored.get("hash", ""):
 			failures += 1
 			if failures % 5 == 0: blocked_until = Time.get_ticks_msec() + 30000
-			notice.text = "Incorrect PIN."
+			notice.text = L10N.text("Incorrect PIN.")
 			pin = ""
 			return
 	else:
 		if first_pin.is_empty():
 			first_pin = pin
 			pin = ""
-			notice.text = "Repeat the PIN and press OK."
+			notice.text = L10N.text("Repeat the PIN and press OK.")
 			return
 		if pin != first_pin:
 			first_pin = ""
 			pin = ""
-			notice.text = "PINs did not match. Start again."
+			notice.text = L10N.text("PINs did not match. Start again.")
 			return
 		var salt := str(Time.get_ticks_usec()) + str(randi())
 		host.progress["parent_pin"] = {"salt": salt, "hash": (salt + pin).sha256_text()}
@@ -106,37 +108,37 @@ func check_pin(exists: bool) -> void:
 func dashboard() -> void:
 	if not unlocked: return
 	clear()
-	label("PARENT DASHBOARD")
-	label("Diagnostics start with v10. Existing learning evidence remains below; older response times cannot be reconstructed. All times include errors, skips and timeouts in their respective category.")
+	label(L10N.text("PARENT DASHBOARD"))
+	label(L10N.text("Diagnostics start with v10. Existing learning evidence remains below; older response times cannot be reconstructed. All times include errors, skips and timeouts in their respective category."))
 	var d: Dictionary = host.progress.get("diagnostics", {})
 	for source in ["battle", "workshop"]:
-		label(source.to_upper())
+		label(L10N.text(source.to_upper()))
 		for category in ["independent", "choice", "assisted", "demo"]:
-			label(category + ": " + DATA.summary(d.get(source + "/" + category, {})))
-	label("Completed missions (all versions): %d; tracked outcomes: %d" % [host.progress.get("missions", 0), host.progress.get("missions_recorded", 0)])
+			label(L10N.text(category) + ": " + DATA.summary(d.get(source + "/" + category, {})))
+	label(L10N.text("Completed missions (all versions): %d; tracked outcomes: %d") % [host.progress.get("missions", 0), host.progress.get("missions_recorded", 0)])
 	var totals: Dictionary = host.progress.get("workshop_totals", {})
-	label("Workshop since v10: %d completed, %d independent, %d hints, %d mistakes" % [totals.get("completed", 0), totals.get("independent", 0), totals.get("hints", 0), totals.get("mistakes", 0)])
-	button("Worlds and sublevels", worlds)
-	button("8 × 8 ordered facts / problem examples", facts)
-	button("Days / weeks / recent missions", history)
-	button("Timing / local backup / reset", settings)
+	label(L10N.text("Workshop since v10: %d completed, %d independent, %d hints, %d mistakes") % [totals.get("completed", 0), totals.get("independent", 0), totals.get("hints", 0), totals.get("mistakes", 0)])
+	button(L10N.text("Worlds and sublevels"), worlds)
+	button(L10N.text("8 × 8 ordered facts / problem examples"), facts)
+	button(L10N.text("Days / weeks / recent missions"), history)
+	button(L10N.text("Timing / local backup / reset"), settings)
 
 func worlds() -> void:
 	clear()
-	button("Overview", dashboard)
+	button(L10N.text("Overview"), dashboard)
 	var d: Dictionary = host.progress.get("diagnostics", {})
 	for w in range(1, 6):
 		label(host.WORLD_NAMES[w - 1])
 		for category in ["independent", "choice", "assisted"]:
-			label(category + ": " + DATA.summary(d.get("world/%d/%s" % [w, category], {})))
+			label(L10N.text(category) + ": " + DATA.summary(d.get("world/%d/%s" % [w, category], {})))
 		for l in range(host.PROGRESSION.levels(w).size()):
 			var key := "%d:%d" % [w, l]
-			label("%s — %s — %s" % [host.PROGRESSION.levels(w)[l], "passed" if host.progress.get("completed_levels", {}).get(key, false) else "pending", DATA.summary(d.get("level/" + key + "/independent", {}))])
+			label("%s — %s — %s" % [host.PROGRESSION.levels(w)[l], L10N.text("passed") if host.progress.get("completed_levels", {}).get(key, false) else L10N.text("pending"), DATA.summary(d.get("level/" + key + "/independent", {}))])
 
 func facts() -> void:
 	clear()
-	button("Overview", dashboard)
-	label("Rows × columns: 2–9. Cells show independent correct / attempts since v10. Tap for details.")
+	button(L10N.text("Overview"), dashboard)
+	label(L10N.text("Rows × columns: 2–9. Cells show independent correct / attempts since v10. Tap for details."))
 	var grid := GridContainer.new()
 	grid.columns = 8
 	body.add_child(grid)
@@ -151,7 +153,7 @@ func facts() -> void:
 			cell.text = "%d×%d\n%d/%d" % [a, b, bucket.get("ok", 0), bucket.get("n", 0)]
 			cell.pressed.connect(func(): fact_detail(key))
 			grid.add_child(cell)
-	label("Problem examples: independent errors, or learning evidence requiring review")
+	label(L10N.text("Problem examples: independent errors, or learning evidence requiring review"))
 	var keys: Array = host.progress.get("skills", {}).keys()
 	keys.sort()
 	for key in keys:
@@ -162,28 +164,28 @@ func facts() -> void:
 
 func fact_detail(key: String) -> void:
 	clear()
-	button("Back to matrix", facts)
+	button(L10N.text("Back to matrix"), facts)
 	label(key.replace("_", " "))
 	for category in ["independent", "choice", "assisted"]:
-		label(category + ": " + DATA.summary(host.progress.get("diagnostics", {}).get("fact/" + key + "/" + category, {})))
+		label(L10N.text(category) + ": " + DATA.summary(host.progress.get("diagnostics", {}).get("fact/" + key + "/" + category, {})))
 	var evidence: Dictionary = host.progress.get("skills", {}).get(key, {})
-	label("Learning state: " + host.LEARNING_ENGINE.effective_state(evidence, int(Time.get_unix_time_from_system() / 86400)))
+	label(L10N.text("Learning state: ") + L10N.text(host.LEARNING_ENGINE.effective_state(evidence, int(Time.get_unix_time_from_system() / 86400))))
 
 func history() -> void:
 	clear()
-	button("Overview", dashboard)
-	label("Daily / weekly totals, UTC dates; weeks start Monday (numeric week ID)")
+	button(L10N.text("Overview"), dashboard)
+	label(L10N.text("Daily / weekly totals, UTC dates; weeks start Monday (numeric week ID)"))
 	var d: Dictionary = host.progress.get("diagnostics", {})
 	var keys: Array = d.keys()
 	keys.sort()
 	for key in keys:
 		if str(key).begins_with("day/") or str(key).begins_with("week/"):
 			label(str(key) + ": " + DATA.summary(d[key]))
-	label("Last 100 missions (UTC), newest first")
+	label(L10N.text("Last 100 missions (UTC), newest first"))
 	var rows: Array = host.progress.get("mission_history", []).duplicate()
 	rows.reverse()
 	for row in rows:
-		label("%s — W%d level %d — %s — %d correct / %d missed — %.0fs" % [row.date, row.world, int(row.level) + 1, "completed" if row.won else "failed / exited", row.hits, row.misses, row.seconds])
+		label(L10N.text("%s — W%d level %d — %s — %d correct / %d missed — %.0fs") % [row.date, row.world, int(row.level) + 1, L10N.text("completed") if row.won else L10N.text("failed / exited"), row.hits, row.misses, row.seconds])
 
 func spin(title: String, value: float, minimum: float, maximum: float) -> SpinBox:
 	label(title)
@@ -196,24 +198,24 @@ func spin(title: String, value: float, minimum: float, maximum: float) -> SpinBo
 
 func settings() -> void:
 	clear()
-	button("Overview", dashboard)
-	var duration := spin("Mission seconds: 120–900 (default 300). Phase proportions stay the same; Rewards begins at 280/300.", DATA.duration(host.progress), 120, 900)
+	button(L10N.text("Overview"), dashboard)
+	var duration := spin(L10N.text("Mission seconds: 120–900 (default 300). Phase proportions stay the same; Rewards begins at 280/300."), DATA.duration(host.progress), 120, 900)
 	var inputs: Array = []
 	for i in range(5):
-		inputs.append(spin("World %d answer seconds: 5–180 (default %d)" % [i + 1, DATA.DEFAULT_LIMITS[i]], DATA.limits(host.progress)[i], 5, 180))
-	button("Save timing", func():
+		inputs.append(spin(L10N.text("World %d answer seconds: 5–180 (default %d)") % [i + 1, DATA.DEFAULT_LIMITS[i]], DATA.limits(host.progress)[i], 5, 180))
+	button(L10N.text("Save timing"), func():
 		var values: Array = []
 		for item in inputs: values.append(item.value)
 		host.progress["parent_settings"] = {"duration": duration.value, "limits": values}
 		host.save_progress()
 		dashboard())
-	button("Restore default timing", func(): host.progress.erase("parent_settings"); host.save_progress(); settings())
-	button("Change PIN (repeat required)", func():
-		confirm("Change PIN?", func(): changing_pin = true; first_pin = ""; unlocked = false; gate()))
-	label("Export includes the local PIN hash. Keep backups private. Imports keep your current PIN and make a backup before replacing progress.")
-	button("Export JSON…", func(): choose_file(false))
-	button("Import JSON…", func(): choose_file(true))
-	button("Reset progress (two confirmations)", func(): confirm("Reset all learning progress?", func(): confirm("Final confirmation: reset? A backup will be saved.", reset)))
+	button(L10N.text("Restore default timing"), func(): host.progress.erase("parent_settings"); host.save_progress(); settings())
+	button(L10N.text("Change PIN (repeat required)"), func():
+		confirm(L10N.text("Change PIN?"), func(): changing_pin = true; first_pin = ""; unlocked = false; gate()))
+	label(L10N.text("Export includes the local PIN hash. Keep backups private. Imports keep your current PIN and make a backup before replacing progress."))
+	button(L10N.text("Export JSON…"), func(): choose_file(false))
+	button(L10N.text("Import JSON…"), func(): choose_file(true))
+	button(L10N.text("Reset progress (two confirmations)"), func(): confirm(L10N.text("Reset all learning progress?"), func(): confirm(L10N.text("Final confirmation: reset? A backup will be saved."), reset)))
 
 func confirm(text: String, action: Callable) -> void:
 	var dialog := ConfirmationDialog.new()
@@ -235,11 +237,11 @@ func backup() -> bool:
 
 func reset() -> void:
 	if not backup():
-		message("Backup failed. No changes made.")
+		message(L10N.text("Backup failed. No changes made."))
 		return
 	var clean: Dictionary = {"skills": {}, "coins": 0, "missions": 0, "parent_pin": host.progress.parent_pin}
 	if not DATA.write_save(host.SAVE_PATH, clean):
-		message("Save failed. No changes made.")
+		message(L10N.text("Save failed. No changes made."))
 		return
 	host.progress = clean
 	host.save_writable = true
@@ -250,30 +252,30 @@ func choose_file(importing: bool) -> void:
 	var picker := FileDialog.new()
 	picker.access = FileDialog.ACCESS_FILESYSTEM
 	picker.file_mode = FileDialog.FILE_MODE_OPEN_FILE if importing else FileDialog.FILE_MODE_SAVE_FILE
-	picker.filters = PackedStringArray(["*.json ; Math Galaxy save"])
+	picker.filters = PackedStringArray([L10N.text("*.json ; Math Galaxy save")])
 	picker.use_native_dialog = OS.get_name() == "Android"
 	add_child(picker)
 	picker.file_selected.connect(func(path: String):
 		picker.queue_free()
 		if not importing:
-			message("Export saved." if DATA.write_save(path, host.progress) else "Export failed.")
+			message(L10N.text("Export saved.") if DATA.write_save(path, host.progress) else L10N.text("Export failed."))
 			return
 		if FileAccess.get_file_as_bytes(path).size() > 16000000:
-			message("File is too large (limit 16 MB).")
+			message(L10N.text("File is too large (limit 16 MB)."))
 			return
 		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 		if not DATA.validate(parsed):
-			message("Invalid or unsupported save. Current data unchanged.")
+			message(L10N.text("Invalid or unsupported save. Current data unchanged."))
 			return
-		confirm("Replace progress with this save? A backup will be saved first.", func():
+		confirm(L10N.text("Replace progress with this save? A backup will be saved first."), func():
 			if not backup():
-				message("Backup failed. No changes made.")
+				message(L10N.text("Backup failed. No changes made."))
 				return
 			if parsed.has("mission_history"): parsed["mission_history"] = parsed.mission_history.slice(maxi(0, parsed.mission_history.size() - 100))
 			if parsed.has("workshop_history"): parsed["workshop_history"] = parsed.workshop_history.slice(maxi(0, parsed.workshop_history.size() - 100))
 			parsed["parent_pin"] = host.progress.parent_pin.duplicate(true)
 			if not DATA.write_save(host.SAVE_PATH, parsed):
-				message("Save failed. No changes made.")
+				message(L10N.text("Save failed. No changes made."))
 				return
 			host.progress = parsed
 			host.load_progress()

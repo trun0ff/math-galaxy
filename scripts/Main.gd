@@ -1,5 +1,7 @@
 extends Control
 
+const L10N = preload("res://scripts/Localization.gd")
+
 const REWARD_MANAGER = preload("res://scripts/RewardManager.gd")
 const HANGAR = preload("res://scripts/Hangar.gd")
 
@@ -92,6 +94,7 @@ var art: Control
 var main_box: VBoxContainer
 
 func _ready() -> void:
+	L10N.initialize()
 	randomize()
 	load_progress()
 	migrate_learning_data()
@@ -123,7 +126,7 @@ func _process(delta: float) -> void:
 		if phase == 4:
 			question_active = false
 			transition_delay = 0.0
-			feedback.text = "Flight complete! Preparing rewards..."
+			feedback.text = L10N.text("Flight complete! Preparing rewards...")
 	if phase == 4:
 		update_hud()
 		return
@@ -148,7 +151,7 @@ func clear_screen() -> void:
 
 func make_label(value: String, font_size: int = 24, color: Color = Color.WHITE) -> Label:
 	var l := Label.new()
-	l.text = value
+	l.text = L10N.text(value)
 	l.add_theme_font_size_override("font_size", font_size)
 	l.add_theme_color_override("font_color", color)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -177,7 +180,8 @@ func decorate_button_text(btn: Button, value: String, font_size: int = 21, color
 			child.queue_free()
 	var cap := Label.new()
 	cap.name = "Caption"
-	cap.text = value
+	cap.text = L10N.text(value)
+	cap.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	cap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cap.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	cap.add_theme_font_size_override("font_size", font_size)
@@ -271,15 +275,27 @@ func show_menu() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(spacer)
-	top.add_child(make_stat_chip("💎", "Crystals %d" % progress.get("coins",0)))
-	top.add_child(make_stat_chip("🏅", "Missions %d" % progress.get("missions",0)))
+	top.add_child(make_stat_chip("💎", L10N.text("Crystals %d") % progress.get("coins",0)))
+	top.add_child(make_stat_chip("🏅", L10N.text("Missions %d") % progress.get("missions",0)))
 	var settings := make_button("⚙", open_parent, Color("274784"), 58, 56, 24)
-	top.add_child(make_button("HANGAR", show_hangar, Color("2865ad"), 150, 56, 20))
+	top.add_child(make_button(L10N.text("HANGAR"), show_hangar, Color("2865ad"), 150, 56, 20))
 	top.add_child(settings)
+	var languages := OptionButton.new()
+	languages.name = "LanguageSelector"
+	languages.custom_minimum_size = Vector2(170, 48)
+	languages.add_item("English", 0)
+	languages.add_item("Українська", 1)
+	languages.select(1 if L10N.language == "uk" else 0)
+	languages.item_selected.connect(func(index: int):
+		var error := L10N.select_language("uk" if index == 1 else "en")
+		show_menu()
+		if error != OK: report_save_warning(L10N.text("Could not save language preference."))
+	)
+	top.add_child(languages)
 	root.add_child(top)
 	root.add_child(make_label("MATH GALAXY", 56, Color("84d8ff")))
-	root.add_child(make_label("Learn multiplication. Power your spaceship.", 24, Color("d5e4ff")))
-	root.add_child(make_label("CHOOSE A WORLD", 21, Color("ffd85b")))
+	root.add_child(make_label(L10N.text("Learn multiplication. Power your spaceship."), 24, Color("d5e4ff")))
+	root.add_child(make_label(L10N.text("CHOOSE A WORLD"), 21, Color("ffd85b")))
 	var cards := HBoxContainer.new()
 	cards.alignment = BoxContainer.ALIGNMENT_CENTER
 	cards.add_theme_constant_override("separation", 12)
@@ -291,33 +307,33 @@ func show_menu() -> void:
 	root.add_child(fill)
 	var level_wrap := CenterContainer.new()
 	root.add_child(level_wrap)
-	level_wrap.add_child(make_button("SELECT SUBLEVEL", show_levels, Color("2865ad"), 340, 58, 22))
+	level_wrap.add_child(make_button(L10N.text("SELECT SUBLEVEL"), show_levels, Color("2865ad"), 340, 58, 22))
 	var start_wrap := CenterContainer.new()
 	root.add_child(start_wrap)
-	start_wrap.add_child(make_button("▶  CHOOSE MISSION", show_levels, Color("00e485"), 520, 78, 29))
+	start_wrap.add_child(make_button(L10N.text("▶  CHOOSE MISSION"), show_levels, Color("00e485"), 520, 78, 29))
 	var workshop_wrap := CenterContainer.new()
 	root.add_child(workshop_wrap)
-	workshop_wrap.add_child(make_button("✦  MATH WORKSHOP", show_workshop, Color("2865ad"), 340, 60, 23))
-	root.add_child(make_label("Prototype • Offline • Landscape • No account required", 16, Color("b2c2dd")))
+	workshop_wrap.add_child(make_button(L10N.text("✦  MATH WORKSHOP"), show_workshop, Color("2865ad"), 340, 60, 23))
+	root.add_child(make_label(L10N.text("Prototype • Offline • Landscape • No account required"), 16, Color("b2c2dd")))
 
 func show_workshop() -> void:
 	screen = "workshop"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
 	var top := HBoxContainer.new()
 	root.add_child(top)
-	top.add_child(make_button("◀  GALAXY", show_menu, Color("425d88"), 190, 54, 19))
-	top.add_child(make_label("   MATH WORKSHOP - WORLD %d" % world, 30, Color("84d8ff")))
+	top.add_child(make_button(L10N.text("◀  GALAXY"), show_menu, Color("425d88"), 190, 54, 19))
+	top.add_child(make_label(L10N.text("   MATH WORKSHOP - WORLD %d") % world, 30, Color("84d8ff")))
 	if world == 1:
-		root.add_child(make_label("Workshop begins in World 2. Select worlds 2-5.", 23))
+		root.add_child(make_label(L10N.text("Workshop begins in World 2. Select worlds 2-5."), 23))
 		return
-	root.add_child(make_label("Choose how you want to learn:", 24))
+	root.add_child(make_label(L10N.text("Choose how you want to learn:"), 24))
 	var modes := HBoxContainer.new()
 	modes.add_theme_constant_override("separation", 14)
 	root.add_child(modes)
-	modes.add_child(make_button("SHOW ME", func(): start_workshop("demo"), Color("2364ad"), 210, 60, 21))
-	modes.add_child(make_button("SOLVE TOGETHER", func(): start_workshop("guided"), Color("2364ad"), 260, 60, 21))
-	modes.add_child(make_button("TRY MYSELF", func(): start_workshop("solo"), Color("00a978"), 235, 60, 21))
-	root.add_child(make_label("Practice is separate from battle scores and rewards.", 19, Color("bbd6f3")))
+	modes.add_child(make_button(L10N.text("SHOW ME"), func(): start_workshop("demo"), Color("2364ad"), 210, 60, 21))
+	modes.add_child(make_button(L10N.text("SOLVE TOGETHER"), func(): start_workshop("guided"), Color("2364ad"), 260, 60, 21))
+	modes.add_child(make_button(L10N.text("TRY MYSELF"), func(): start_workshop("solo"), Color("00a978"), 235, 60, 21))
+	root.add_child(make_label(L10N.text("Practice is separate from battle scores and rewards."), 19, Color("bbd6f3")))
 
 func start_workshop(mode: String) -> void:
 	var q: Dictionary = MathEngine.generate(world)
@@ -334,7 +350,7 @@ func show_workshop_step() -> void:
 	workshop_value = ""
 	workshop_keypad = null
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
-	root.add_child(make_button("◀  BACK TO WORKSHOP", show_workshop, Color("425d88"), 270, 50, 19))
+	root.add_child(make_button(L10N.text("◀  BACK TO WORKSHOP"), show_workshop, Color("425d88"), 270, 50, 19))
 	var q: Dictionary = workshop_session["question"]
 	root.add_child(make_label("%d %s %d = ?" % [int(q["a"]), str(q["sign"]), int(q["b"])], 43, Color("8de8ff")))
 	var step: Dictionary = WORKSHOP_ENGINE.current_step(workshop_session)
@@ -343,17 +359,17 @@ func show_workshop_step() -> void:
 		return
 	var idx: int = int(workshop_session["index"])
 	var count: int = workshop_session["steps"].size()
-	root.add_child(make_label("STEP %d OF %d" % [idx + 1, count], 19, Color("fcd34d")))
+	root.add_child(make_label(L10N.text("STEP %d OF %d") % [idx + 1, count], 19, Color("fcd34d")))
 	root.add_child(make_label(str(step["prompt"]), 25, Color.WHITE))
 	# Concrete decomposition stays visible. It is an explanation, not an input field.
 	root.add_child(make_label(DECOMPOSITION_ENGINE.explanation(q, str(workshop_session.get("strategy", "tens"))), 19, Color("bbd6f3")))
 	add_workshop_solution_path(root)
 	if world == 5:
-		root.add_child(make_button("↻  ANOTHER DIVISION METHOD", switch_workshop_strategy, Color("425d88"), 340, 42, 17))
+		root.add_child(make_button(L10N.text("↻  ANOTHER DIVISION METHOD"), switch_workshop_strategy, Color("425d88"), 340, 42, 17))
 	workshop_feedback = make_label("", 19, Color("c4e5ff"))
 	if workshop_session["mode"] == "demo":
-		root.add_child(make_label("Answer: %d" % int(step["answer"]), 30, Color("8fffc4")))
-		root.add_child(make_button("NEXT STEP ▶", advance_workshop_demo, Color("00a978"), 230, 58, 22))
+		root.add_child(make_label(L10N.text("Answer: %d") % int(step["answer"]), 30, Color("8fffc4")))
+		root.add_child(make_button(L10N.text("NEXT STEP ▶"), advance_workshop_demo, Color("00a978"), 230, 58, 22))
 	else:
 		# The same actual scene script, buttons, colours and behaviour as battle mode.
 		var center := CenterContainer.new()
@@ -368,8 +384,8 @@ func show_workshop_step() -> void:
 		var actions := HBoxContainer.new()
 		actions.alignment = BoxContainer.ALIGNMENT_CENTER
 		root.add_child(actions)
-		actions.add_child(make_button("HINT", reveal_workshop_step, Color("425d88"), 140, 44, 19))
-		workshop_next = make_button("NEXT STEP ▶", advance_workshop_step, Color("2865ad"), 220, 44, 19)
+		actions.add_child(make_button(L10N.text("HINT"), reveal_workshop_step, Color("425d88"), 140, 44, 19))
+		workshop_next = make_button(L10N.text("NEXT STEP ▶"), advance_workshop_step, Color("2865ad"), 220, 44, 19)
 		workshop_next.visible = false
 		actions.add_child(workshop_next)
 
@@ -394,7 +410,7 @@ func refresh_workshop_solution_path() -> void:
 	for child in workshop_path.get_children():
 		workshop_path.remove_child(child)
 		child.queue_free()
-	workshop_path.add_child(make_label("SOLUTION PATH", 19, Color("8de8ff")))
+	workshop_path.add_child(make_label(L10N.text("SOLUTION PATH"), 19, Color("8de8ff")))
 	var session_steps: Array = workshop_session.get("steps", [])
 	var results: Array = workshop_session.get("step_results", [])
 	var completed: Dictionary = {}
@@ -406,7 +422,7 @@ func refresh_workshop_solution_path() -> void:
 	var guidance: int = WORKSHOP_ENGINE.guidance_level(progress, world, mode)
 	var show_structure: bool = mode != "solo" or workshop_review_open
 	if not show_structure:
-		workshop_path.add_child(make_label("Solve the full expression yourself. Open HINT to see support.", 17, Color("bbd6f3")))
+		workshop_path.add_child(make_label(L10N.text("Solve the full expression yourself. Open HINT to see support."), 17, Color("bbd6f3")))
 		return
 	var q: Dictionary = workshop_session["question"]
 	var partial_values: Array[String] = []
@@ -416,24 +432,24 @@ func refresh_workshop_solution_path() -> void:
 			continue
 		var expression: String = str(part.get("expression", part["prompt"]))
 		var value_text: String = "?"
-		var status: String = "TO SOLVE"
+		var status: String = L10N.text("TO SOLVE")
 		var color := Color("bbd6f3")
 		if completed.has(i):
 			var recorded: Dictionary = completed[i]
 			value_text = str(recorded["answer"])
 			match str(recorded["source"]):
-				"self": status = "MY ANSWER"; color = Color("8fffc4")
-				"hint": status = "WITH HINT"; color = Color("fcd34d")
-				_: status = "SHOWN"; color = Color("b6d2fa")
+				"self": status = L10N.text("MY ANSWER"); color = Color("8fffc4")
+				"hint": status = L10N.text("WITH HINT"); color = Color("fcd34d")
+				_: status = L10N.text("SHOWN"); color = Color("b6d2fa")
 			if int(recorded.get("mistakes", 0)) > 0:
-				status += " / RETRIED"
+				status += L10N.text(" / RETRIED")
 		elif i == current_index:
-			status = "CURRENT STEP" if not bool(workshop_session.get("current_hint", false)) else "HINT OPENED"
+			status = L10N.text("CURRENT STEP") if not bool(workshop_session.get("current_hint", false)) else L10N.text("HINT OPENED")
 			color = Color("8de8ff")
 		if guidance >= 2 and i > current_index and not workshop_review_open:
-			expression = "Next calculation"
+			expression = L10N.text("Next calculation")
 		elif guidance >= 1 and i > current_index + 1 and not workshop_review_open:
-			expression = "Upcoming calculation"
+			expression = L10N.text("Upcoming calculation")
 		var row_panel := PanelContainer.new()
 		if i == current_index and not workshop_review_open:
 			row_panel.add_theme_stylebox_override("panel", space_panel(Color("193e65", 0.94), Color("69e5ff"), 7, 0.0))
@@ -449,17 +465,17 @@ func refresh_workshop_solution_path() -> void:
 		if is_division:
 			var first_quotient: int = int(q["a"] / q["b"]) - int(session_steps[2]["answer"])
 			var remaining_quotient: String = partial_values[2] if partial_values.size() > 2 else "?"
-			workshop_path.add_child(make_label("Combine quotients: %d + %s = %s" % [first_quotient, remaining_quotient, partial_values[3] if partial_values.size() > 3 else "?"], 18, Color("8de8ff")))
+			workshop_path.add_child(make_label(L10N.text("Combine quotients: %d + %s = %s") % [first_quotient, remaining_quotient, partial_values[3] if partial_values.size() > 3 else "?"], 18, Color("8de8ff")))
 		else:
 			var products: Array = partial_values.slice(0, partial_values.size() - 1)
-			workshop_path.add_child(make_label("Add partial products: %s = %s" % [" + ".join(products), partial_values[partial_values.size() - 1]], 18, Color("8de8ff")))
+			workshop_path.add_child(make_label(L10N.text("Add partial products: %s = %s") % [" + ".join(products), partial_values[partial_values.size() - 1]], 18, Color("8de8ff")))
 	if last_index >= 0:
 		var final_value: String = "?"
-		var final_status: String = "TO SOLVE"
+		var final_status: String = L10N.text("TO SOLVE")
 		if completed.has(last_index):
 			final_value = str(completed[last_index]["answer"])
-			final_status = "MY ANSWER" if str(completed[last_index]["source"]) == "self" else "ASSISTED / SHOWN"
-		workshop_path.add_child(make_label("Result: %d %s %d = %s   [%s]" % [int(q["a"]), str(q["sign"]), int(q["b"]), final_value, final_status], 18, Color("8fffc4")))
+			final_status = L10N.text("MY ANSWER") if str(completed[last_index]["source"]) == "self" else L10N.text("ASSISTED / SHOWN")
+		workshop_path.add_child(make_label(L10N.text("Result: %d %s %d = %s   [%s]") % [int(q["a"]), str(q["sign"]), int(q["b"]), final_value, final_status], 18, Color("8fffc4")))
 
 func switch_workshop_strategy() -> void:
 	if world != 5:
@@ -498,7 +514,7 @@ func submit_workshop_step() -> void:
 	if not is_instance_valid(workshop_next) or workshop_next.visible:
 		return
 	if not workshop_value.is_valid_int():
-		workshop_feedback.text = "Enter a whole number first."
+		workshop_feedback.text = L10N.text("Enter a whole number first.")
 		return
 	var expected: int = int(WORKSHOP_ENGINE.current_step(workshop_session)["answer"])
 	record_workshop_attempt(int(workshop_value) == expected, "answer")
@@ -506,11 +522,11 @@ func submit_workshop_step() -> void:
 	workshop_step_started = Time.get_ticks_msec()
 	workshop_keypad.call("flash", correct)
 	if correct:
-		workshop_feedback.text = "Correct! Continue to the next step."
+		workshop_feedback.text = L10N.text("Correct! Continue to the next step.")
 		workshop_next.visible = true
 		refresh_workshop_solution_path()
 	else:
-		workshop_feedback.text = "Not quite. Check this calculation and try again. Your mistake is recorded."
+		workshop_feedback.text = L10N.text("Not quite. Check this calculation and try again. Your mistake is recorded.")
 
 func reveal_workshop_step() -> void:
 	if is_instance_valid(workshop_next) and workshop_next.visible:
@@ -518,7 +534,7 @@ func reveal_workshop_step() -> void:
 	WORKSHOP_ENGINE.reveal(workshop_session)
 	workshop_review_open = true
 	var step: Dictionary = WORKSHOP_ENGINE.current_step(workshop_session)
-	workshop_feedback.text = "Hint: this step equals %d. Type it to continue." % int(step["answer"])
+	workshop_feedback.text = L10N.text("Hint: this step equals %d. Type it to continue.") % int(step["answer"])
 	refresh_workshop_solution_path()
 
 func advance_workshop_step() -> void:
@@ -543,23 +559,23 @@ func finish_workshop() -> void:
 	save_progress()
 	screen = "workshop_complete"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
-	root.add_child(make_label("WORKSHOP COMPLETE!", 48, Color("8fffc4")))
-	root.add_child(make_label("Mistakes: %d   Hints: %d" % [int(outcome["mistakes"]), int(outcome["hints"])], 27))
-	root.add_child(make_label("Independent: YES" if outcome["independent"] else "Guided practice completed", 23, Color("c4e5ff")))
-	root.add_child(make_button("REVIEW SOLUTION", show_workshop_review, Color("2865ad"), 280, 58, 20))
-	root.add_child(make_button("TRY ANOTHER", func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 64, 22))
-	root.add_child(make_button("BACK TO WORKSHOP", show_workshop, Color("425d88"), 280, 60, 21))
+	root.add_child(make_label(L10N.text("WORKSHOP COMPLETE!"), 48, Color("8fffc4")))
+	root.add_child(make_label(L10N.text("Mistakes: %d   Hints: %d") % [int(outcome["mistakes"]), int(outcome["hints"])], 27))
+	root.add_child(make_label(L10N.text("Independent: YES") if outcome["independent"] else L10N.text("Guided practice completed"), 23, Color("c4e5ff")))
+	root.add_child(make_button(L10N.text("REVIEW SOLUTION"), show_workshop_review, Color("2865ad"), 280, 58, 20))
+	root.add_child(make_button(L10N.text("TRY ANOTHER"), func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 64, 22))
+	root.add_child(make_button(L10N.text("BACK TO WORKSHOP"), show_workshop, Color("425d88"), 280, 60, 21))
 
 func show_workshop_review() -> void:
 	screen = "workshop_review"
 	workshop_review_open = true
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
-	root.add_child(make_label("REVIEW YOUR SOLUTION", 35, Color("8de8ff")))
+	root.add_child(make_label(L10N.text("REVIEW YOUR SOLUTION"), 35, Color("8de8ff")))
 	root.add_child(make_label(DECOMPOSITION_ENGINE.explanation(workshop_session["question"], str(workshop_session.get("strategy", "tens"))), 20, Color("bbd6f3")))
 	# Reuse the same solution-path renderer, with all completed steps intact.
 	add_workshop_solution_path(root)
-	root.add_child(make_button("BACK TO WORKSHOP", show_workshop, Color("425d88"), 280, 58, 20))
-	root.add_child(make_button("TRY ANOTHER", func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 58, 20))
+	root.add_child(make_button(L10N.text("BACK TO WORKSHOP"), show_workshop, Color("425d88"), 280, 58, 20))
+	root.add_child(make_button(L10N.text("TRY ANOTHER"), func(): start_workshop(str(workshop_session["mode"])), Color("00a978"), 260, 58, 20))
 
 func make_world_card(idx: int) -> Button:
 	var selected: bool = idx == world
@@ -603,8 +619,8 @@ func make_world_card(idx: int) -> Button:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 0)
 	footer.add_child(box)
-	box.add_child(make_label("WORLD %d" % idx, 14, Color("fff2a6")))
-	box.add_child(make_label(WORLD_NAMES[idx - 1], 17, Color("f8fdff")))
+	box.add_child(make_label(L10N.text("WORLD %d") % idx, 14, Color("fff2a6")))
+	box.add_child(make_label(L10N.text(WORLD_NAMES[idx - 1]), 17, Color("f8fdff")))
 	box.add_child(make_label(WORLD_SUBTITLES[idx - 1], 13, Color("8ff0ff" if selected else Color("b0d0ff"))))
 	return b
 
@@ -616,7 +632,7 @@ func select_world(value: int) -> void:
 func show_levels() -> void:
 	screen = "levels"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
-	root.add_child(make_label("WORLD %d - SUBLEVELS" % world, 34, Color("84d8ff")))
+	root.add_child(make_label(L10N.text("WORLD %d - SUBLEVELS") % world, 34, Color("84d8ff")))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(scroll)
@@ -627,14 +643,14 @@ func show_levels() -> void:
 		var available: bool = PROGRESSION.is_unlocked(progress, world, i)
 		var completed: bool = bool(progress.get("completed_levels", {}).get(PROGRESSION.id_for(world, i), false))
 		var label_text: String = "%d. %s" % [i + 1, PROGRESSION.levels(world)[i]]
-		if completed: label_text += "  ✓ Replay"
+		if completed: label_text += L10N.text("  ✓ Replay")
 		if not available: label_text += "  -  " + PROGRESSION.requirement(progress, world, i)
 		elif not completed: label_text += "  -  " + PROGRESSION.required_evidence(world, i)
 		var btn := make_button(label_text, func(): select_level(index), Color("267aa8") if available else Color("34415e"), 650, 48, 19)
 		btn.disabled = not available
 		list.add_child(btn)
-	root.add_child(make_button("PRACTICE NEXT SKILL", start_level_practice, Color("4260a4"), 320, 50, 19))
-	root.add_child(make_button("BACK", show_menu, Color("4260a4"), 180, 50, 19))
+	root.add_child(make_button(L10N.text("PRACTICE NEXT SKILL"), start_level_practice, Color("4260a4"), 320, 50, 19))
+	root.add_child(make_button(L10N.text("BACK"), show_menu, Color("4260a4"), 180, 50, 19))
 
 func select_level(index: int) -> void:
 	if not PROGRESSION.is_unlocked(progress, world, index): return
@@ -685,7 +701,7 @@ func build_battle() -> void:
 	top.alignment = BoxContainer.ALIGNMENT_CENTER
 	top.add_theme_constant_override("separation", 16)
 	top_panel.add_child(top)
-	shield_label = make_label("SHIELD 100%", 20, Color("8de5ff"))
+	shield_label = make_label(L10N.text("SHIELD 100%"), 20, Color("8de5ff"))
 	shield_label.custom_minimum_size.x = 160
 	top.add_child(shield_label)
 	shield_bar = ProgressBar.new()
@@ -694,10 +710,10 @@ func build_battle() -> void:
 	shield_bar.custom_minimum_size = Vector2(220, 22)
 	style_progress(shield_bar, Color("44d0ff"))
 	top.add_child(shield_bar)
-	header = make_label("WORLD %d • %s" % [world, WORLD_NAMES[world - 1]], 22, Color("ffe270"))
+	header = make_label(L10N.text("WORLD %d • %s") % [world, L10N.text(WORLD_NAMES[world - 1])], 22, Color("ffe270"))
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(header)
-	energy_label = make_label("ENERGY 50  •  COMBO 0", 20, Color("ffd85d"))
+	energy_label = make_label(L10N.text("ENERGY 50  •  COMBO 0"), 20, Color("ffd85d"))
 	energy_label.custom_minimum_size.x = 250
 	top.add_child(energy_label)
 	info = make_label("05:00", 26, Color.WHITE)
@@ -756,15 +772,15 @@ func build_battle() -> void:
 	footer.alignment = BoxContainer.ALIGNMENT_CENTER
 	footer.add_theme_constant_override("separation", 12)
 	root.add_child(footer)
-	hint_button = make_button("✦ HINT 1/3  -25", use_hint, Color("9d50ff"), 230, 51, 19)
+	hint_button = make_button(L10N.text("✦ HINT 1/3  -25"), use_hint, Color("9d50ff"), 230, 51, 19)
 	footer.add_child(hint_button)
-	hint_close_button = make_button("CONTINUE ▶", close_hint, Color("2865ad"), 165, 51, 19)
+	hint_close_button = make_button(L10N.text("CONTINUE ▶"), close_hint, Color("2865ad"), 165, 51, 19)
 	hint_close_button.visible = false
 	footer.add_child(hint_close_button)
-	footer.add_child(make_button("↻ SKIP  -20 SHIELD", func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 51, 19))
-	footer.add_child(make_button("◀ EXIT", exit_mission, Color("4f8cdb"), 125, 51, 19))
+	footer.add_child(make_button(L10N.text("↻ SKIP  -20 SHIELD"), func(): resolve_answer(-1, "skip"), Color("f04d76"), 235, 51, 19))
+	footer.add_child(make_button(L10N.text("◀ EXIT"), exit_mission, Color("4f8cdb"), 125, 51, 19))
 	if progress.rewards.owned.has("repair"):
-		footer.add_child(make_button("REPAIR +15", use_repair, Color("2865ad"), 160, 51, 18))
+		footer.add_child(make_button(L10N.text("REPAIR +15"), use_repair, Color("2865ad"), 160, 51, 18))
 	art.set("ship_tint", Color("c89aff") if progress.rewards.equipped == "violet" else Color("ffe080") if progress.rewards.equipped == "gold" else Color.WHITE)
 	update_hud()
 	update_phase_label()
@@ -784,16 +800,16 @@ func style_progress(bar: ProgressBar, fill: Color) -> void:
 
 func update_phase_label() -> void:
 	if header != null:
-		header.text = "%s  •  WORLD %d" % [PHASE_NAMES[phase], world]
+		header.text = L10N.text("%s  •  WORLD %d") % [L10N.text(PHASE_NAMES[phase]), world]
 	if art != null and is_instance_valid(art):
 		art.call("set_boss_mode", phase == 3)
 
 func update_hud() -> void:
 	info.text = "%02d:%02d" % [int(ceil(MISSION_LENGTH-elapsed)) / 60, int(ceil(MISSION_LENGTH-elapsed)) % 60]
-	shield_label.text = "SHIELD %d%%" % shield
+	shield_label.text = L10N.text("SHIELD %d%%") % shield
 	shield_bar.value = shield
-	energy_label.text = "ENERGY %d  •  COMBO %d" % [energy, combo]
-	timer_label.text = "PAUSED" if hint_visible else "%.1f s" % maxf(0.0, question_limit - question_elapsed)
+	energy_label.text = L10N.text("ENERGY %d  •  COMBO %d") % [energy, combo]
+	timer_label.text = L10N.text("PAUSED") if hint_visible else "%.1f s" % maxf(0.0, question_limit - question_elapsed)
 	timer_bar.max_value = question_limit
 	timer_bar.value = maxf(0.0, question_limit - question_elapsed)
 
@@ -841,12 +857,12 @@ func next_question() -> void:
 	hint_visible = false
 	hint_close_button.visible = false
 	hint_texts = MathEngine.hint_stages(question, randf() < 0.5 and int(question.world) > 1)
-	hint_button.text = "✦ HINT 1/3  -25"
+	hint_button.text = L10N.text("✦ HINT 1/3  -25")
 	question_active = true
 	input_value = ""
 	input_mode = "choices" if randf() < 0.25 else "numeric"
 	question_label.text = "%d %s %d = ?" % [question["a"],question["sign"],question["b"]]
-	feedback.text = "Enter your answer" if input_mode == "numeric" else "Choose the answer"
+	feedback.text = L10N.text("Enter your answer") if input_mode == "numeric" else L10N.text("Choose the answer")
 	build_answers()
 
 func build_answers() -> void:
@@ -919,7 +935,7 @@ func close_hint() -> void:
 	hint_visible = false
 	hint_close_button.visible = false
 	if question_active:
-		feedback.text = "Enter your answer" if input_mode == "numeric" else "Choose the answer"
+		feedback.text = L10N.text("Enter your answer") if input_mode == "numeric" else L10N.text("Choose the answer")
 	update_hud()
 
 func use_hint() -> void:
@@ -930,16 +946,16 @@ func use_hint() -> void:
 		return
 	var cost: int = HINT_COSTS[hint_stage]
 	if energy < cost:
-		feedback.text = "Not enough energy" + ("\n" + hint_texts[hint_stage - 1] if hint_stage > 0 else "")
+		feedback.text = L10N.text("Not enough energy") + ("\n" + hint_texts[hint_stage - 1] if hint_stage > 0 else "")
 		if hint_stage > 0: show_hint_pause()
 		return
 	energy -= cost
 	hint_used = true
-	feedback.text = "Hint %d/3: %s" % [hint_stage + 1, hint_texts[hint_stage]]
+	feedback.text = L10N.text("Hint %d/3: %s") % [hint_stage + 1, hint_texts[hint_stage]]
 	question_limit += HINT_SECONDS[hint_stage]
 	hint_stage += 1
 	queue_review()
-	hint_button.text = "✦ REVIEW HINT" if hint_stage == 3 else "✦ HINT %d/3  -%d" % [hint_stage + 1, HINT_COSTS[hint_stage]]
+	hint_button.text = L10N.text("✦ REVIEW HINT") if hint_stage == 3 else L10N.text("✦ HINT %d/3  -%d") % [hint_stage + 1, HINT_COSTS[hint_stage]]
 	show_hint_pause()
 
 func resolve_answer(value: int, reason: String) -> void:
@@ -963,17 +979,17 @@ func resolve_answer(value: int, reason: String) -> void:
 		shield = mini(100, shield + 5 + (10 if combo % 5 == 0 else 0))
 		var reward: int = 10 + (5 if fast else 0)
 		coins_earned += reward
-		feedback.text = "DIRECT HIT! +%d pending crystals" % reward
+		feedback.text = L10N.text("DIRECT HIT! +%d pending crystals") % reward
 		art.call("hit_enemy")
 	else:
 		misses += 1
 		combo = 0
 		shield = maxi(0, shield - 20)
-		feedback.text = "%s! Answer: %d" % [reason.to_upper(), question["answer"]]
+		feedback.text = L10N.text("%s! Answer: %d") % [L10N.text(reason.to_upper()), question["answer"]]
 		art.call("hit_ship")
 		queue_review()
 		if shield == 0:
-			feedback.text = "SHIELD DESTROYED! MISSION FAILED"
+			feedback.text = L10N.text("SHIELD DESTROYED! MISSION FAILED")
 	PROGRESSION.record(progress, world, level, question, correct, reason, input_mode, hint_used, phase == 3 and not level_practice)
 	skills[skill_key] = stats
 	if int(question["world"]) > 1:
@@ -1002,17 +1018,17 @@ func fail_mission() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(spacer)
-	root.add_child(make_label("SHIP DESTROYED", 58, Color("fb7185")))
-	root.add_child(make_label("World %d: %s" % [world, WORLD_NAMES[world - 1]], 26))
-	root.add_child(make_label("Correct: %d        Missed: %d" % [hits, misses], 31))
-	root.add_child(make_label("Shield: 0%  •  No mission crystals awarded", 24, Color("fda4af")))
-	root.add_child(make_label("Your answers were saved for future practice", 21, Color("a7bddf")))
+	root.add_child(make_label(L10N.text("SHIP DESTROYED"), 58, Color("fb7185")))
+	root.add_child(make_label(L10N.text("World %d: %s") % [world, L10N.text(WORLD_NAMES[world - 1])], 26))
+	root.add_child(make_label(L10N.text("Correct: %d        Missed: %d") % [hits, misses], 31))
+	root.add_child(make_label(L10N.text("Shield: 0%  •  No mission crystals awarded"), 24, Color("fda4af")))
+	root.add_child(make_label(L10N.text("Your answers were saved for future practice"), 21, Color("a7bddf")))
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 18)
 	root.add_child(row)
-	row.add_child(make_button("↻  RETRY LEVEL", start_mission, Color("00e485"), 260, 68, 24))
-	row.add_child(make_button("◀  RETURN TO GALAXY", show_menu, Color("425d88"), 280, 68, 24))
+	row.add_child(make_button(L10N.text("↻  RETRY LEVEL"), start_mission, Color("00e485"), 260, 68, 24))
+	row.add_child(make_button(L10N.text("◀  RETURN TO GALAXY"), show_menu, Color("425d88"), 280, 68, 24))
 	var sp2 := Control.new()
 	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(sp2)
@@ -1037,15 +1053,15 @@ func finish_mission() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(spacer)
-	root.add_child(make_label("MISSION COMPLETE", 58, Color("fcd34d")))
-	root.add_child(make_label("World %d: %s" % [world,WORLD_NAMES[world - 1]], 26))
-	root.add_child(make_label("Correct: %d        Missed: %d        Shield: %d%%" % [hits,misses,shield], 31))
-	root.add_child(make_label("+%d crystals    •    %d questions awaiting review" % [coins_earned,queue.size()], 29, Color("7dd3fc")))
+	root.add_child(make_label(L10N.text("MISSION COMPLETE"), 58, Color("fcd34d")))
+	root.add_child(make_label(L10N.text("World %d: %s") % [world,L10N.text(WORLD_NAMES[world - 1])], 26))
+	root.add_child(make_label(L10N.text("Correct: %d        Missed: %d        Shield: %d%%") % [hits,misses,shield], 31))
+	root.add_child(make_label(L10N.text("+%d crystals    •    %d questions awaiting review") % [coins_earned,queue.size()], 29, Color("7dd3fc")))
 	var reward_note := make_label(str(payout.details), 17, Color("ffd85b"))
 	reward_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(reward_note)
-	root.add_child(make_label("SUBLEVEL PASSED" if passed else "Practice completed - challenge needs more independent answers" if level_practice else "More independent evidence needed - retry this level", 21, Color("a7f3d0")))
-	root.add_child(make_button("◀  RETURN TO GALAXY", show_menu, Color("00e485"), 280, 68, 24))
+	root.add_child(make_label(L10N.text("SUBLEVEL PASSED") if passed else L10N.text("Practice completed - challenge needs more independent answers") if level_practice else L10N.text("More independent evidence needed - retry this level"), 21, Color("a7f3d0")))
+	root.add_child(make_button(L10N.text("◀  RETURN TO GALAXY"), show_menu, Color("00e485"), 280, 68, 24))
 	var sp2 := Control.new()
 	sp2.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(sp2)
@@ -1058,14 +1074,14 @@ func save_progress() -> void:
 	if not save_writable: return
 	REWARD_MANAGER.migrate(progress)
 	if not SAVE_MANAGER.write_save(SAVE_PATH, progress):
-		report_save_warning("Could not save progress. Check available storage and permissions.")
+		report_save_warning(L10N.text("Could not save progress. Check available storage and permissions."))
 
 func report_save_warning(text: String) -> void:
 	push_warning(text)
 	if text == save_warning: return
 	save_warning = text
 	var dialog := AcceptDialog.new()
-	dialog.title = "Profile storage"
+	dialog.title = L10N.text("Profile storage")
 	dialog.dialog_text = text
 	add_child(dialog)
 	dialog.confirmed.connect(dialog.queue_free)
@@ -1119,7 +1135,7 @@ func show_hangar() -> void:
 
 func buy_hangar(id: String) -> void:
 	if not save_writable:
-		HANGAR.show(self, "Restore your profile before purchasing.")
+		HANGAR.show(self, L10N.text("Restore your profile before purchasing."))
 		return
 	REWARD_MANAGER.migrate(progress)
 	if progress.rewards.owned.has(id):
@@ -1127,11 +1143,11 @@ func buy_hangar(id: String) -> void:
 		return
 	var before := progress.duplicate(true)
 	if not REWARD_MANAGER.purchase(progress, id):
-		HANGAR.show(self, "Not enough crystals or already owned")
+		HANGAR.show(self, L10N.text("Not enough crystals or already owned"))
 		return
 	if not PARENT_DATA.write_save(SAVE_PATH, progress):
 		progress = before
-		HANGAR.show(self, "Could not save purchase. Crystals returned.")
+		HANGAR.show(self, L10N.text("Could not save purchase. Crystals returned."))
 		return
 	HANGAR.show(self, "Unlocked!" )
 
@@ -1141,7 +1157,7 @@ func equip_hangar(id: String) -> void:
 	if REWARD_MANAGER.equip(progress, id):
 		if not PARENT_DATA.write_save(SAVE_PATH, progress):
 			progress = before
-			HANGAR.show(self, "Could not save selection")
+			HANGAR.show(self, L10N.text("Could not save selection"))
 			return
 	HANGAR.show(self)
 
@@ -1149,5 +1165,5 @@ func use_repair() -> void:
 	if screen != "battle" or finished or pending_defeat or repair_used or not progress.rewards.owned.has("repair"): return
 	repair_used = true
 	shield = mini(100, shield + 15)
-	feedback.text = "Repair pulse used (+15 shield)"
+	feedback.text = L10N.text("Repair pulse used (+15 shield)")
 	update_hud()

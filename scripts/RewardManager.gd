@@ -1,5 +1,7 @@
 extends RefCounted
 
+const L10N = preload("res://scripts/Localization.gd")
+
 const CATALOG = {
 	"violet": {"name": "Violet hull", "cost": 180, "description": "Cosmetic ship colour"},
 	"gold": {"name": "Golden hull", "cost": 300, "description": "Cosmetic ship colour"},
@@ -36,24 +38,24 @@ static func equip(p: Dictionary, id: String) -> bool:
 static func settle(p: Dictionary, mission: int, won: bool, hits: int, misses: int, base: int, difficult: int, day: String, world: int) -> Dictionary:
 	migrate(p)
 	var r: Dictionary = p.rewards
-	if mission <= int(r.settled): return {"amount": 0, "details": "Already settled"}
+	if mission <= int(r.settled): return {"amount": 0, "details": L10N.text("Already settled")}
 	r.settled = mission
-	if not won: return {"amount": 0, "details": "No reward for an unfinished mission"}
+	if not won: return {"amount": 0, "details": L10N.text("No reward for an unfinished mission")}
 	var amount := maxi(0, base) + 40
-	var details := "Completion +40"
+	var details := L10N.text("Completion +40")
 	var accuracy := float(hits) / maxi(1, hits + misses)
 	var record: Dictionary = r.records.get(str(world), {})
 	var improved := hits + misses >= 10 and record.has("accuracy") and accuracy > float(record.accuracy)
 	if not r.days.has(day):
 		r.days[day] = true
 		amount += 30
-		details += " | New practice day +30"
+		details += L10N.text(" | New practice day +30")
 	if difficult > 0:
 		amount += 25
-		details += " | Difficult facts +25"
+		details += L10N.text(" | Difficult facts +25")
 	if improved:
 		amount += 30
-		details += " | Accuracy progress +30"
+		details += L10N.text(" | Accuracy progress +30")
 	var eligible := {"first": true, "accurate": hits + misses >= 10 and accuracy >= 0.9, "return": r.days.size() >= 3, "courage": difficult > 0, "progress": improved}
 	for id in eligible:
 		if eligible[id] and not r.achievements.has(id):

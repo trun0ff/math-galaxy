@@ -1,5 +1,7 @@
 extends RefCounted
 
+const L10N = preload("res://scripts/Localization.gd")
+
 const DEFAULT_LIMITS = [8, 20, 35, 60, 45]
 
 static func duration(p: Dictionary) -> float:
@@ -55,8 +57,8 @@ static func median(bucket: Dictionary) -> float:
 
 static func summary(b: Dictionary) -> String:
 	var n := int(b.get("n", 0))
-	if n == 0: return "No data"
-	return "%d/%d correct (%.1f%%), mean %.2fs, median %.2fs" % [int(b.get("ok", 0)), n, 100.0 * float(b.get("ok", 0)) / n, float(b.get("seconds", 0)) / n, median(b)]
+	if n == 0: return L10N.text("No data")
+	return L10N.text("%d/%d correct (%.1f%%), mean %.2fs, median %.2fs") % [int(b.get("ok", 0)), n, 100.0 * float(b.get("ok", 0)) / n, float(b.get("seconds", 0)) / n, median(b)]
 
 static func mission(p: Dictionary, world: int, level: int, seconds: float, hits: int, misses: int, won: bool) -> void:
 	var rows: Array = p.get("mission_history", [])

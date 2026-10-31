@@ -1,12 +1,16 @@
 extends RefCounted
+
 class_name WorkshopEngine
+
+const L10N = preload("res://scripts/Localization.gd")
+
 
 const DECOMPOSITION = preload("res://scripts/DecompositionEngine.gd")
 
 static func prepare(question: Dictionary, mode: String) -> Dictionary:
 	var steps: Array[Dictionary] = DECOMPOSITION.steps(question)
 	# End guided work with a full, unassisted calculation. Solo starts with it.
-	var final_step: Dictionary = {"prompt": "Now solve the original problem", "answer": int(question["answer"])}
+	var final_step: Dictionary = {"prompt": L10N.text("Now solve the original problem"), "answer": int(question["answer"])}
 	if mode == "solo":
 		steps = [final_step]
 	else:
@@ -58,7 +62,7 @@ static func change_strategy(session: Dictionary, strategy: String) -> void:
 		session["strategy"] = strategy
 		return
 	var steps: Array[Dictionary] = DECOMPOSITION.steps(session["question"], strategy)
-	steps.append({"prompt": "Now solve the original problem", "answer": int(session["question"]["answer"])})
+	steps.append({"prompt": L10N.text("Now solve the original problem"), "answer": int(session["question"]["answer"])})
 	session["steps"] = steps
 	session["index"] = 0
 	session["strategy"] = strategy

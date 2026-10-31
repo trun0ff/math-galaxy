@@ -21,7 +21,7 @@ try {
             throw "Missing test completion marker: $arguments"
         }
     }
-    Write-Output 'All 8 test suites and import passed.'
+    Write-Output 'All test suites and import passed.'
 } finally {
     $env:APPDATA = $oldAppData
 }
