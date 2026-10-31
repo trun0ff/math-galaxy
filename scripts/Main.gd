@@ -10,6 +10,7 @@ const HANGAR = preload("res://scripts/Hangar.gd")
 const PARENT_DATA = preload("res://scripts/ParentData.gd")
 const PARENT_UI = preload("res://scripts/ParentDashboard.gd")
 
+const LOCATIONS = preload("res://scripts/WorldLocations.gd")
 const PROGRESSION = preload("res://scripts/LearningProgression.gd")
 const LEARNING_ENGINE = preload("res://scripts/LearningEngine.gd")
 const ADAPTIVE_SELECTOR = preload("res://scripts/AdaptiveQuestionSelector.gd")
@@ -19,9 +20,9 @@ const WORKSHOP_ENGINE = preload("res://scripts/WorkshopEngine.gd")
 const SCENE_SCRIPT = preload("res://scripts/SpaceScene.gd")
 const KEYPAD_SCRIPT = preload("res://scripts/ui/NeonKeypad.gd")
 const FANCY_BUTTON = preload("res://scripts/ui/FancyButton.gd")
-const WORLD_ART = [preload("res://assets/worlds/1_lightning_clean.jpg"), preload("res://assets/worlds/2_desert_clean.jpg"), preload("res://assets/worlds/3_crystal_clean.jpg"), preload("res://assets/worlds/4_titan_clean.jpg"), preload("res://assets/worlds/5_blackhole_clean.jpg"), preload("res://assets/worlds/6_tide.svg"), preload("res://assets/worlds/7_aurora.svg"), preload("res://assets/worlds/8_solar.svg")]
+const WORLD_ART = [preload("res://assets/worlds/1_lightning_clean.jpg"), preload("res://assets/worlds/2_desert_clean.jpg"), preload("res://assets/worlds/3_crystal_clean.jpg"), preload("res://assets/worlds/4_titan_clean.jpg"), preload("res://assets/worlds/5_blackhole_clean.jpg"), preload("res://assets/locations/world_6.png"), preload("res://assets/locations/world_7.png"), preload("res://assets/locations/world_8.png")]
 const MENU_GALAXY = preload("res://assets/battle/menu_galaxy.jpg")
-const MENU_BACKGROUNDS = [preload("res://assets/battle/world_1_background.jpg"), preload("res://assets/battle/world_2_background.jpg"), preload("res://assets/battle/world_3_background.jpg"), preload("res://assets/battle/world_4_background.jpg"), preload("res://assets/battle/world_5_background.jpg"), preload("res://assets/worlds/6_tide.svg"), preload("res://assets/worlds/7_aurora.svg"), preload("res://assets/worlds/8_solar.svg")]
+const MENU_BACKGROUNDS = [preload("res://assets/battle/world_1_background.jpg"), preload("res://assets/battle/world_2_background.jpg"), preload("res://assets/battle/world_3_background.jpg"), preload("res://assets/battle/world_4_background.jpg"), preload("res://assets/battle/world_5_background.jpg"), preload("res://assets/locations/world_6.png"), preload("res://assets/locations/world_7.png"), preload("res://assets/locations/world_8.png")]
 const WORLD_SUBTITLES = ["TABLE 2-9", "2 DIGITS × 1", "3 DIGITS × 1", "2 DIGITS × 2", "EXACT DIVISION", "TABLE ÷ 2–9", "2 DIGITS ÷ 1", "3 DIGITS ÷ 1"]
 const SAVE_MANAGER = preload("res://scripts/SaveManager.gd")
 const MISSION_MANAGER = preload("res://scripts/MissionManager.gd")
@@ -639,7 +640,7 @@ func make_world_card(idx: int) -> Button:
 	picture_clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(picture_clip)
 	var pic := TextureRect.new()
-	pic.texture = WORLD_ART[idx - 1]
+	pic.texture = LOCATIONS.world_portrait(idx) if idx >= 6 else WORLD_ART[idx - 1]
 	pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	pic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	pic.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -674,7 +675,7 @@ func make_world_card(idx: int) -> Button:
 	footer.add_child(box)
 	box.add_child(make_label(L10N.text("WORLD %d") % (PROGRESSION.WORLD_ORDER.find(idx) + 1), 14, Color("fff2a6")))
 	box.add_child(make_label(L10N.text(WORLD_NAMES[idx - 1]), 17, Color("f8fdff")))
-	box.add_child(make_label(WORLD_SUBTITLES[idx - 1], 13, Color("8ff0ff" if selected else Color("b0d0ff"))))
+	box.add_child(make_label(L10N.text(WORLD_SUBTITLES[idx - 1]), 13, Color("8ff0ff" if selected else Color("b0d0ff"))))
 	return b
 
 func select_world(value: int) -> void:
@@ -686,23 +687,82 @@ func show_levels() -> void:
 	screen = "levels"
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
 	root.add_child(make_label(L10N.text("WORLD %d - SUBLEVELS") % (PROGRESSION.WORLD_ORDER.find(world) + 1), 34, Color("84d8ff")))
-	var scroll := horizontal_strip(root, 240)
-	var list := HBoxContainer.new()
-	scroll.add_child(list)
+	root.add_child(make_label(L10N.text("Explore a location: choose first, then solve on your own."), 19, Color("c1dcff")))
+	var scroll := ScrollContainer.new()
+	scroll.name = "SublevelScroll"
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	root.add_child(scroll)
+	var grid := GridContainer.new()
+	grid.name = "SublevelGrid"
+	grid.columns = 3
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 14)
+	grid.add_theme_constant_override("v_separation", 14)
+	scroll.add_child(grid)
+	scroll.resized.connect(func(): grid.columns = clampi(int((scroll.size.x - 16) / 360), 1, 3))
 	for i in range(PROGRESSION.levels(world).size()):
-		var index: int = i
-		var available: bool = PROGRESSION.is_unlocked(progress, world, i)
-		var completed: bool = bool(progress.get("completed_levels", {}).get(PROGRESSION.id_for(world, i), false))
-		var label_text: String = "%d. %s" % [i + 1, PROGRESSION.levels(world)[i]]
-		if completed: label_text += L10N.text("  ✓ Replay")
-		if not available: label_text += "  -  " + PROGRESSION.requirement(progress, world, i)
-		elif not completed: label_text += "  -  " + PROGRESSION.required_evidence(world, i)
-		var btn := make_button(label_text, func(): select_level(index), Color("267aa8") if available else Color("34415e"), 290, 210, 19)
-		btn.disabled = not available
-		list.add_child(btn)
-	scroll.set_deferred("scroll_horizontal", maxi(0, PROGRESSION.practice_target(progress, world) * 294 - 300))
-	root.add_child(make_button(L10N.text("PRACTICE NEXT SKILL"), start_level_practice, Color("4260a4"), 320, 50, 19))
+		grid.add_child(make_sublevel_card(i))
+	var practice := make_button(L10N.text("PRACTICE NEXT SKILL"), start_level_practice, Color("4260a4"), 320, 50, 19)
+	practice.disabled = not PROGRESSION.is_unlocked(progress, world, 0)
+	root.add_child(practice)
 	root.add_child(make_button(L10N.text("BACK"), show_menu, Color("4260a4"), 180, 50, 19))
+
+func make_sublevel_card(index: int) -> Button:
+	var available: bool = PROGRESSION.is_unlocked(progress, world, index)
+	var completed: bool = bool(progress.get("completed_levels", {}).get(PROGRESSION.id_for(world, index), false))
+	var choice: bool = PROGRESSION.input_mode(index) == "choices"
+	var color := Color("28cfe6") if choice else Color("bc8aff")
+	var card := make_button("", func(): select_level(index), color if available else Color("425473"), 280, 360, 20)
+	card.name = "Sublevel_%d" % index
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.disabled = not available
+	card.focus_mode = Control.FOCUS_ALL
+	card.clip_contents = true
+	var content := VBoxContainer.new()
+	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	content.offset_left = 16
+	content.offset_right = -16
+	content.offset_top = 16
+	content.offset_bottom = -16
+	content.add_theme_constant_override("separation", 5)
+	card.add_child(content)
+	var image := TextureRect.new()
+	image.name = "LocationPreview"
+	image.texture = LOCATIONS.texture(world, index)
+	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	image.custom_minimum_size.y = 112
+	image.modulate = Color.WHITE if available else Color(0.6, 0.65, 0.75, 0.8)
+	content.add_child(image)
+	var status: String = L10N.text("Completed · replay") if completed else L10N.text("Ready to explore") if available else L10N.text("Locked")
+	content.add_child(make_card_label("%02d  ·  %s" % [index + 1, status], 15, Color("ffe49b")))
+	content.add_child(make_card_label(LOCATIONS.title(world, index), 19, Color("c8ecff")))
+	content.add_child(make_card_label(L10N.text(PROGRESSION.TRACKS[world - 1][int(index / 2)]), 21, Color.WHITE))
+	var explanation: String = L10N.text("Choose the correct answer from 4 options.\nYou have 5 seconds per example.") if choice else L10N.text("Solve the same skill on your own.\nType your answer using the keypad.")
+	content.add_child(make_card_label(explanation, 17, Color("dce8ff")))
+	var footer := make_card_label(L10N.text("Choose · 5 seconds") if choice else L10N.text("Enter · reinforcement"), 16, color.lightened(0.25))
+	footer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	footer.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	content.add_child(footer)
+	if not available:
+		card.tooltip_text = PROGRESSION.requirement(progress, world, index)
+		footer.text = L10N.text("Finish the previous sublevel") if index > 0 else PROGRESSION.requirement(progress, world, index)
+	else:
+		card.tooltip_text = PROGRESSION.required_evidence(world, index)
+	ignore_card_mouse(content)
+	return card
+
+func make_card_label(value: String, font_size: int, color: Color) -> Label:
+	var label := make_label(value, font_size, color)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return label
+
+func ignore_card_mouse(node: Control) -> void:
+	node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		if child is Control: ignore_card_mouse(child)
 
 func select_level(index: int) -> void:
 	if not PROGRESSION.is_unlocked(progress, world, index): return
@@ -711,6 +771,7 @@ func select_level(index: int) -> void:
 	start_mission()
 
 func start_level_practice() -> void:
+	if not PROGRESSION.is_unlocked(progress, world, 0): return
 	level = PROGRESSION.practice_target(progress, world)
 	level_practice = true
 	start_mission()
@@ -744,7 +805,7 @@ func start_mission() -> void:
 	next_question()
 
 func build_battle() -> void:
-	var root := build_root(MENU_BACKGROUNDS[world - 1])
+	var root := build_root(LOCATIONS.texture(world, level))
 	var top_panel := PanelContainer.new()
 	top_panel.set_script(preload("res://scripts/ui/BattleHudFrame.gd"))
 	root.add_child(top_panel)
@@ -784,9 +845,12 @@ func build_battle() -> void:
 	art = Control.new()
 	art.set_script(SCENE_SCRIPT)
 	art.call("set_world", world)
+	art.call("set_location", LOCATIONS.texture(world, level))
 	art.custom_minimum_size.y = 204
 	art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	root.add_child(art)
+	var location_caption := make_label(LOCATIONS.title(world, level) + " · " + L10N.text(PROGRESSION.TRACKS[world - 1][int(level / 2)]), 16, Color("bfe8ff"))
+	root.add_child(location_caption)
 	art.connect("ship_impact", update_hud)
 
 	var question_card := PanelContainer.new()
@@ -883,11 +947,7 @@ func choose_question() -> Dictionary:
 			queue.remove_at(i)
 			retry.erase("retry_after")
 			return retry
-	# Spiral review is deliberately excluded from level evidence and challenges.
-	if PROGRESSION.input_mode(level) == "numeric" and not level_practice and not PROGRESSION.is_final(world, level) and randf() < 0.15:
-		var previous_world: int = PROGRESSION.review_world(world, level)
-		if previous_world > 0:
-			return PROGRESSION.generate(previous_world, randi_range(0, PROGRESSION.levels(previous_world).size() - 2))
+	# Both halves of a skill stay on the selected topic, including independent world starts.
 	return PROGRESSION.generate(world, level)
 
 func choose_question_legacy() -> Dictionary:

@@ -239,16 +239,37 @@ func settings() -> void:
 	clear()
 	button(L10N.text("Overview"), dashboard)
 	label(L10N.text("Missions: 10 examples; final challenges: 12. No mission timer."))
-	var inputs: Array = []
-	for i in range(8):
-		inputs.append(spin(L10N.text("World %d answer seconds: 5–180 (default %d)") % [host.PROGRESSION.WORLD_ORDER.find(i + 1) + 1, DATA.DEFAULT_LIMITS[i]], DATA.limits(host.progress)[i], 5, 180))
+	var independent := CheckButton.new()
+	independent.name = "IndependentWorlds"
+	independent.text = L10N.text("Start each world independently")
+	independent.button_pressed = bool(host.progress.get("parent_settings", {}).get("independent_worlds", false))
+	independent.add_theme_font_size_override("font_size", 22)
+	body.add_child(independent)
+	label(L10N.text("Open the first sublevel of every world. Continue sublevels in order within each world."))
+	independent.toggled.connect(func(enabled: bool):
+		var settings_data: Dictionary = host.progress.get("parent_settings", {}).duplicate(true)
+		settings_data["independent_worlds"] = enabled
+		host.progress["parent_settings"] = settings_data
+		host.save_progress())
+	label(L10N.text("These times apply to typed answers. Choice rounds always allow 5 seconds."))
+	var inputs: Dictionary = {}
+	for world_id in host.PROGRESSION.WORLD_ORDER:
+		var i: int = world_id - 1
+		inputs[world_id] = spin(L10N.text("World %d answer seconds: 5–180 (default %d)") % [host.PROGRESSION.WORLD_ORDER.find(i + 1) + 1, DATA.DEFAULT_LIMITS[i]], DATA.limits(host.progress)[i], 5, 180)
 	button(L10N.text("Save timing"), func():
-		var values: Array = []
-		for item in inputs: values.append(item.value)
-		host.progress["parent_settings"] = {"duration": DATA.duration(host.progress), "limits": values}
+		var values: Array = DATA.DEFAULT_LIMITS.duplicate()
+		for world_id in inputs: values[world_id - 1] = inputs[world_id].value
+		var settings_data: Dictionary = host.progress.get("parent_settings", {}).duplicate(true)
+		settings_data["limits"] = values
+		host.progress["parent_settings"] = settings_data
 		host.save_progress()
 		dashboard())
-	button(L10N.text("Restore default timing"), func(): host.progress.erase("parent_settings"); host.save_progress(); settings())
+	button(L10N.text("Restore default timing"), func():
+		var settings_data: Dictionary = host.progress.get("parent_settings", {}).duplicate(true)
+		settings_data.erase("limits")
+		host.progress["parent_settings"] = settings_data
+		host.save_progress()
+		settings())
 	button(L10N.text("Change PIN (repeat required)"), func():
 		confirm(L10N.text("Change PIN?"), func(): changing_pin = true; first_pin = ""; unlocked = false; gate()))
 	label(L10N.text("Export includes the local PIN hash. Keep backups private. Imports keep your current PIN and make a backup before replacing progress."))

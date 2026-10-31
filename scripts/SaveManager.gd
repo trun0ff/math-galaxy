@@ -92,6 +92,7 @@ static func validate(value: Variant) -> bool:
 		if not record is Dictionary: return false
 		if record.has("accuracy") and (not (record.accuracy is int or record.accuracy is float) or not is_finite(float(record.accuracy)) or float(record.accuracy) < 0 or float(record.accuracy) > 1): return false
 	var settings: Dictionary = value.get("parent_settings", {})
+	if settings.has("independent_worlds") and not settings.independent_worlds is bool: return false
 	if settings.has("duration") and not (settings.duration is float or settings.duration is int): return false
 	if settings.has("limits"):
 		if not settings.limits is Array or settings.limits.size() not in [5, 8]: return false

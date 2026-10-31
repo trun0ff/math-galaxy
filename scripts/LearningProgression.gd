@@ -38,6 +38,7 @@ static func id_for(world: int, level: int) -> String:
 static func is_unlocked(progress: Dictionary, world: int, level: int) -> bool:
  if level < 0 or level >= levels(world).size(): return false
  if level == 0:
+  if bool(progress.get("parent_settings", {}).get("independent_worlds", false)): return true
   if world == 1: return true
   if int(progress.get("legacy_unlocked_world", 1)) >= world: return true
   return bool(progress.get("completed_levels", {}).get(id_for(previous_world(world), levels(previous_world(world)).size() - 1), false))

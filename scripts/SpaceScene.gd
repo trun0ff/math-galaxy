@@ -48,11 +48,16 @@ var shockwaves: Array[Dictionary] = []
 var rng := RandomNumberGenerator.new()
 const PLAYER_TEXTURES = [preload("res://assets/battle/fighter_cyan.png"), preload("res://assets/battle/fighter_gold.png"), preload("res://assets/battle/fighter_violet.png")]
 const ENEMY_TEXTURES = [preload("res://assets/battle/monster_cyclops.png"), preload("res://assets/battle/monster_mech.png"), preload("res://assets/battle/monster_crystal.png")]
-const WORLD_BACKGROUNDS = [preload("res://assets/battle/world_1_background_fade.png"), preload("res://assets/battle/world_2_background_fade.png"), preload("res://assets/battle/world_3_background_fade.png"), preload("res://assets/battle/world_4_background_fade.png"), preload("res://assets/battle/world_5_background_fade.png"), preload("res://assets/worlds/6_tide.svg"), preload("res://assets/worlds/7_aurora.svg"), preload("res://assets/worlds/8_solar.svg")]
+const WORLD_BACKGROUNDS = [preload("res://assets/battle/world_1_background_fade.png"), preload("res://assets/battle/world_2_background_fade.png"), preload("res://assets/battle/world_3_background_fade.png"), preload("res://assets/battle/world_4_background_fade.png"), preload("res://assets/battle/world_5_background_fade.png"), preload("res://assets/locations/world_6.png"), preload("res://assets/locations/world_7.png"), preload("res://assets/locations/world_8.png")]
 var damage_labels: Array[Dictionary] = []
 var ship_variant: int = 0
 var ship_tint := Color.WHITE
 var current_world: int = 1
+var location_texture: Texture2D
+
+func set_location(texture: Texture2D) -> void:
+	location_texture = texture
+	queue_redraw()
 
 func set_world(idx: int) -> void:
 	current_world = clampi(idx, 1, 8)
@@ -260,7 +265,17 @@ func _draw() -> void:
 	if w < 50.0 or h < 50.0:
 		return
 	# Painted nebula texture with a subtle animated parallax star layer.
-	draw_texture_rect(WORLD_BACKGROUNDS[current_world - 1], Rect2(Vector2.ZERO, size), false, Color.WHITE)
+	var backdrop: Texture2D = location_texture if location_texture != null else WORLD_BACKGROUNDS[current_world - 1]
+	var source_size := Vector2(backdrop.get_width(), backdrop.get_height())
+	var crop := source_size
+	var target_aspect: float = size.x / size.y
+	if source_size.x / source_size.y < target_aspect:
+		crop.y = source_size.x / target_aspect
+	else:
+		crop.x = source_size.y * target_aspect
+	var origin := Vector2((source_size.x - crop.x) * 0.5, clampf(source_size.y * 0.37 - crop.y * 0.5, 0, source_size.y - crop.y))
+	draw_texture_rect_region(backdrop, Rect2(Vector2.ZERO, size), Rect2(origin, crop))
+	draw_rect(Rect2(Vector2.ZERO, size), Color(0.01, 0.025, 0.08, 0.22))
 	for i in range(stars.size()):
 		var star: Vector2 = stars[i]
 		var layer: int = i % 3

@@ -1,0 +1,450 @@
+[
+  {
+    "world": 1,
+    "index": 0,
+    "name": "Thunder Gate",
+    "asset": "assets/locations/world_1/location_01.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Thunder Gate. Main scene: colossal twin lightning-charged stone gate with arcs of blue electricity spanning a cloud chasm. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "07e8c3a61defb08a4e43358210bbf2344a76fff817f19e9dbf2b3016bf8e5ff7"
+  },
+  {
+    "world": 1,
+    "index": 1,
+    "name": "Cloud Observatory",
+    "asset": "assets/locations/world_1/location_02.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Cloud Observatory. Main scene: a domed brass astronomical observatory on a lone cloud island with giant telescopes pointing into blue stars. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "cee3e71ba3aea3ee0a39fa292a589c8d1f63ff0e5315c15b455d8b009124dd5f"
+  },
+  {
+    "world": 1,
+    "index": 2,
+    "name": "Storm Islands",
+    "asset": "assets/locations/world_1/location_03.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Storm Islands. Main scene: a chain of jagged floating islands amid rolling storm clouds, arcs of lightning linking the peaks. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "4e08f6210cd4abec4b4c1d6ea9b7202bb208792e36560810f08175e0eee4e2b6"
+  },
+  {
+    "world": 1,
+    "index": 3,
+    "name": "Lightning Harbor",
+    "asset": "assets/locations/world_1/location_04.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Lightning Harbor. Main scene: an empty aerial harbor of curved docks and glowing blue mooring beacons suspended over clouds. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "fbc31df72a7d461b28b89be53a06d81db5d80d394b84c87c954d246635437f1d"
+  },
+  {
+    "world": 1,
+    "index": 4,
+    "name": "Sky Citadel",
+    "asset": "assets/locations/world_1/location_05.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Sky Citadel. Main scene: a vast white-and-gold citadel with sapphire roofs atop a sheer floating mountain. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "4d8ace843909bc645c5e3efe079fa99d8d7f871c5fca987c9aae306af2101b1f"
+  },
+  {
+    "world": 1,
+    "index": 5,
+    "name": "Beacon Cliffs",
+    "asset": "assets/locations/world_1/location_06.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Beacon Cliffs. Main scene: steep cloud cliffs crowned with tall electric blue beacon towers, bright light shafts through mist. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "1dc8ac524897f36b19f125afeec700b38f841a3cf5224f5f5e00a6f0ae12549e"
+  },
+  {
+    "world": 1,
+    "index": 6,
+    "name": "Tempest Library",
+    "asset": "assets/locations/world_1/location_07.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Tempest Library. Main scene: open-air terraces of a monumental celestial library, glowing crystal archives and swirling clouds. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "057dd82d3ea0d7470bb3608fe916b09d0407c952215af4d36544c1f9050bd0e0"
+  },
+  {
+    "world": 1,
+    "index": 7,
+    "name": "Electric Falls",
+    "asset": "assets/locations/world_1/location_08.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Electric Falls. Main scene: cascades of luminous blue energy pouring down floating rock terraces into a cloud sea. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "d5c9fecbe7db4913a81f88e24b80e581483962e48a83e65fbd6ef70ad6549f03"
+  },
+  {
+    "world": 1,
+    "index": 8,
+    "name": "Ionosphere Gardens",
+    "asset": "assets/locations/world_1/location_09.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Ionosphere Gardens. Main scene: hanging gardens of silvery trees and blue luminous flowers on golden rings above the storm. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "d47192786ef306e7c548f6600eb663c18d4ddc75bd6799db77f9fe9105bbab2b"
+  },
+  {
+    "world": 1,
+    "index": 9,
+    "name": "Stormheart Fortress",
+    "asset": "assets/locations/world_1/location_10.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Lightning Academy. Location: Stormheart Fortress. Main scene: a dramatic final fortress built around a huge contained lightning core above a cyclone. Shared world art direction: electric blue and gold sky world of floating islands, lightning crystals and ornate scientific academy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "5f7b72cef41b03b9e0e320399eb60d11bd6f0565912e2d945ce9c52b9959aaeb"
+  },
+  {
+    "world": 2,
+    "index": 0,
+    "name": "Copper Dunes",
+    "asset": "assets/locations/world_2/location_01.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Mechanic Desert. Location: Copper Dunes. Main scene: sweeping undulating copper sand dunes with half-buried giant bronze gears under an orange sky. Shared world art direction: rust orange sandstone desert planet, amber sunset, copper and brass machinery embedded in ancient canyons. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "a2848a8733e08f0f6e1bac3d56269a657ce078e49237d576f38bf2dbdacc2c75"
+  },
+  {
+    "world": 2,
+    "index": 1,
+    "name": "Gear Canyon",
+    "asset": "assets/locations/world_2/location_02.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Mechanic Desert. Location: Gear Canyon. Main scene: a deep narrow red canyon bridged by immense interlocking ancient metal gears and cables. Shared world art direction: rust orange sandstone desert planet, amber sunset, copper and brass machinery embedded in ancient canyons. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "12eafb8c22128eb7950981d396b99f4755c28227c2b89e06a9e3dec3c877a798"
+  },
+  {
+    "world": 2,
+    "index": 2,
+    "name": "Sand Observatory",
+    "asset": "assets/locations/world_2/location_03.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Mechanic Desert. Location: Sand Observatory. Main scene: a circular bronze desert observatory with huge sundials and a glass dome amid dunes. Shared world art direction: rust orange sandstone desert planet, amber sunset, copper and brass machinery embedded in ancient canyons. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "1fdcccd4ca253c164ed2951e3962e0464668ef5bed55fe9de321a8b8ab812c33"
+  },
+  {
+    "world": 2,
+    "index": 3,
+    "name": "Engine Ruins",
+    "asset": "assets/locations/world_2/location_04.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Mechanic Desert. Location: Engine Ruins. Main scene: monumental ruined engine cylinders and broken turbines rising from a desert crater. Shared world art direction: rust orange sandstone desert planet, amber sunset, copper and brass machinery embedded in ancient canyons. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "3a4086bb73e3317326b3ac69d271b62587eb428dc3e91ad97d1da4207ebe2f9f"
+  },
+  {
+    "world": 3,
+    "index": 0,
+    "name": "Crystal Gate",
+    "asset": "assets/locations/world_3/location_01.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Crystal Planet. Location: Crystal Gate. Main scene: a towering crystalline gateway with faceted sapphire pillars and a glowing passage over ice. Shared world art direction: ice blue and turquoise alien crystal world, glowing sapphire formations, violet shadows and frozen water. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "953374b29a911902bf7bb6f26d82f7434c034735deaca6c4a2cdf09abaa9bb95"
+  },
+  {
+    "world": 3,
+    "index": 1,
+    "name": "Sapphire Valley",
+    "asset": "assets/locations/world_3/location_02.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Crystal Planet. Location: Sapphire Valley. Main scene: a wide frozen valley filled with blue gem spires reflected in a long turquoise lake. Shared world art direction: ice blue and turquoise alien crystal world, glowing sapphire formations, violet shadows and frozen water. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "243f70d60915c31c49cbadd6fe2a719abaec7d302e506d384af192b1fcbf2323"
+  },
+  {
+    "world": 3,
+    "index": 2,
+    "name": "Prism Caverns",
+    "asset": "assets/locations/world_3/location_03.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Crystal Planet. Location: Prism Caverns. Main scene: the interior of a vast luminous crystal cave, rainbow refractions, deep violet tunnels and underground water. Shared world art direction: ice blue and turquoise alien crystal world, glowing sapphire formations, violet shadows and frozen water. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "272913f0faab376f6c102584841836860d27586131e356e3e2e27b7c0741f60a"
+  },
+  {
+    "world": 3,
+    "index": 3,
+    "name": "Frozen Arches",
+    "asset": "assets/locations/world_3/location_04.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Crystal Planet. Location: Frozen Arches. Main scene: sweeping translucent ice and crystal arches forming a monumental natural bridge above a frozen gorge. Shared world art direction: ice blue and turquoise alien crystal world, glowing sapphire formations, violet shadows and frozen water. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "82252f7ee4028f6dd2d0beb078cd6190cdb8943a2ec18888353184d2e4603ca4"
+  },
+  {
+    "world": 4,
+    "index": 0,
+    "name": "Titan Spaceport",
+    "asset": "assets/locations/world_4/location_01.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Titan City. Location: Titan Spaceport. Main scene: an empty grand orbital spaceport with golden docking gantries, luminous landing platforms and giant ringed planet. Shared world art direction: majestic indigo and gold futuristic alien city, immense ringed planet in sky, clean monumental sci-fi architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "7766e7de56725275e1d301f6f774ff682d014ca58ba83341ee8d2ff0d2c3206f"
+  },
+  {
+    "world": 4,
+    "index": 1,
+    "name": "Golden Bridges",
+    "asset": "assets/locations/world_4/location_02.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Titan City. Location: Golden Bridges. Main scene: a complex of elegant golden sky bridges stretching between immense indigo city towers above clouds. Shared world art direction: majestic indigo and gold futuristic alien city, immense ringed planet in sky, clean monumental sci-fi architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "6afb1852da1c7b413611a69b12dd1da9d4dd188a82f9920565f5e4fe11037563"
+  },
+  {
+    "world": 4,
+    "index": 2,
+    "name": "Orbital Gardens",
+    "asset": "assets/locations/world_4/location_03.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Titan City. Location: Orbital Gardens. Main scene: lush terraced gardens on circular orbital platforms among sleek blue-and-gold towers. Shared world art direction: majestic indigo and gold futuristic alien city, immense ringed planet in sky, clean monumental sci-fi architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "7a2123208be666164585b4afb6e9cedf0d4e975920e2f49215881aaf951672c4"
+  },
+  {
+    "world": 4,
+    "index": 3,
+    "name": "Tower District",
+    "asset": "assets/locations/world_4/location_04.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Titan City. Location: Tower District. Main scene: a dramatic central city district of tall luminous indigo skyscrapers, gold spires and radiant sky avenues. Shared world art direction: majestic indigo and gold futuristic alien city, immense ringed planet in sky, clean monumental sci-fi architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "8c83773321872b4ae2d347602940d69866a0a36de5dc790751702c7967779a10"
+  },
+  {
+    "world": 5,
+    "index": 0,
+    "name": "Violet Rift",
+    "asset": "assets/locations/world_5/location_01.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Black Hole. Location: Violet Rift. Main scene: a vast luminous violet spacetime fissure running between floating broken stone monoliths in deep space. Shared world art direction: mysterious violet and navy deep space gravity world, golden black hole accretion light, alien orbital ruins. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "da8e32d1d5edf1a10c7a63cdb06803ced09e534147e7653db254003c32bd8014"
+  },
+  {
+    "world": 5,
+    "index": 1,
+    "name": "Gravity Station",
+    "asset": "assets/locations/world_5/location_02.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Black Hole. Location: Gravity Station. Main scene: an abandoned circular scientific gravity station with rotating gold rings and a distant black hole. Shared world art direction: mysterious violet and navy deep space gravity world, golden black hole accretion light, alien orbital ruins. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "2a588e57d7d89716e97cecba8277972b6ee399e0dcd73b566afee47269949720"
+  },
+  {
+    "world": 5,
+    "index": 2,
+    "name": "Asteroid Passage",
+    "asset": "assets/locations/world_5/location_03.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Black Hole. Location: Asteroid Passage. Main scene: a winding corridor through enormous dark asteroids with ancient purple beacons and orbital bridges. Shared world art direction: mysterious violet and navy deep space gravity world, golden black hole accretion light, alien orbital ruins. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "d8dcf9b75a2b32dc178c1636857b7984a3d21675ebf1f5c5a761758413928bc2"
+  },
+  {
+    "world": 5,
+    "index": 3,
+    "name": "Event Horizon",
+    "asset": "assets/locations/world_5/location_04.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Black Hole. Location: Event Horizon. Main scene: a monumental final approach platform facing a huge black hole with brilliant gold accretion disk and curved starlight. Shared world art direction: mysterious violet and navy deep space gravity world, golden black hole accretion light, alien orbital ruins. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "486ad5628222402a4b2c5ac7c65092ac1eb0cfbf66e649ead2a8211c5d585c89"
+  },
+  {
+    "world": 6,
+    "index": 0,
+    "name": "Coral Gateway",
+    "asset": "assets/locations/world_6/location_01.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Coral Gateway. Main scene: a gigantic natural arch of luminous pink and cyan coral framing open blue sea and distant moons. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "af6be7f475742d0b0532397b1c69716d55ee1d96e7ac26ca77836d46a6f0db92"
+  },
+  {
+    "world": 6,
+    "index": 1,
+    "name": "Moonlit Lagoon",
+    "asset": "assets/locations/world_6/location_02.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Moonlit Lagoon. Main scene: a sheltered tranquil turquoise lagoon at night, white crescent moon, curved rock islands and luminous reefs. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "1d4bd481bef975070d221f1e2437e227e7ed9a931c407f0c7fffb38f60c6eb2d"
+  },
+  {
+    "world": 6,
+    "index": 2,
+    "name": "Tidal Observatory",
+    "asset": "assets/locations/world_6/location_03.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Tidal Observatory. Main scene: an ivory circular ocean observatory with an immense astronomical armillary on a wave-battered island. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "84362a37af321955308faddd82e4f78603a8eea060bccdeabd15061951b2672b"
+  },
+  {
+    "world": 6,
+    "index": 3,
+    "name": "Sapphire Reefs",
+    "asset": "assets/locations/world_6/location_04.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Sapphire Reefs. Main scene: a shallow transparent sapphire reef maze, bright coral terraces and immense sweeping blue waves. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "f8cc3d491263e8c23260d47e7bf8698660775e745d7f70ff3322b0babfc940cd"
+  },
+  {
+    "world": 6,
+    "index": 4,
+    "name": "Ocean Sanctuary",
+    "asset": "assets/locations/world_6/location_05.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Ocean Sanctuary. Main scene: an ancient ivory temple sanctuary on a tranquil island encircled by luminous ocean rings. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "5d61e9eefdd75dd1769e24e6d91a5766a0955d9eb7c1c6abd895de47337cd2c6"
+  },
+  {
+    "world": 6,
+    "index": 5,
+    "name": "Waterfall Isles",
+    "asset": "assets/locations/world_6/location_06.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Waterfall Isles. Main scene: tall tropical rock islands connected by multiple huge waterfalls pouring into the turquoise sea. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "c0a891aa71882fea91d2527c311784167e80217cbf339d525a43bf6844a51f51"
+  },
+  {
+    "world": 6,
+    "index": 6,
+    "name": "Pearl Caverns",
+    "asset": "assets/locations/world_6/location_07.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Pearl Caverns. Main scene: an open sea cave with pearlescent walls, glowing giant pearls and clear blue tidal pools. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "3694254163190e76cb4efbdd34c5214d34a4c34a335c6fcd4b0e325a44973a56"
+  },
+  {
+    "world": 6,
+    "index": 7,
+    "name": "Abyssal Lanterns",
+    "asset": "assets/locations/world_6/location_08.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Abyssal Lanterns. Main scene: a deep underwater alien canyon with bioluminescent coral lanterns and monumental sunken arches. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "67f419cbd8eca4af684061c9cf1c1dea4ccc8bd35749063d9c5d0d5827d231f0"
+  },
+  {
+    "world": 6,
+    "index": 8,
+    "name": "Whirlpool Passage",
+    "asset": "assets/locations/world_6/location_09.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Whirlpool Passage. Main scene: a majestic safe-looking winding sea passage between two huge luminous spiral whirlpools and stone beacons. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "63216bc2610c6ad5b82a707602ba0bbb7bd5cd0e5ba447a1f9e4663cf141ea60"
+  },
+  {
+    "world": 6,
+    "index": 9,
+    "name": "Tidal Palace",
+    "asset": "assets/locations/world_6/location_10.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Tidal Ocean. Location: Tidal Palace. Main scene: an imposing final royal ocean palace of ivory and sapphire rising above a cresting wave under blue stars. Shared world art direction: turquoise alien ocean planet, sapphire waves, glowing corals, ancient ivory oceanic architecture and starry blue sky. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "a7436b08b6073500233c673d6e14644219d613b6dfaad633fa887dce87d21c2a"
+  },
+  {
+    "world": 7,
+    "index": 0,
+    "name": "Emerald Terrace",
+    "asset": "assets/locations/world_7/location_01.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Emerald Terrace. Main scene: a broad emerald garden terrace with geometric crystal flowerbeds and waterfalls suspended beneath a green aurora. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "357452e50841e819f54485a086640bce0448a5fcc8b0d054be9a2abf375b3483"
+  },
+  {
+    "world": 7,
+    "index": 1,
+    "name": "Floating Gardens",
+    "asset": "assets/locations/world_7/location_02.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Floating Gardens. Main scene: a cluster of lush floating garden islands at different heights with trailing vines and bright waterfalls. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "1df82a48b4884803b34fe2230e5708e3d8c586c3040c7581c9e2c36622f3beec"
+  },
+  {
+    "world": 7,
+    "index": 2,
+    "name": "Aurora Bridge",
+    "asset": "assets/locations/world_7/location_03.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Aurora Bridge. Main scene: a huge elegant glass-and-gold bridge curving between green cliffs beneath rippling violet and green aurora. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "6f821801dc22cee21cb8e797d947cdb63f1ae5b8c4e5241890620391a4031e80"
+  },
+  {
+    "world": 7,
+    "index": 3,
+    "name": "Luminous Grove",
+    "asset": "assets/locations/world_7/location_04.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Luminous Grove. Main scene: a secluded grove of glowing emerald trees with violet crystalline leaves and a luminous stream. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "5e7a25ee283698dc5f4c72dd6e91d7bf853955f584ffd0066a279d75ac94d4e6"
+  },
+  {
+    "world": 7,
+    "index": 4,
+    "name": "Sky Observatory",
+    "asset": "assets/locations/world_7/location_05.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Sky Observatory. Main scene: a gold armillary observatory atop a floating grassy island facing an immense emerald planet. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "6c14bb7329c26d1e5f90332618397eac3fe64f03a43953fd9e53a31f68060c63"
+  },
+  {
+    "world": 7,
+    "index": 5,
+    "name": "Starlily Lake",
+    "asset": "assets/locations/world_7/location_06.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Starlily Lake. Main scene: a quiet floating lake covered in giant luminous star-shaped lilies reflecting the green aurora. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "b78a83d88de97b401e17dc54d96bfa5a6c0b2dd153aeedae3256be3c8907e28e"
+  },
+  {
+    "world": 7,
+    "index": 6,
+    "name": "Canopy Ruins",
+    "asset": "assets/locations/world_7/location_07.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Canopy Ruins. Main scene: ancient ivory columns and golden astronomical machinery wrapped in a dense emerald canopy. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "ec3e467da5c3b6116e1a86a6a3119fdb4340f8c9d77cc0d2d5dc5a613b1b3398"
+  },
+  {
+    "world": 7,
+    "index": 7,
+    "name": "Prism Waterfalls",
+    "asset": "assets/locations/world_7/location_08.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Prism Waterfalls. Main scene: a sequence of cascading green and violet luminous waterfalls over crystalline floating terraces. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "568df8cbbbe00dd15611896fded7090b67f96eda941efab3709321ac6d948dd1"
+  },
+  {
+    "world": 7,
+    "index": 8,
+    "name": "Moonseed Orchard",
+    "asset": "assets/locations/world_7/location_09.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Moonseed Orchard. Main scene: an enchanting alien orchard of silver trees bearing luminous emerald orbs under a lavender moon. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "345efa1fe8fde986c85740c5823cbf30b330707d277e444cd812c28dba3ba844"
+  },
+  {
+    "world": 7,
+    "index": 9,
+    "name": "Aurora Crown",
+    "asset": "assets/locations/world_7/location_10.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Aurora Gardens. Location: Aurora Crown. Main scene: a final magnificent crown-shaped garden citadel of gold and emerald overlooking a sea of green northern lights. Shared world art direction: emerald and violet alien aurora sky, verdant floating islands, luminous gardens, elegant ivory and gold astronomy architecture. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "ae4b1ee072bb8f7ad3ecae1ca22fd7d4f7e248ca31907b8264f11c01106f14f8"
+  },
+  {
+    "world": 8,
+    "index": 0,
+    "name": "Amber Canyon",
+    "asset": "assets/locations/world_8/location_01.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Amber Canyon. Main scene: a deep amber volcanic canyon crossed by narrow obsidian bridges above slow golden lava rivers. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "04104eeefee71d37afc12b1d0c4f1b9c7657a6da7a7d761b1288fe8c684c4cb4"
+  },
+  {
+    "world": 8,
+    "index": 1,
+    "name": "Obsidian Islands",
+    "asset": "assets/locations/world_8/location_02.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Obsidian Islands. Main scene: jagged black glass islands floating over a glowing orange magma sea under an immense sun. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "a3436593f3ec029885c996cf8ee91b290c29cce69ceb17513818943863c1c20c"
+  },
+  {
+    "world": 8,
+    "index": 2,
+    "name": "Solar Towers",
+    "asset": "assets/locations/world_8/location_03.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Solar Towers. Main scene: a cluster of soaring gold solar energy towers catching radiant beams from a blazing corona. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "c6ee3cfebffc51f9ae437e0119b7ade837007f8aab450f46872e5e5ae8d941ec"
+  },
+  {
+    "world": 8,
+    "index": 3,
+    "name": "Forge Harbor",
+    "asset": "assets/locations/world_8/location_04.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Forge Harbor. Main scene: an empty industrial volcanic harbor of giant bronze gantries and basalt docks beside a molten gold channel. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "b71b743bc418ae52b20e3a2ceeac03e6591a80c25053d0dea1f6e6aa9f5adecf"
+  },
+  {
+    "world": 8,
+    "index": 4,
+    "name": "Sunfire Citadel",
+    "asset": "assets/locations/world_8/location_05.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Sunfire Citadel. Main scene: a mighty golden citadel protected by dark volcanic ridges and streams of radiant orange energy. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "f5a94073f84a5cd0ca0069a9adbdb0db8e7287a255adf7daad64e741c99388a9"
+  },
+  {
+    "world": 8,
+    "index": 5,
+    "name": "Lava Gardens",
+    "asset": "assets/locations/world_8/location_06.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Lava Gardens. Main scene: terraced black rock gardens with glowing amber mineral flowers beside gentle lava streams. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "31be3221fe311daa4386647018ce741a5e2326191c1aede6e6018989fd70ca10"
+  },
+  {
+    "world": 8,
+    "index": 6,
+    "name": "Ember Caverns",
+    "asset": "assets/locations/world_8/location_07.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Ember Caverns. Main scene: a huge volcanic cavern lit by orange mineral veins and hanging crystalline embers. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "3a2ef9f0351952b4ea62278202857fa4c45146e18c95115262515f59e3b2c1b6"
+  },
+  {
+    "world": 8,
+    "index": 7,
+    "name": "Helios Foundry",
+    "asset": "assets/locations/world_8/location_08.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Helios Foundry. Main scene: a monumental open-air solar foundry with giant circular bronze furnaces and suspended golden energy rings. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "2e5c51a3c53ac78270a261867826009c055ad1c66eb4dd64c45fd87e421509d5"
+  },
+  {
+    "world": 8,
+    "index": 8,
+    "name": "Corona Bridge",
+    "asset": "assets/locations/world_8/location_09.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Corona Bridge. Main scene: an immense obsidian-and-gold bridge silhouetted against a gigantic bright solar corona. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "4f2013b29f21ee60eda651489179c16dd3ae100cbae6a7e7a55b9c2d90b11552"
+  },
+  {
+    "world": 8,
+    "index": 9,
+    "name": "Heart of the Sun",
+    "asset": "assets/locations/world_8/location_10.png",
+    "prompt": "Premium finished hand-painted 2D sci-fi adventure game environment, wide cinematic landscape 16:9. World: Solar Forge. Location: Heart of the Sun. Main scene: a final awe-inspiring temple-forge surrounding a brilliant contained star core, golden arches and obsidian platforms. Shared world art direction: gold and amber volcanic alien world, black obsidian rock, glowing lava rivers, monumental futuristic forge towers and solar corona. Make this a distinct place with its own recognizable landmark and composition, not a collage or a repeated view. Match richly detailed colorful illustrated space arcade game artwork: jewel colors, glossy painted details, dark navy shadows, cinematic atmospheric depth, clear silhouettes, family-friendly sense of adventure. Keep scenery around the upper horizon and lower edge with clear central space for ship combat. No characters, creatures, ships, text, lettering, numbers, math symbols, logos, UI or frames. One single panoramic location illustration, full bleed.",
+    "sha256": "a9ce1ecd6693a12cfea68d4387ce0b89f01dd13107fbf914d439c37e5241adc1"
+  }
+]

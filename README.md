@@ -98,8 +98,25 @@ two digits by one digit, three digits by one digit, then two digits by two digit
 and advanced exact division. Stable internal world IDs are `1, 6, 2, 7, 3, 8, 4, 5`.
 Each skill has a choice sublevel (exactly 5 seconds per question), followed by a
 numeric reinforcement sublevel. Both modes require their own completion evidence;
-choice answers do not count as independent mastery. World and sublevel cards use
-horizontal single-row strips with arrow buttons, scrollbar, wheel and touch scrolling.
+choice answers do not count as independent mastery. World cards use a horizontal single-row strip with arrows, scrollbar, wheel
+and touch scrolling. Sublevels use a responsive grid of location cards.
 Version 14 migrates old completed sublevels to both halves and retains existing
-world IDs, statistics and parent timing settings. New vector world art is in
-`assets/worlds/6_tide.svg`, `7_aurora.svg`, and `8_solar.svg`.
+world IDs, statistics and parent timing settings. World overview paintings and dedicated location illustrations are stored in
+`assets/locations/`; earlier vector drafts remain in `assets/worlds/`.
+
+
+### Location cards and independent world starts
+
+Sublevels now use a responsive grid with separate location art, skill title, mode
+instructions and completion status. Each choice/input pair shares a location.
+Each location has its own full painting under `assets/locations/world_N/`;
+the selected painting is used as the mission background and combat scenery.
+There are 56 distinct location images across the eight worlds. A choice/input
+pair shares one location; different skills never share an image.
+Division world portraits and menus use the new painted art.
+
+Parent dashboard → Settings → **Start each world independently** opens only the
+first sublevel of every world; sublevels within each world remain sequential.
+The option saves immediately and survives timing saves, restoring default timing,
+profile reloads and imports. It defaults to off. Choice rounds remain 5 seconds;
+parent timing controls apply to typed answers.
