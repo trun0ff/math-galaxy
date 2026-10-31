@@ -1,5 +1,8 @@
 extends Control
 
+const PARENT_DATA = preload("res://scripts/ParentData.gd")
+const PARENT_UI = preload("res://scripts/ParentDashboard.gd")
+
 const PROGRESSION = preload("res://scripts/LearningProgression.gd")
 const LEARNING_ENGINE = preload("res://scripts/LearningEngine.gd")
 const ADAPTIVE_SELECTOR = preload("res://scripts/AdaptiveQuestionSelector.gd")
@@ -14,8 +17,8 @@ const MENU_GALAXY = preload("res://assets/battle/menu_galaxy.jpg")
 const MENU_BACKGROUNDS = [preload("res://assets/battle/world_1_background.jpg"), preload("res://assets/battle/world_2_background.jpg"), preload("res://assets/battle/world_3_background.jpg"), preload("res://assets/battle/world_4_background.jpg"), preload("res://assets/battle/world_5_background.jpg")]
 const WORLD_SUBTITLES = ["TABLE 2-9", "2 DIGITS × 1", "3 DIGITS × 1", "2 DIGITS × 2", "EXACT DIVISION"]
 const SAVE_PATH = "user://math_galaxy_progress.json"
-const MISSION_LENGTH := 300.0
-const PHASE_LIMITS := [35.0, 85.0, 235.0, 280.0, 300.0]
+var MISSION_LENGTH := 300.0
+var PHASE_LIMITS := [35.0, 85.0, 235.0, 280.0, 300.0]
 const PHASE_NAMES := ["WARM-UP", "WORKSHOP", "SPACE BATTLE", "BOSS", "REWARDS"]
 const WORLD_NAMES := ["Lightning Academy", "Mechanic Desert", "Crystal Planet", "Titan City", "Black Hole"]
 const BACK := Color("07122d")
@@ -251,8 +254,7 @@ func show_menu() -> void:
 	top.add_child(spacer)
 	top.add_child(make_stat_chip("💎", "Crystals %d" % progress.get("coins",0)))
 	top.add_child(make_stat_chip("🏅", "Missions %d" % progress.get("missions",0)))
-	var settings := make_button("⚙", func(): null, Color("274784"), 58, 56, 24)
-	settings.disabled = true
+	var settings := make_button("⚙", open_parent, Color("274784"), 58, 56, 24)
 	top.add_child(settings)
 	root.add_child(top)
 	root.add_child(make_label("MATH GALAXY", 56, Color("84d8ff")))
@@ -513,6 +515,10 @@ func finish_workshop() -> void:
 	if records.size() > 200:
 		records.pop_front()
 	progress["workshop_history"] = records
+	var totals: Dictionary = progress.get("workshop_totals", {})
+	for key in ["completed", "hints", "mistakes", "independent"]:
+		totals[key] = int(totals.get(key, 0)) + int(outcome.get(key, 0))
+	progress["workshop_totals"] = totals
 	WORKSHOP_ENGINE.record_guided_streak(progress, outcome)
 	save_progress()
 	screen = "workshop_complete"
@@ -622,6 +628,8 @@ func start_level_practice() -> void:
 	start_mission()
 
 func start_mission() -> void:
+	MISSION_LENGTH = PARENT_DATA.duration(progress)
+	PHASE_LIMITS = [35.0, 85.0, 235.0, 280.0, 300.0].map(func(v): return v * MISSION_LENGTH / 300.0)
 	progress["mission_sequence"] = int(progress.get("mission_sequence", 0)) + 1
 	elapsed = 0.0
 	phase = 0
@@ -785,7 +793,7 @@ func next_question() -> void:
 	if recent_keys.size() > 5:
 		recent_keys.pop_front()
 	question_elapsed = 0.0
-	question_limit = [8.0, 20.0, 35.0, 60.0, 45.0][world - 1]
+	question_limit = PARENT_DATA.limits(progress)[world - 1]
 	if phase == 1:
 		question_limit += 8.0
 	hint_used = false
@@ -864,6 +872,7 @@ func resolve_answer(value: int, reason: String) -> void:
 	if not question_active or finished: return
 	question_active = false
 	var correct: bool = reason == "answer" and value == question["answer"]
+	PARENT_DATA.record(progress, question, world, level, correct, input_mode, hint_used, question_elapsed, "battle")
 	var fast: bool = question_elapsed <= question_limit * 0.45 and not hint_used
 	var skill_key: String = question["key"]
 	var skills: Dictionary = progress["skills"]
@@ -907,6 +916,7 @@ func resolve_answer(value: int, reason: String) -> void:
 func fail_mission() -> void:
 	if finished: return
 	finished = true
+	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, false)
 	question_active = false
 	transition_delay = 0.0
 	save_progress()
@@ -933,6 +943,7 @@ func fail_mission() -> void:
 func finish_mission() -> void:
 	if finished: return
 	finished = true
+	PARENT_DATA.mission(progress, world, level, elapsed, hits, misses, true)
 	question_active = false
 	progress["coins"] = int(progress.get("coins",0)) + coins_earned
 	progress["missions"] = int(progress.get("missions",0)) + 1
@@ -960,11 +971,8 @@ func exit_mission() -> void:
 	fail_mission()
 
 func save_progress() -> void:
-	progress["schema_version"] = 9
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file != null:
-		file.store_string(JSON.stringify(progress))
-		file.close()
+	progress["schema_version"] = 10
+	PARENT_DATA.write_save(SAVE_PATH, progress)
 
 func load_progress() -> void:
 	if not FileAccess.file_exists(SAVE_PATH): return
@@ -980,7 +988,7 @@ func load_progress() -> void:
 		progress["legacy_unlocked_world"] = int(progress.get("unlocked_world", 1))
 	if not progress.has("completed_levels"): progress["completed_levels"] = {}
 	if not progress.has("level_evidence"): progress["level_evidence"] = {}
-	progress["schema_version"] = 9
+	progress["schema_version"] = 10
 
 func record_workshop_attempt(correct: bool, reason: String) -> void:
 	var q: Dictionary = workshop_session["question"]
@@ -993,6 +1001,7 @@ func record_workshop_attempt(correct: bool, reason: String) -> void:
 	var event_id: String = "%s:%d" % [workshop_session["session_id"], count]
 	var day: int = int(Time.get_unix_time_from_system() / 86400.0)
 	var seconds: float = (Time.get_ticks_msec() - workshop_step_started) / 1000.0
+	PARENT_DATA.record(progress, q, int(q["world"]), -1, correct, "demo" if mode == "demo" else "numeric", assisted, seconds, "workshop")
 	var bucket: String = "skills" if int(q["world"]) == 1 else "strategies"
 	var key: String = SKILL_TAXONOMY.key_for(q)
 	if not final_step:
@@ -1009,3 +1018,10 @@ func migrate_learning_data() -> void:
 		for key in records:
 			records[key] = LEARNING_ENGINE.migrate(records[key])
 		progress[bucket] = records
+
+func open_parent() -> void:
+	screen = "parent"
+	var panel := Control.new()
+	panel.set_script(PARENT_UI)
+	add_child(panel)
+	panel.call("setup", self)

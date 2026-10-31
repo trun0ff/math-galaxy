@@ -1,0 +1,31 @@
+extends SceneTree
+const D = preload("res://scripts/ParentData.gd")
+func _initialize() -> void:
+	var p: Dictionary = {"skills": {}}
+	assert(D.validate(p))
+	assert(D.validate({"skills": {}, "level_evidence": {"1:0": {"missions": {"1": true}}}}))
+	assert(not D.validate(null))
+	assert(not D.validate({"skills": []}))
+	var q := {"key": "1_2_3"}
+	D.record(p, q, 1, 0, true, "numeric", false, 1, "battle")
+	D.record(p, q, 1, 0, false, "numeric", false, 3, "battle")
+	var b: Dictionary = p.diagnostics["battle/independent"]
+	assert(D.median(b) == 2)
+	D.record(p, q, 1, 0, true, "choices", false, 9, "battle")
+	D.record(p, q, 1, 0, true, "numeric", true, 9, "battle")
+	assert(p.diagnostics["battle/independent"].n == 2)
+	D.record(p, q, 1, 0, true, "numeric", false, 2, "battle")
+	assert(D.median(p.diagnostics["battle/independent"]) == 2)
+	for i in range(110): D.mission(p, 1, 0, 10, 1, 0, true)
+	assert(p.mission_history.size() == 100 and p.missions_recorded == 110)
+	assert(not D.validate({"skills": {}, "mission_history": [4]}))
+	assert(not D.validate({"skills": {"x": {"history": [4]}}}))
+	assert(not D.validate({"skills": {}, "diagnostics": {"x": {"n": "oops"}}}))
+	assert(D.duration({"parent_settings": {"duration": 1}}) == 120)
+	assert(D.limits({"parent_settings": {"limits": [1, 999, 20, 30, 40]}})[1] == 180)
+	assert(D.write_save("res://tests/parent_test.tmp", p))
+	assert(D.write_save("res://tests/parent_test.tmp", p))
+	assert(D.validate(JSON.parse_string(FileAccess.get_file_as_string("res://tests/parent_test.tmp"))))
+	DirAccess.remove_absolute("res://tests/parent_test.tmp")
+	print("Parent diagnostics tests passed")
+	quit()
