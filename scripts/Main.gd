@@ -19,6 +19,10 @@ const WORLD_ART = [preload("res://assets/worlds/1_lightning_clean.jpg"), preload
 const MENU_GALAXY = preload("res://assets/battle/menu_galaxy.jpg")
 const MENU_BACKGROUNDS = [preload("res://assets/battle/world_1_background.jpg"), preload("res://assets/battle/world_2_background.jpg"), preload("res://assets/battle/world_3_background.jpg"), preload("res://assets/battle/world_4_background.jpg"), preload("res://assets/battle/world_5_background.jpg")]
 const WORLD_SUBTITLES = ["TABLE 2-9", "2 DIGITS × 1", "3 DIGITS × 1", "2 DIGITS × 2", "EXACT DIVISION"]
+const SAVE_MANAGER = preload("res://scripts/SaveManager.gd")
+const MISSION_MANAGER = preload("res://scripts/MissionManager.gd")
+var save_writable := true
+var save_warning := ""
 const SAVE_PATH = "user://math_galaxy_progress.json"
 var MISSION_LENGTH := 300.0
 var PHASE_LIMITS := [35.0, 85.0, 235.0, 280.0, 300.0]
@@ -135,10 +139,7 @@ func _process(delta: float) -> void:
 	update_hud()
 
 func determine_phase() -> int:
-	for i in range(PHASE_LIMITS.size()):
-		if elapsed < PHASE_LIMITS[i]:
-			return i
-	return 4
+	return MISSION_MANAGER.phase_at(elapsed, PHASE_LIMITS)
 
 func clear_screen() -> void:
 	for c in get_children():
@@ -648,7 +649,7 @@ func start_level_practice() -> void:
 
 func start_mission() -> void:
 	MISSION_LENGTH = PARENT_DATA.duration(progress)
-	PHASE_LIMITS = [35.0, 85.0, 235.0, 280.0, 300.0].map(func(v): return v * MISSION_LENGTH / 300.0)
+	PHASE_LIMITS = MISSION_MANAGER.phase_limits(MISSION_LENGTH)
 	REWARD_MANAGER.migrate(progress)
 	progress["mission_sequence"] = maxi(int(progress.get("mission_sequence", 0)), int(progress.rewards.settled)) + 1
 	save_progress()
@@ -1054,24 +1055,28 @@ func exit_mission() -> void:
 	fail_mission()
 
 func save_progress() -> void:
+	if not save_writable: return
 	REWARD_MANAGER.migrate(progress)
-	PARENT_DATA.write_save(SAVE_PATH, progress)
+	if not SAVE_MANAGER.write_save(SAVE_PATH, progress):
+		report_save_warning("Could not save progress. Check available storage and permissions.")
+
+func report_save_warning(text: String) -> void:
+	push_warning(text)
+	if text == save_warning: return
+	save_warning = text
+	var dialog := AcceptDialog.new()
+	dialog.title = "Profile storage"
+	dialog.dialog_text = text
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(680, 200))
 
 func load_progress() -> void:
-	if not FileAccess.file_exists(SAVE_PATH): return
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if file == null: return
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	file.close()
-	if typeof(parsed) == TYPE_DICTIONARY:
-		progress = parsed
-		if not progress.has("skills"): progress["skills"] = {}
-	if not progress.has("strategies"): progress["strategies"] = {}
-	if not progress.has("legacy_unlocked_world"):
-		progress["legacy_unlocked_world"] = int(progress.get("unlocked_world", 1))
-	if not progress.has("completed_levels"): progress["completed_levels"] = {}
-	if not progress.has("level_evidence"): progress["level_evidence"] = {}
-	REWARD_MANAGER.migrate(progress)
+	var result := SAVE_MANAGER.load_profile(SAVE_PATH)
+	progress = result.data
+	save_writable = result.writable
+	if not str(result.warning).is_empty():
+		call_deferred("report_save_warning", str(result.warning))
 
 func record_workshop_attempt(correct: bool, reason: String) -> void:
 	var q: Dictionary = workshop_session["question"]
@@ -1113,6 +1118,9 @@ func show_hangar() -> void:
 	HANGAR.show(self)
 
 func buy_hangar(id: String) -> void:
+	if not save_writable:
+		HANGAR.show(self, "Restore your profile before purchasing.")
+		return
 	REWARD_MANAGER.migrate(progress)
 	if progress.rewards.owned.has(id):
 		equip_hangar(id)
@@ -1128,6 +1136,7 @@ func buy_hangar(id: String) -> void:
 	HANGAR.show(self, "Unlocked!" )
 
 func equip_hangar(id: String) -> void:
+	if not save_writable: return
 	var before := progress.duplicate(true)
 	if REWARD_MANAGER.equip(progress, id):
 		if not PARENT_DATA.write_save(SAVE_PATH, progress):

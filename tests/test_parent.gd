@@ -27,5 +27,6 @@ func _initialize() -> void:
 	assert(D.write_save("res://tests/parent_test.tmp", p))
 	assert(D.validate(JSON.parse_string(FileAccess.get_file_as_string("res://tests/parent_test.tmp"))))
 	DirAccess.remove_absolute("res://tests/parent_test.tmp")
+	DirAccess.remove_absolute("res://tests/parent_test.tmp.bak")
 	print("Parent diagnostics tests passed")
 	quit()

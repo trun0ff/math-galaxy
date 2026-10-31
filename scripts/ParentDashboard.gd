@@ -242,6 +242,7 @@ func reset() -> void:
 		message("Save failed. No changes made.")
 		return
 	host.progress = clean
+	host.save_writable = true
 	host.migrate_learning_data()
 	dashboard()
 

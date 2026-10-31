@@ -16,7 +16,7 @@ static func migrate(p: Dictionary) -> void:
 	r["settled"] = maxi(int(r.get("settled", 0)), 0)
 	r["equipped"] = str(r.get("equipped", "default"))
 	p["rewards"] = r
-	p["schema_version"] = 11
+	p["schema_version"] = maxi(13, int(p.get("schema_version", 0)))
 
 static func purchase(p: Dictionary, id: String) -> bool:
 	migrate(p)
