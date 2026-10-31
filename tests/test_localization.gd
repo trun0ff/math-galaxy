@@ -24,8 +24,8 @@ func run() -> void:
 	root.add_child(host)
 	host.set_process(false)
 	var before: Dictionary = host.progress.duplicate(true)
-	var selector: OptionButton = host.find_child("LanguageSelector", true, false)
-	selector.item_selected.emit(1)
+	var selector: Button = host.find_child("Language_uk", true, false)
+	selector.pressed.emit()
 	assert(L10N.language == "uk")
 	assert(labels(host).contains("ОБЕРИ СВІТ"))
 	assert(host.progress == before, "Language must not change learning data")
@@ -47,8 +47,8 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	assert(host.main_box.size.x <= 1280)
-	selector = host.find_child("LanguageSelector", true, false)
-	selector.item_selected.emit(0)
+	selector = host.find_child("Language_en", true, false)
+	selector.pressed.emit()
 	assert(labels(host).contains("CHOOSE A WORLD"))
 	assert(host.progress.skills == before.skills)
 	# Every translated format keeps exactly the same placeholders and order.

@@ -265,17 +265,29 @@ func show_menu() -> void:
 	var settings := make_button("⚙", open_parent, Color("274784"), 58, 56, 24)
 	top.add_child(make_button(L10N.text("HANGAR"), show_hangar, Color("2865ad"), 150, 56, 20))
 	top.add_child(settings)
-	var languages := OptionButton.new()
+	var languages := HBoxContainer.new()
 	languages.name = "LanguageSelector"
-	languages.custom_minimum_size = Vector2(170, 48)
-	languages.add_item("English", 0)
-	languages.add_item("Українська", 1)
-	languages.select(1 if L10N.language == "uk" else 0)
-	languages.item_selected.connect(func(index: int):
-		var error := L10N.select_language("uk" if index == 1 else "en")
-		show_menu()
-		if error != OK: report_save_warning(L10N.text("Could not save language preference."))
-	)
+	for code in ["en", "uk"]:
+		var selected_code: String = code
+		var flag := make_button("", func():
+			var error := L10N.select_language(selected_code)
+			show_menu()
+			if error != OK: report_save_warning(L10N.text("Could not save language preference."))
+		, Color("22bfff") if L10N.language == code else Color("274784"), 58, 56, 24)
+		flag.name = "Language_" + code
+		flag.tooltip_text = "Українська" if code == "uk" else "English"
+		var icon := TextureRect.new()
+		icon.texture = load("res://assets/ui/flag_" + code + ".svg")
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		flag.add_child(icon)
+		icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		icon.offset_left = 13
+		icon.offset_right = -13
+		icon.offset_top = 14
+		icon.offset_bottom = -14
+		languages.add_child(flag)
 	top.add_child(languages)
 	root.add_child(top)
 	root.add_child(make_label("MATH GALAXY", 56, Color("84d8ff")))
@@ -298,7 +310,11 @@ func show_menu() -> void:
 	start_wrap.add_child(make_button(L10N.text("▶  CHOOSE MISSION"), show_levels, Color("00e485"), 520, 78, 29))
 	var workshop_wrap := CenterContainer.new()
 	root.add_child(workshop_wrap)
-	workshop_wrap.add_child(make_button(L10N.text("✦  MATH WORKSHOP"), show_workshop, Color("2865ad"), 340, 60, 23))
+	var workshop_button := make_button(L10N.text("✦  MATH WORKSHOP"), show_workshop, Color("2865ad"), 340, 60, 23)
+	var caption: Label = workshop_button.get_node("Caption")
+	caption.autowrap_mode = TextServer.AUTOWRAP_OFF
+	workshop_button.custom_minimum_size.x = maxf(340, caption.get_theme_font("font").get_string_size(caption.text, HORIZONTAL_ALIGNMENT_LEFT, -1, caption.get_theme_font_size("font_size")).x + 64)
+	workshop_wrap.add_child(workshop_button)
 	root.add_child(make_label(L10N.text("Prototype • Offline • Landscape • No account required"), 16, Color("b2c2dd")))
 
 func show_workshop() -> void:
@@ -585,9 +601,14 @@ func make_world_card(idx: int) -> Button:
 	pic.offset_right = 0
 	pic.offset_bottom = 0
 	pic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var picture_material := ShaderMaterial.new()
+	picture_material.shader = preload("res://assets/shaders/beveled_picture.gdshader")
+	pic.material = picture_material
+	pic.resized.connect(func(): picture_material.set_shader_parameter("rect_size", pic.size))
 	picture_clip.add_child(pic)
 	var glow := ColorRect.new()
 	glow.color = Color(0.1,0.2,0.4,0.16 if selected else 0.28)
+	glow.material = picture_material
 	glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	picture_clip.add_child(glow)
@@ -679,7 +700,7 @@ func start_mission() -> void:
 func build_battle() -> void:
 	var root := build_root(MENU_BACKGROUNDS[world - 1])
 	var top_panel := PanelContainer.new()
-	top_panel.add_theme_stylebox_override("panel", space_panel(Color(0.02,0.07,0.19,0.78), Color("2aaeff"), 16, 0.18))
+	top_panel.set_script(preload("res://scripts/ui/BattleHudFrame.gd"))
 	root.add_child(top_panel)
 	var top := HBoxContainer.new()
 	top.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -687,12 +708,20 @@ func build_battle() -> void:
 	top_panel.add_child(top)
 	shield_label = make_label(L10N.text("SHIELD 100%"), 20, Color("8de5ff"))
 	shield_label.custom_minimum_size.x = 160
+	var shield_icon := TextureRect.new()
+	shield_icon.texture = preload("res://assets/ui/shield.svg")
+	shield_icon.custom_minimum_size = Vector2(34, 40)
+	shield_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	shield_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	top.add_child(shield_icon)
+	top.move_child(shield_icon, 0)
 	top.add_child(shield_label)
 	shield_bar = ProgressBar.new()
 	shield_bar.max_value = 100
 	shield_bar.value = 100
 	shield_bar.custom_minimum_size = Vector2(220, 22)
-	style_progress(shield_bar, Color("44d0ff"))
+	shield_bar.set_script(preload("res://scripts/ui/ShieldMeter.gd"))
+	shield_bar.custom_minimum_size.y = 28
 	top.add_child(shield_bar)
 	header = make_label(L10N.text("WORLD %d • %s") % [world, L10N.text(WORLD_NAMES[world - 1])], 22, Color("ffe270"))
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -710,6 +739,7 @@ func build_battle() -> void:
 	art.custom_minimum_size.y = 220
 	art.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	root.add_child(art)
+	art.connect("ship_impact", update_hud)
 
 	var question_card := PanelContainer.new()
 	question_card.add_theme_stylebox_override("panel", space_panel(Color(0.01,0.07,0.18,0.51), Color("1daeff"), 18, 0.12))
@@ -765,7 +795,7 @@ func build_battle() -> void:
 	footer.add_child(make_button(L10N.text("◀ EXIT"), exit_mission, Color("4f8cdb"), 125, 51, 19))
 	if progress.rewards.owned.has("repair"):
 		footer.add_child(make_button(L10N.text("REPAIR +15"), use_repair, Color("2865ad"), 160, 51, 18))
-	art.set("ship_tint", Color("c89aff") if progress.rewards.equipped == "violet" else Color("ffe080") if progress.rewards.equipped == "gold" else Color.WHITE)
+	art.set("ship_variant", 2 if progress.rewards.equipped == "violet" else 1 if progress.rewards.equipped == "gold" else 0)
 	update_hud()
 	update_phase_label()
 
@@ -790,8 +820,9 @@ func update_phase_label() -> void:
 
 func update_hud() -> void:
 	info.text = L10N.text("Examples: %d/%d") % [hits + misses, question_target]
-	shield_label.text = L10N.text("SHIELD %d%%") % shield
-	shield_bar.value = shield
+	if art == null or float(art.get("enemy_attack_timer")) <= 0.0:
+		shield_label.text = L10N.text("SHIELD %d%%") % shield
+		shield_bar.value = shield
 	energy_label.text = L10N.text("ENERGY %d  •  COMBO %d") % [energy, combo]
 	timer_label.text = L10N.text("PAUSED") if hint_visible else "%.1f s" % maxf(0.0, question_limit - question_elapsed)
 	timer_bar.max_value = question_limit

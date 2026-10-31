@@ -7,39 +7,41 @@ extends Button
 func _ready() -> void:
 	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
 		add_theme_stylebox_override(state, StyleBoxEmpty.new())
-	mouse_entered.connect(queue_redraw)
-	mouse_exited.connect(queue_redraw)
-	button_down.connect(queue_redraw)
-	button_up.connect(queue_redraw)
-	resized.connect(queue_redraw)
+	for event in [mouse_entered, mouse_exited, button_down, button_up, resized, focus_entered, focus_exited]:
+		event.connect(queue_redraw)
+
+func frame(inset: float) -> PackedVector2Array:
+	var w := size.x - inset
+	var h := size.y - inset
+	var c := minf(18.0, size.y * 0.24)
+	return PackedVector2Array([Vector2(inset+c,inset), Vector2(w-c,inset), Vector2(w,inset+c), Vector2(w,h-c), Vector2(w-c,h), Vector2(inset+c,h), Vector2(inset,h-c), Vector2(inset,inset+c)])
 
 func _draw() -> void:
-	var w: float = size.x
-	var h: float = size.y
-	if w < 30 or h < 20:
-		return
-	var cut: float = minf(18.0, minf(w, h) * 0.20)
-	var points := PackedVector2Array([Vector2(cut,1), Vector2(w-cut,1), Vector2(w-1,cut), Vector2(w-1,h-cut), Vector2(w-cut,h-1), Vector2(cut,h-1), Vector2(1,h-cut), Vector2(1,cut)])
-	var accent: Color = accent_color.lightened(0.50)
-	var hover: bool = is_hovered() and not disabled
-	var down: bool = button_pressed
-	var body: Color = accent_color.darkened(0.035 if hover else 0.14)
-	if down:
-		body = body.lightened(0.12)
+	if size.x < 30 or size.y < 20: return
+	var active := (is_hovered() or has_focus()) and not disabled
+	var light := accent_color.lightened(0.4) if not disabled else Color("65748e")
+	var edge := frame(3)
+	var closed := edge + PackedVector2Array([edge[0]])
+	# Layered luminous rim, gunmetal chassis, and inset glass.
+	draw_polyline(closed, Color(light, 0.09 if not active else 0.22), 11, true)
+	draw_colored_polygon(frame(1), Color("060f23"))
+	draw_polyline(frame(1) + PackedVector2Array([frame(1)[0]]), Color("7687ab"), 1.5, true)
+	draw_colored_polygon(edge, accent_color.darkened(0.68))
+	draw_polyline(closed, light, 2.4, true)
+	var glass := frame(7)
+	var top_color := accent_color.darkened(0.23 if active else 0.46)
+	var bottom_color := accent_color.darkened(0.62 if button_pressed else 0.82)
 	if disabled:
-		body = Color("243045")
-		hover = false
-	draw_colored_polygon(points, body)
-	draw_colored_polygon(
-		points,
-		Color(accent.r, accent.g, accent.b, 0.08 if not hover else 0.16)
-	)
-	var outline: Color = accent if not disabled else Color("5b6783")
-	draw_polyline(points + PackedVector2Array([points[0]]), outline, 2.7, true)
-	var inner := PackedVector2Array([Vector2(cut + 5, 5), Vector2(w-cut-5, 5), Vector2(w-7, cut+1), Vector2(w-7, h-cut-1), Vector2(w-cut-5, h-5), Vector2(cut+5, h-5), Vector2(7, h-cut-1), Vector2(7, cut+1)])
-	draw_polyline(inner + PackedVector2Array([inner[0]]), Color(1,1,1,0.10 if not hover else 0.22), 1.3, true)
-	var top := PackedVector2Array([Vector2(cut+8,5), Vector2(w-cut-8,5), Vector2(w-cut-14,11), Vector2(cut+14,11)])
-	draw_colored_polygon(top, Color(accent.r, accent.g, accent.b, 0.18 if not hover else 0.34))
-	draw_line(Vector2(cut+7,h-6), Vector2(w-cut-7,h-6), Color(accent.r, accent.g, accent.b, 0.18), 2.0, true)
-	for x in [cut+6, w-cut-6]:
-		draw_circle(Vector2(x,h*0.5), 1.9, outline)
+		top_color = Color("273449")
+		bottom_color = Color("121b2c")
+	var colors := PackedColorArray()
+	for point in glass:
+		colors.append(top_color.lerp(bottom_color, point.y / size.y))
+	draw_polygon(glass, colors)
+	draw_polyline(glass + PackedVector2Array([glass[0]]), Color(light, 0.55), 1.0, true)
+	var c := minf(18.0, size.y * 0.24)
+	for x in [8.0, size.x - 8.0]:
+		draw_line(Vector2(x,c+2), Vector2(x,size.y-c-2), Color(light, 0.2), 8, true)
+		draw_line(Vector2(x,c+2), Vector2(x,size.y-c-2), light, 2.5, true)
+	draw_line(Vector2(c+8,9), Vector2(size.x-c-8,9), Color(light, 0.85), 2, true)
+	draw_line(Vector2(c+12,size.y-9), Vector2(size.x-c-12,size.y-9), Color(light, 0.35), 1.2, true)

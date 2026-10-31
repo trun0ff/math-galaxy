@@ -2,6 +2,15 @@ extends RefCounted
 
 # English source templates map to Ukrainian; keep format placeholders unchanged.
 const UK := {
+	"Scout • Cyan engines": "Розвідник • Блакитні двигуни",
+	"Heavy hull • Golden engines": "Важкий корпус • Золоті двигуни",
+	"Interceptor • Violet engines": "Перехоплювач • Фіолетові двигуни",
+	"Original hull": "Базовий корпус",
+	"Complete missions: +40. New day: +30.": "Завершуй місії: +40. Новий день: +30.",
+	"Difficult facts: +25. Accuracy progress: +30.": "Складні приклади: +25. Покращення точності: +30.",
+	"Hull designs change your look, not your battle strength.": "Дизайн корпусу змінює вигляд корабля, а не його силу.",
+	"Energy reserve adds 15 hint energy at mission start.": "Резерв енергії додає 15 енергії для підказок на початку місії.",
+	"Repair pulse restores 15 shield once per mission.": "Ремонтний імпульс відновлює 15 щита один раз за місію.",
 	"Examples: %d/%d": "Приклади: %d/%d",
 	"Missions: 10 examples; final challenges: 12. No mission timer.": "Місії: 10 прикладів; фінальні випробування: 12. Без таймера місії.",
 	"TABLE 2-9": "ТАБЛИЦЯ 2–9",

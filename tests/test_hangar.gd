@@ -16,7 +16,7 @@ func run() -> void:
 	assert(host.progress.coins == 720)
 	host.start_mission()
 	assert(host.energy == 65)
-	assert(host.art.ship_tint == Color("ffe080"))
+	assert(host.art.ship_variant == 1)
 	host.shield = 50
 	host.use_repair()
 	assert(host.shield == 65)
